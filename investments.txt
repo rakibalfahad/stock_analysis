@@ -1,0 +1,14 @@
+# Investment Configuration
+# Format: key = value
+
+total_investment = 10000
+target_gain_percentage = 20
+
+# Preferred stocks to analyze (comma-separated)
+# You can change these to any stock symbols you prefer
+preferred_stocks = AAPL,GOOGL,MSFT,AMZN
+
+# Sold stocks (format: stock_symbol,sale_price,sale_date)
+# Example: AAPL,150.50,2025-09-05
+sold_stocks:
+AAPL,155.75,2025-09-01
