@@ -64,11 +64,14 @@ A sophisticated, **modular** investment portfolio optimization system using Mode
 ```
 
 ### 🔄 **Continuous Monitoring (Real-time)**
+
+**⚠️ IMPORTANT: `--interval` only works with `--monitor` flag!**
+
 ```bash
 # Quick monitoring (15-minute intervals) - RECOMMENDED
 /home/ralfahad/delopment/mycode/stock_env/bin/python main.py --quick-monitor --plot
 
-# Custom interval monitoring (5 minutes)
+# Custom interval monitoring (5 minutes) - REQUIRES --monitor
 /home/ralfahad/delopment/mycode/stock_env/bin/python main.py --monitor --plot --interval 300
 
 # Hourly monitoring (default)
@@ -76,6 +79,15 @@ A sophisticated, **modular** investment portfolio optimization system using Mode
 
 # Very active monitoring (every minute) - for day trading
 /home/ralfahad/delopment/mycode/stock_env/bin/python main.py --monitor --plot --interval 60
+```
+
+**🚨 Common Mistake:**
+```bash
+# ❌ WRONG - This ignores --interval and runs only once!
+python main.py --plot --interval 300
+
+# ✅ CORRECT - This runs every 300 seconds (5 minutes)
+python main.py --monitor --plot --interval 300
 ```
 
 ### Advanced Usage
@@ -551,12 +563,14 @@ AMZN:0:0.00:
 
 ### Command Line Options
 
+**⚠️ Key Rule: `--interval` requires `--monitor` to work!**
+
 | Option | Description | Example |
 |--------|-------------|---------|
 | `--plot` | Enable visualization dashboard | `/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --plot` |
 | `--monitor` | Run in monitoring mode (1 hour default) | `/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --monitor --plot` |
 | `--quick-monitor` | 15-minute monitoring intervals | `/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --quick-monitor` |
-| `--interval N` | Custom monitoring interval (seconds) | `/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --monitor --interval 300` |
+| `--interval N` | Custom monitoring interval (seconds) **REQUIRES --monitor** | `/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --monitor --interval 300` |
 | `--keep-timestamp` | Create timestamped files | `/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --plot --keep-timestamp` |
 | `--cleanup N` | Clean old files, keep N latest | `/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --cleanup 5` |
 | `--target-return` | Set target return (default: 0.20) | `/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --target-return 0.25` |
@@ -692,6 +706,19 @@ If you're upgrading from the monolithic `investment_optimizer.py`:
 - ✅ System remains functional
 
 ### ⚙️ **Configuration Issues**
+
+#### **⚙️ Configuration Problems:**
+
+**Invalid `--interval` Usage:**
+```
+⚠️ WARNING: --interval ignored in single-run mode
+💡 Use --monitor flag to enable interval-based monitoring
+🔄 Running single optimization instead...
+```
+**How to fix:**
+- ✅ Add `--monitor` flag: `python main.py --monitor --plot --interval 300`
+- ✅ Or use `--quick-monitor` for 15-minute intervals
+- ❌ Don't use `--interval` without `--monitor`
 
 #### **Invalid Stock Symbol:**
 ```
