@@ -71,6 +71,7 @@ class InvestmentOptimizer:
         self.optimal_weights = None
         self.portfolio_return = None
         self.portfolio_volatility = None
+        self.additional_capital_needed = 0  # Additional capital needed for full utilization
         
         logging.info(f"Optimizer initialized with {len(self.tickers)} stocks")
     
@@ -216,10 +217,12 @@ class InvestmentOptimizer:
             return False
     
     def get_trading_recommendations(self) -> Dict[str, Dict[str, Any]]:
-        """Get trading recommendations based on optimization"""
+        """Get trading recommendations based on optimization with improved capital utilization"""
         recommendations = {}
         total_capital = self.config['cash']
         
+        # First pass: collect available stocks and their optimal allocations
+        available_stocks = []
         for i, ticker in enumerate(self.tickers):
             current_holdings = self.config['stocks'][ticker]
             current_price = self.current_prices.get(ticker, 0)
@@ -234,10 +237,24 @@ class InvestmentOptimizer:
                 }
                 continue
             
-            # Calculate optimal investment amount
-            target_investment = total_capital * optimal_weight
-            target_shares = int(target_investment / current_price) if current_price > 0 else 0
-            current_shares = current_holdings['shares']
+            available_stocks.append({
+                'ticker': ticker,
+                'price': current_price,
+                'optimal_weight': optimal_weight,
+                'current_shares': current_holdings['shares'],
+                'target_investment': total_capital * optimal_weight
+            })
+        
+        # Improved allocation: maximize capital utilization
+        allocated_shares = self._optimize_share_allocation(available_stocks, total_capital)
+        
+        # Generate recommendations based on optimized allocation
+        for stock_info in available_stocks:
+            ticker = stock_info['ticker']
+            current_price = stock_info['price']
+            optimal_weight = stock_info['optimal_weight']
+            current_shares = stock_info['current_shares']
+            target_shares = allocated_shares.get(ticker, 0)
             
             # Determine action
             if target_shares > current_shares:
@@ -269,7 +286,121 @@ class InvestmentOptimizer:
                     'details': {}
                 }
         
+        # Calculate additional capital needed for full portfolio utilization
+        self._calculate_additional_capital_needed(recommendations)
+        
         return recommendations
+    
+    def _optimize_share_allocation(self, available_stocks: List[Dict], total_capital: float) -> Dict[str, int]:
+        """Optimize share allocation to maximize capital utilization using iterative approach"""
+        if not available_stocks:
+            return {}
+        
+        # Start with basic allocation (truncated shares)
+        allocation = {}
+        total_invested = 0
+        
+        for stock in available_stocks:
+            ticker = stock['ticker']
+            price = stock['price']
+            target_investment = stock['target_investment']
+            
+            if price > 0:
+                shares = int(target_investment / price)
+                allocation[ticker] = shares
+                total_invested += shares * price
+        
+        remaining_capital = total_capital - total_invested
+        
+        # Iteratively allocate remaining capital to maximize utilization
+        # Priority: stocks with highest weight that can still be purchased
+        max_iterations = 20
+        iteration = 0
+        
+        while remaining_capital > 0 and iteration < max_iterations:
+            iteration += 1
+            best_purchase = None
+            best_efficiency = 0
+            
+            for stock in available_stocks:
+                ticker = stock['ticker']
+                price = stock['price']
+                optimal_weight = stock['optimal_weight']
+                current_allocation = allocation.get(ticker, 0)
+                current_investment = current_allocation * price
+                
+                # Check if we can afford one more share
+                if price <= remaining_capital:
+                    # Calculate efficiency: how close this gets us to optimal weight
+                    new_investment = current_investment + price
+                    target_investment = stock['target_investment']
+                    
+                    # Efficiency metric: weight significance + proximity to target
+                    weight_importance = optimal_weight * 100  # Higher weight = more important
+                    proximity_to_target = 1.0 - abs(new_investment - target_investment) / max(target_investment, 1)
+                    efficiency = weight_importance * proximity_to_target
+                    
+                    if efficiency > best_efficiency:
+                        best_efficiency = efficiency
+                        best_purchase = ticker
+            
+            # Make the best purchase
+            if best_purchase:
+                price = next(s['price'] for s in available_stocks if s['ticker'] == best_purchase)
+                allocation[best_purchase] = allocation.get(best_purchase, 0) + 1
+                remaining_capital -= price
+            else:
+                break  # No more beneficial purchases possible
+        
+        return allocation
+    
+    def _calculate_additional_capital_needed(self, recommendations: Dict[str, Dict[str, Any]]) -> None:
+        """Calculate additional capital needed to fully utilize optimal portfolio allocation"""
+        if self.optimal_weights is None or len(self.optimal_weights) == 0:
+            self.additional_capital_needed = 0
+            return
+        
+        try:
+            # Calculate current portfolio value (cash + holdings)
+            current_holdings_value = 0
+            for ticker, holdings in self.config['stocks'].items():
+                current_price = self.current_prices.get(ticker, 0)
+                current_holdings_value += holdings['shares'] * current_price
+            
+            total_current_value = self.config['cash'] + current_holdings_value
+            
+            # Calculate total investment needed for new purchases
+            total_new_investment = sum(
+                rec['shares'] * rec['current_price'] 
+                for rec in recommendations.values() 
+                if rec['action'] == 'BUY'
+            )
+            
+            # Calculate cash remaining after new investments
+            cash_after_investment = self.config['cash'] - total_new_investment
+            
+            # If there's significant uninvested cash (> 10% of total capital), calculate additional capital needed
+            if cash_after_investment > 0 and total_current_value > 0 and (cash_after_investment / total_current_value) > 0.10:
+                # Calculate the theoretical total capital needed to have minimal uninvested cash
+                # We want cash_after / total_capital ≤ 0.05 (5% or less uninvested)
+                target_cash_ratio = 0.05
+                
+                # If we want only 5% cash remaining:
+                # cash_after_investment / total_current_value = target_cash_ratio
+                # We need: total_new_investment / (total_new_investment + target_cash) = (1 - target_cash_ratio)
+                # Solving: additional_capital = (cash_after_investment - (total_new_investment * target_cash_ratio / (1 - target_cash_ratio)))
+                
+                target_cash_amount = total_new_investment * target_cash_ratio / (1 - target_cash_ratio)
+                if cash_after_investment > target_cash_amount:
+                    self.additional_capital_needed = cash_after_investment - target_cash_amount
+                else:
+                    self.additional_capital_needed = 0
+            else:
+                self.additional_capital_needed = 0
+                
+        except Exception as e:
+            logging.warning(f"Error calculating additional capital needed: {e}")
+            self.additional_capital_needed = 0
     
     def print_analysis(self, recommendations: Dict[str, Dict[str, Any]]) -> None:
         """Print comprehensive portfolio analysis"""
@@ -331,6 +462,10 @@ class InvestmentOptimizer:
             for rec in recommendations.values()
         )
         print(f"{EMOJIS['scales']} Total Portfolio Risk: {format_currency(total_risk)} ({format_percentage(total_risk/total_capital * 100)} of capital)")
+        
+        # Display additional capital needed if applicable
+        if hasattr(self, 'additional_capital_needed') and self.additional_capital_needed > 0:
+            print(f"{EMOJIS['warning']} Additional Capital Needed: {format_currency(self.additional_capital_needed)} to fully utilize portfolio")
     
     def run_optimization(self) -> bool:
         """Run complete optimization process"""
