@@ -13,3 +13,26 @@
 2025-09-05 22:53:39,901 - root - INFO - Optimizer initialized with 4 stocks
 2025-09-05 22:55:14,470 - root - INFO - Optimizer initialized with 4 stocks
 2025-09-05 23:00:41,729 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:05:20,149 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:18:38,468 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:18:38,983 - root - ERROR - Error in optimization process: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+2025-09-05 23:19:16,039 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:19:35,704 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:20:32,600 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:21:13,060 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:21:34,392 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:23:53,690 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:24:24,290 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:24:57,507 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:26:06,226 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:32:36,766 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:34:35,084 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:35:53,972 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:36:33,451 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:36:48,435 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:41:34,196 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:42:52,316 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:44:41,373 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:45:36,272 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:46:00,535 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:46:24,998 - root - INFO - Optimizer initialized with 4 stocks
