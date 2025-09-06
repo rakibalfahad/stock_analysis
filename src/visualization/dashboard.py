@@ -9,9 +9,20 @@ import pandas as pd
 import yfinance as yf
 import glob
 import os
+import warnings
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 import logging
+
+# Suppress specific warnings
+warnings.filterwarnings('ignore', category=UserWarning, module='matplotlib')
+warnings.filterwarnings('ignore', category=FutureWarning, module='yfinance')
+warnings.filterwarnings('ignore', message='.*missing from font.*')
+warnings.filterwarnings('ignore', message='.*auto_adjust.*')
+
+# Configure matplotlib to handle missing fonts gracefully
+plt.rcParams['font.family'] = ['DejaVu Sans', 'Arial', 'sans-serif']
+plt.rcParams['axes.unicode_minus'] = False
 
 from ..utils.constants import EMOJIS, COLORS, DASHBOARD_FILE
 from ..utils.config import format_currency, format_percentage, get_color_for_gain_risk_ratio
@@ -48,8 +59,9 @@ class PortfolioVisualizer:
         try:
             # Create figure with 2x3 subplot grid
             self.fig, self.axes = plt.subplots(2, 3, figsize=(18, 12))
+            # Use simple text instead of emojis for title to avoid font warnings
             self.fig.suptitle(
-                f'{EMOJIS["chart"]} Investment Portfolio Dashboard - {datetime.now().strftime("%Y-%m-%d %H:%M")}',
+                f'Investment Portfolio Dashboard - {datetime.now().strftime("%Y-%m-%d %H:%M")}',
                 fontsize=16, fontweight='bold'
             )
             
@@ -103,7 +115,7 @@ class PortfolioVisualizer:
                        horizontalalignment='center', verticalalignment='center',
                        transform=ax.transAxes, fontsize=14)
             
-            ax.set_title(f'{EMOJIS["money_bag"]} Current Portfolio\nTotal: {format_currency(total_value)}', 
+            ax.set_title(f'Current Portfolio\nTotal: {format_currency(total_value)}', 
                         fontweight='bold')
             
         except Exception as e:
@@ -169,7 +181,7 @@ class PortfolioVisualizer:
                        horizontalalignment='center', verticalalignment='center',
                        transform=ax.transAxes, fontsize=14)
             
-            ax.set_title(f'{EMOJIS["chart"]} Comprehensive Analysis\nInvestment • Risk • Gain', 
+            ax.set_title(f'Comprehensive Analysis\nInvestment • Risk • Gain', 
                         fontweight='bold')
             
         except Exception as e:
@@ -207,37 +219,37 @@ class PortfolioVisualizer:
             cash_after = config['cash'] - total_investment
             total_capital = config['cash']
             
-            # Create summary text
+            # Create summary text without emojis
             summary_text = f"""
-{EMOJIS['money_bag']} INVESTMENT SUMMARY
+INVESTMENT SUMMARY
 
-{EMOJIS['shopping_cart']} New Investment:
+New Investment:
 {format_currency(total_investment)}
 
-{EMOJIS['cash']} Remaining Cash:
+Remaining Cash:
 {format_currency(cash_after)}
 ({format_percentage(cash_after/total_capital * 100)})
 
-{EMOJIS['shield']} Total Risk:
+Total Risk:
 {format_currency(total_risk)}
 ({format_percentage(total_risk/total_capital * 100)})
 
-{EMOJIS['up_trend']} Expected Gain:
+Expected Gain:
 {format_currency(total_expected_gain)}
 
-{EMOJIS['scales']} Risk/Reward Ratio:
+Risk/Reward Ratio:
 {total_expected_gain/total_risk:.2f}x
 """ if total_risk > 0 else f"""
-{EMOJIS['money_bag']} INVESTMENT SUMMARY
+INVESTMENT SUMMARY
 
-{EMOJIS['shopping_cart']} New Investment:
+New Investment:
 {format_currency(total_investment)}
 
-{EMOJIS['cash']} Remaining Cash:
+Remaining Cash:
 {format_currency(cash_after)}
 ({format_percentage(cash_after/total_capital * 100)})
 
-{EMOJIS['up_trend']} Expected Gain:
+Expected Gain:
 {format_currency(total_expected_gain)}
 """
             
@@ -271,7 +283,7 @@ class PortfolioVisualizer:
             ax.plot(dates, values, linewidth=2, color=COLORS['primary'])
             ax.fill_between(dates, values, alpha=0.3, color=COLORS['primary'])
             
-            ax.set_title(f'{EMOJIS["up_trend"]} Portfolio Value Over Time', fontweight='bold')
+            ax.set_title('Portfolio Value Over Time', fontweight='bold')
             ax.set_xlabel('Date')
             ax.set_ylabel('Portfolio Value ($)')
             ax.grid(True, alpha=0.3)
@@ -314,7 +326,7 @@ class PortfolioVisualizer:
                        horizontalalignment='center', verticalalignment='center',
                        transform=ax.transAxes, fontsize=14)
             
-            ax.set_title(f'{EMOJIS["scales"]} Risk vs Return Analysis', fontweight='bold')
+            ax.set_title('Risk vs Return Analysis', fontweight='bold')
             
         except Exception as e:
             logging.warning(f"Error updating risk return analysis: {e}")
@@ -336,7 +348,10 @@ class PortfolioVisualizer:
             
             for i, ticker in enumerate(tickers):
                 try:
-                    data = yf.download(ticker, start=start_date, end=end_date, interval='1d')
+                    # Suppress yfinance warnings
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        data = yf.download(ticker, start=start_date, end=end_date, interval='1d', progress=False)
                     if not data.empty:
                         # Normalize prices to show percentage change
                         normalized = (data['Close'] / data['Close'].iloc[0] - 1) * 100
@@ -345,7 +360,7 @@ class PortfolioVisualizer:
                 except Exception as e:
                     logging.warning(f"Could not fetch trend data for {ticker}: {e}")
             
-            ax.set_title(f'{EMOJIS["up_trend"]} Stock Price Trends (30 days)', fontweight='bold')
+            ax.set_title('Stock Price Trends (30 days)', fontweight='bold')
             ax.set_xlabel('Date')
             ax.set_ylabel('Price Change (%)')
             ax.legend()

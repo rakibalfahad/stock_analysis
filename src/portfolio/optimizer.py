@@ -5,10 +5,15 @@ Portfolio optimization using Modern Portfolio Theory
 import yfinance as yf
 import numpy as np
 import pandas as pd
+import warnings
 from scipy.optimize import minimize
 from datetime import datetime, timedelta
 import logging
 from typing import Dict, List, Tuple, Any, Optional
+
+# Suppress yfinance warnings
+warnings.filterwarnings('ignore', category=FutureWarning, module='yfinance')
+warnings.filterwarnings('ignore', message='.*auto_adjust.*')
 
 from ..utils.constants import (
     DEFAULT_PERIOD, DEFAULT_INTERVAL, DEFAULT_TARGET_RETURN,
@@ -72,10 +77,13 @@ class InvestmentOptimizer:
     def fetch_market_data(self) -> bool:
         """Fetch market data for all stocks"""
         try:
-            print(f"\n{EMOJIS['chart']} Fetching market data...")
+            current_time = datetime.now().strftime('%H:%M:%S')
+            print(f"\n{EMOJIS['chart']} Fetching market data at {current_time}...")
             
-            # Download data for all tickers
-            self.data = yf.download(self.tickers, period=self.period, interval=self.interval)
+            # Download data for all tickers with warnings suppressed
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                self.data = yf.download(self.tickers, period=self.period, interval=self.interval, progress=False)
             
             if self.data.empty:
                 logging.error("No market data retrieved")
@@ -89,11 +97,13 @@ class InvestmentOptimizer:
                 )
             
             # Calculate current prices and ATR values
+            fresh_data_count = 0
             for ticker in self.tickers:
                 try:
                     close_prices = self.data['Close'][ticker].dropna()
                     if not close_prices.empty:
                         self.current_prices[ticker] = float(close_prices.iloc[-1])
+                        fresh_data_count += 1
                         
                         # Calculate ATR
                         ticker_data = pd.DataFrame({
@@ -108,6 +118,11 @@ class InvestmentOptimizer:
                     logging.warning(f"Error processing {ticker}: {e}")
                     self.current_prices[ticker] = 0.0
                     self.atr_values[ticker] = 0.0
+            
+            # Show summary of fresh data
+            if fresh_data_count > 0:
+                latest_date = self.data['Close'][self.tickers[0]].dropna().index[-1].strftime('%Y-%m-%d')
+                print(f"   ✅ Fresh data retrieved for {fresh_data_count} stocks (latest: {latest_date})")
             
             print(f"{progress_bar(100, 100)} {EMOJIS['check']} Data fetched successfully")
             return True

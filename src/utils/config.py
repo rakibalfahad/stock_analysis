@@ -37,10 +37,33 @@ def load_config(config_file: str = CONFIG_FILE) -> Dict[str, Any]:
                 line = line.strip()
                 if not line or line.startswith('#'):
                     continue
+                
+                # Handle new format: key = value
+                if '=' in line:
+                    key, value = line.split('=', 1)
+                    key = key.strip()
+                    value = value.strip()
                     
-                if line.startswith('CASH:'):
+                    if key == 'total_investment':
+                        config['cash'] = float(value)
+                    elif key == 'target_gain_percentage':
+                        # Store target gain percentage for potential use
+                        config['target_gain_percentage'] = float(value)
+                    elif key == 'preferred_stocks':
+                        # Update stocks based on preferred list
+                        stock_symbols = [s.strip() for s in value.split(',')]
+                        config['stocks'] = {}
+                        for symbol in stock_symbols:
+                            config['stocks'][symbol] = {
+                                'shares': 0,
+                                'purchase_price': 0.0,
+                                'last_sold': None
+                            }
+                
+                # Handle old format: CASH: value
+                elif line.startswith('CASH:'):
                     config['cash'] = float(line.split(':')[1].strip())
-                elif ':' in line:
+                elif ':' in line and not line.startswith('sold_stocks'):
                     parts = line.split(':')
                     if len(parts) >= 3:
                         symbol = parts[0].strip()
@@ -59,6 +82,24 @@ def load_config(config_file: str = CONFIG_FILE) -> Dict[str, Any]:
                             'purchase_price': price,
                             'last_sold': last_sold
                         }
+                
+                # Handle sold_stocks section
+                elif line.startswith('sold_stocks:'):
+                    # Process sold stocks that follow
+                    continue
+                elif line and ',' in line and len(line.split(',')) >= 3:
+                    # This might be a sold stock entry: SYMBOL,PRICE,DATE
+                    parts = line.split(',')
+                    if len(parts) >= 3:
+                        symbol = parts[0].strip()
+                        if symbol in config['stocks']:
+                            try:
+                                # Update last_sold date for this stock
+                                sold_date = datetime.strptime(parts[2].strip(), '%Y-%m-%d').date()
+                                config['stocks'][symbol]['last_sold'] = sold_date
+                            except ValueError:
+                                pass  # Invalid date format, ignore
+                        
         except Exception as e:
             logging.warning(f"Error loading config file {config_file}: {e}")
     

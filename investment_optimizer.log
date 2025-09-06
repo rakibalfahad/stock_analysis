@@ -1,0 +1,15 @@
+2025-09-05 22:30:34,096 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 22:30:53,686 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 22:31:27,784 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 22:31:53,183 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 22:34:25,196 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 22:34:25,298 - root - ERROR - Error fetching market data: download() got an unexpected keyword argument 'show_errors'
+2025-09-05 22:34:47,119 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 22:35:55,962 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 22:36:49,698 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 22:37:25,643 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 22:39:33,751 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 22:42:24,887 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 22:53:39,901 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 22:55:14,470 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-05 23:00:41,729 - root - INFO - Optimizer initialized with 4 stocks

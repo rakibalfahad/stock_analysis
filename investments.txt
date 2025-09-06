@@ -1,7 +1,7 @@
 # Investment Configuration
 # Format: key = value
 
-total_investment = 10000
+total_investment = 2000
 target_gain_percentage = 20
 
 # Preferred stocks to analyze (comma-separated)

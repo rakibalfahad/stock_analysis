@@ -93,10 +93,11 @@ def run_monitoring_mode(optimizer: InvestmentOptimizer,
                        keep_timestamp: bool = False) -> None:
     """Run the optimizer in monitoring mode"""
     print(f"\n{EMOJIS['rocket']} Starting monitoring mode...")
-    print(f"{EMOJIS['calendar']} Update interval: {interval//60} minutes")
+    print(f"{EMOJIS['calendar']} Update interval: {interval} seconds" if interval < 60 else f"{EMOJIS['calendar']} Update interval: {interval//60} minutes")
     
     if visualizer.enable_plotting:
-        print(f"{EMOJIS['chart']} Dynamic plotting enabled - Dashboard will update every {interval//60} minutes")
+        time_str = f"{interval} seconds" if interval < 60 else f"{interval//60} minutes"
+        print(f"{EMOJIS['chart']} Dynamic plotting enabled - Dashboard will update every {time_str}")
     
     try:
         iteration = 0
@@ -120,7 +121,8 @@ def run_monitoring_mode(optimizer: InvestmentOptimizer,
             if not success:
                 print(f"{EMOJIS['warning']} Optimization failed, will retry next cycle")
             
-            print(f"\n{EMOJIS['calendar']} Next update in {interval//60} minutes...")
+            time_str = f"{interval} seconds" if interval < 60 else f"{interval//60} minutes"
+            print(f"\n{EMOJIS['calendar']} Next update in {time_str}...")
             print(f"{EMOJIS['pause']} Press Ctrl+C to stop monitoring")
             
             # Sleep until next iteration
