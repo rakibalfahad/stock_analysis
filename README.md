@@ -1,24 +1,28 @@
 # 🚀 Investment Portfolio Optimizer - Modular Version 2.0
 
-A sophisticated, **modular** investment portfolio optimization system using Modern Portfolio Theory, featuring comprehensive visualization, risk management, and intelligent file management.
+A sophisticated, **modular** investment portfolio optimization system using Modern Portfolio Theory, featuring comprehensive visualization, risk management, intelligent file management, and **dynamic configuration reloading**.
 
 ## 🎯 **What's New in Version 2.0**
 
 ✨ **Complete Modular Refactor** - Clean, organized codebase with separate modules  
 🏗️ **Professional Structure** - Following Python best practices and standards  
 📊 **Enhanced Visualization** - Comprehensive investment analysis dashboard  
-� **Continuous Monitoring** - Real-time portfolio tracking with customizable intervals  
-�🗂️ **Smart File Management** - No more clutter with intelligent file naming  
+🔄 **Continuous Monitoring** - Real-time portfolio tracking with customizable intervals  
+🗂️ **Smart File Management** - No more clutter with intelligent file naming  
 🧪 **Easier Testing** - Modular design allows component-level testing  
 📚 **Better Documentation** - Clear module separation and usage examples  
 🎯 **Standalone System** - No git dependencies, clean project structure  
+🔥 **Dynamic Configuration Reloading** - Changes to investments.txt picked up automatically  
+💰 **Automated Sale Processing** - Sold stocks automatically update capital and track gains  
+🛡️ **Cooling Period Management** - Recently sold stocks excluded from recommendations  
 
 ## 📁 **Project Structure**
 
 ```
-📦 stock/
+📦 stock_analysis/
 ├── 🐍 main.py                          # Main entry point
-├── 📁 src/                             # Source code modules
+├── � stock_analyzer.py                # Standalone Stock Risk vs Return Analysis Tool  
+├── �📁 src/                             # Source code modules
 │   ├── 📁 portfolio/                   # Portfolio optimization
 │   │   ├── __init__.py
 │   │   └── optimizer.py                # InvestmentOptimizer class
@@ -30,37 +34,149 @@ A sophisticated, **modular** investment portfolio optimization system using Mode
 │       ├── constants.py                # Constants and configuration
 │       ├── config.py                   # File handling utilities
 │       └── helpers.py                  # Calculation helpers
-├── ⚙️ investments.txt                  # Portfolio configuration
+├── ⚙️ investments.txt                  # Portfolio configuration (auto-updating)
 ├── 📊 portfolio_dashboard.png          # Latest dashboard (auto-generated)
 ├── 📊 portfolio_dashboard_*.png        # Timestamped dashboards (optional)
+├── 📊 sample_stocks.xlsx               # Comprehensive sample Excel file
+├── 📊 sample_stocks.csv                # Simple CSV version
 ├── 📚 README.md                        # This documentation
+├── 📚 STOCK_ANALYZER_README.md         # Stock Analyzer documentation
 └── 📦 requirements.txt                 # Dependencies
 ```
 
-## 🚀 **Quick Start**
+## � **Stock Risk vs Return Analysis Tool**
+
+### **🎯 Standalone Analysis Tool**
+
+In addition to the portfolio optimizer, the system includes a **comprehensive standalone stock analysis tool** that generates professional Risk vs Return charts with 52-week market positioning.
+
+#### **✨ Key Features:**
+- **📈 Risk vs Return Scatter Plots** with 52-week position indicators
+- **🔥 Visual Market Positioning**: 🔥 = near 52W high, ⚡ = mid-range, ❄️ = near 52W low
+- **📊 Dual Color Coding**: Fill color for Sharpe ratio, border color for 52W position
+- **💼 Portfolio-Based Analysis**: Pre-built Conservative, Moderate, and Aggressive portfolios
+- **📁 Multi-Sheet Excel Support**: Analyze specific sheets with --sheet parameter
+- **📈 Professional Visualizations**: Side-by-side charts with comprehensive statistics
+- **🎨 High-Quality Output**: 300 DPI charts suitable for presentations
+
+#### **🚀 Quick Start - Stock Analyzer:**
+
+```bash
+# Create comprehensive sample files
+python stock_analyzer.py --create-sample
+
+# Analyze all stocks (uses 'All_Stocks' sheet automatically)
+python stock_analyzer.py sample_stocks.xlsx
+
+# Conservative portfolio analysis (low-risk stocks)
+python stock_analyzer.py sample_stocks.xlsx --sheet Conservative_Portfolio
+
+# Aggressive portfolio with 2-year analysis
+python stock_analyzer.py sample_stocks.xlsx --sheet Aggressive_Portfolio --period 2y
+
+# Custom analysis with 60-day price trends
+python stock_analyzer.py sample_stocks.xlsx --price-period 60d --output my_analysis.png
+
+# Show all options
+python stock_analyzer.py --help
+```
+
+#### **📋 Comprehensive Excel File Structure:**
+
+The enhanced sample Excel file contains **6 professional sheets**:
+
+1. **📊 All_Stocks** - Complete dataset with 11 detailed columns
+2. **🛡️ Conservative_Portfolio** - Low-risk, dividend-paying stocks
+3. **⚖️ Moderate_Portfolio** - Balanced growth stocks
+4. **🚀 Aggressive_Portfolio** - High-growth, high-volatility stocks
+5. **📈 Sector_Analysis** - Sector breakdown and statistics
+6. **📚 Instructions** - Complete usage guide and tips
+
+#### **💼 Detailed Stock Information:**
+
+- **Symbol**: Stock ticker for trading
+- **Company**: Full company name
+- **Sector**: Business sector classification
+- **Industry**: Specific industry within sector
+- **Market_Cap**: Market capitalization category
+- **Description**: Detailed business description
+- **Country**: Country of incorporation
+- **Exchange**: Stock exchange (NASDAQ, NYSE)
+- **Currency**: Trading currency
+- **Risk_Level**: Professional risk assessment
+- **Dividend**: Dividend-paying status
+
+#### **🔥 52-Week Analysis Features:**
+
+**📊 Enhanced Risk vs Return Plot:**
+- **🎨 Fill Colors**: Green = excellent Sharpe ratio, Red = poor Sharpe ratio
+- **🔥 Border Colors**: Green = near 52W high, Orange = mid-range, Red = near 52W low
+- **📍 Emoji Indicators**: 🔥 (>80% of 52W range), ⚡ (50-80%), ❄️ (<50%)
+- **📏 Bubble Sizes**: Representing market cap proxy
+- **📈 Efficient Frontier**: Mathematical optimization curve
+
+**📋 Comprehensive Statistics:**
+```
+Symbol Current Price 52W High 52W Low 52W Position Expected Return Risk (Volatility) Sharpe Ratio
+  AAPL       $236.23  $259.18 $168.80      74.6% ⚡           12.3%             32.2%         0.32
+ GOOGL       $238.70  $238.76 $140.23      99.9% 🔥           53.2%             31.9%         1.60
+  MSFT       $499.07  $554.54 $343.59      73.7% ⚡           24.7%             24.9%         0.91
+
+🎯 KEY INSIGHTS:
+🏆 Best Expected Return: SHOP (93.5%)
+📊 Best Sharpe Ratio: NFLX (2.03)
+🛡️ Lowest Risk: MSFT (24.9%)
+
+🔥 52-WEEK ANALYSIS:
+🔥 Near 52W High (>80%): GOOGL, NVDA, META, NFLX, SPOT
+❄️ Near 52W Low (<20%): CRM, ADBE
+📏 Widest 52W Range: SPOT (143.5% range)
+```
+
+#### **🎯 Investment Use Cases:**
+
+**🛡️ Conservative Analysis:**
+```bash
+python stock_analyzer.py sample_stocks.xlsx --sheet Conservative_Portfolio
+# Analyzes: MSFT, ORCL (stable, dividend-paying)
+```
+
+**🚀 Growth Analysis:**
+```bash
+python stock_analyzer.py sample_stocks.xlsx --sheet Aggressive_Portfolio --period 2y
+# Analyzes: NVDA, TSLA, META, SPOT, etc. (high-growth potential)
+```
+
+**📊 Sector Comparison:**
+```bash
+python stock_analyzer.py sample_stocks.xlsx --output tech_analysis.png
+# Analyzes: All 16 stocks across Technology, Communication, Consumer sectors
+```
+
+## �🚀 **Quick Start**
 
 ### Installation
 ```bash
 # Activate virtual environment
-/home/ralfahad/delopment/mycode/stock_env/bin/python
+/home/ralfahad/stock_env/bin/python
 
 # Verify installation
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --help
+/home/ralfahad/stock_env/bin/python main.py --help
 
 # Or install dependencies if needed
-/home/ralfahad/delopment/mycode/stock_env/bin/pip install -r requirements.txt
+/home/ralfahad/stock_env/bin/pip install -r requirements.txt
 ```
 
 ### Basic Usage
 ```bash
 # Run optimization with dashboard
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --plot
+/home/ralfahad/stock_env/bin/python main.py --plot
 
 # Run without saving dashboard
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --plot --no-save
+/home/ralfahad/stock_env/bin/python main.py --plot --no-save
 
 # Show help and all options
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --help
+/home/ralfahad/stock_env/bin/python main.py --help
 ```
 
 ### 🔄 **Continuous Monitoring (Real-time)**
@@ -69,16 +185,16 @@ A sophisticated, **modular** investment portfolio optimization system using Mode
 
 ```bash
 # Quick monitoring (15-minute intervals) - RECOMMENDED
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --quick-monitor --plot
+/home/ralfahad/stock_env/bin/python main.py --quick-monitor --plot
 
 # Custom interval monitoring (5 minutes) - REQUIRES --monitor
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --monitor --plot --interval 300
+/home/ralfahad/stock_env/bin/python main.py --monitor --plot --interval 300
 
 # Hourly monitoring (default)
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --monitor --plot
+/home/ralfahad/stock_env/bin/python main.py --monitor --plot
 
 # Very active monitoring (every minute) - for day trading
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --monitor --plot --interval 60
+/home/ralfahad/stock_env/bin/python main.py --monitor --plot --interval 60
 ```
 
 **🚨 Common Mistake:**
@@ -93,17 +209,158 @@ python main.py --monitor --plot --interval 300
 ### Advanced Usage
 ```bash
 # Keep timestamped files for historical tracking
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --plot --keep-timestamp
+/home/ralfahad/stock_env/bin/python main.py --plot --keep-timestamp
 
 # Clean up old files (keep 5 latest)
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --cleanup 5
+/home/ralfahad/stock_env/bin/python main.py --cleanup 5
 
 # Custom target return (25% annually)
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --plot --target-return 0.25
+/home/ralfahad/stock_env/bin/python main.py --plot --target-return 0.25
 
 # Lower risk per trade (1% instead of 2%)
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --plot --risk-per-trade 0.01
+/home/ralfahad/stock_env/bin/python main.py --plot --risk-per-trade 0.01
 ```
+
+## 🔥 **Dynamic Configuration System**
+
+### 📝 **Automatic Configuration Reloading**
+
+The system now **automatically reloads** your `investments.txt` configuration on every monitoring iteration. This means you can **edit the file while monitoring is running** and see changes immediately!
+
+#### **✅ What Updates Automatically:**
+- 💰 **Investment Amount**: Change `total_investment` and see new capital instantly
+- 🎯 **Target Return**: Adjust `target_gain_percentage` for different strategies  
+- 📊 **Stock List**: Add/remove stocks in `preferred_stocks` and see immediate rebalancing
+- 💸 **Sold Stocks**: Add sales to `sold_stocks` and watch automatic processing
+
+#### **🔄 Configuration Format (`investments.txt`):**
+
+```plaintext
+# Investment Configuration
+# Format: key = value
+
+total_investment = 5000
+target_gain_percentage = 25
+
+# Preferred stocks to analyze (comma-separated)
+preferred_stocks = MSFT,AMZN,AAPL,GOOGL
+
+# Sold stocks (format: stock_symbol,sale_price,sale_date)
+sold_stocks = AAPL,273,2025-09-08
+```
+
+#### **🎬 Real-time Configuration Changes Example:**
+
+**While monitoring is running:**
+1. **Edit investments.txt**: Change `total_investment = 3000` to `total_investment = 5000`
+2. **Save the file**
+3. **Next iteration**: System shows `💰 Capital: $5,000.00` (updated automatically!)
+4. **Portfolio rebalanced** with new capital amount
+
+**Log output shows:**
+```
+2025-09-09 17:35:00,604 - root - INFO - Cash updated: $3,000.00 → $5,000.00
+2025-09-09 17:35:00,604 - root - INFO - Target return updated: 25.0%
+```
+
+## 💰 **Automated Sale Processing & Capital Management**
+
+### 🔄 **Sold Stocks Management**
+
+When you sell a stock, simply update the `sold_stocks` line and the system automatically:
+
+1. **📈 Adds sale proceeds** to your available investment capital
+2. **🛡️ Applies 30-day cooling period** to prevent immediate repurchase
+3. **📊 Calculates and records gain/loss** 
+4. **💰 Rebalances portfolio** with new capital amount
+5. **📝 Writes audit trail** to your configuration file
+
+#### **🎯 How to Record a Sale:**
+
+**Before Sale:**
+```plaintext
+total_investment = 5000
+sold_stocks = 
+```
+
+**After Selling AAPL for $273 on 2025-09-08:**
+```plaintext
+total_investment = 5000           # Don't change this manually!
+sold_stocks = AAPL,273,2025-09-08 # System adds $273 to capital automatically
+```
+
+**System automatically adds to file:**
+```plaintext
+# Sale Record: AAPL sold on 2025-09-08 for $273.00 | Gain/Loss: $+273.00 (+100.0%)
+```
+
+#### **💡 What Happens Automatically:**
+
+**In Next Monitoring Iteration:**
+- 💰 **Capital Updated**: $5,000 → $5,273 (base + sale proceeds)
+- 🛡️ **Cooling Period**: AAPL shows `⏸️ No action - Recently sold`
+- 📝 **Audit Trail**: Gain/loss record written to file
+- 📊 **Rebalancing**: New recommendations based on $5,273 capital
+- 🔄 **Portfolio Optimization**: Recalculated with updated constraints
+
+#### **📊 Sale Processing Examples:**
+
+**Example 1: Profitable Sale**
+```plaintext
+sold_stocks = MSFT,500,2025-09-09
+# Automatically generates:
+# Sale Record: MSFT sold on 2025-09-09 for $500.00 | Gain/Loss: $+50.00 (+11.1%)
+```
+
+**Example 2: Loss Sale**
+```plaintext
+sold_stocks = AMZN,200,2025-09-09  
+# Automatically generates:
+# Sale Record: AMZN sold on 2025-09-09 for $200.00 | Gain/Loss: $-37.50 (-15.8%)
+```
+
+**Example 3: Multiple Sales (historical tracking)**
+```plaintext
+# Investment Configuration
+total_investment = 5000
+sold_stocks = GOOGL,2500,2025-09-09
+
+# Automatic sale records (audit trail):
+# Sale Record: AAPL sold on 2025-09-08 for $273.00 | Gain/Loss: $+273.00 (+100.0%)
+# Sale Record: MSFT sold on 2025-09-09 for $500.00 | Gain/Loss: $+50.00 (+11.1%)
+# Sale Record: GOOGL sold on 2025-09-09 for $2500.00 | Gain/Loss: $+120.00 (+5.0%)
+```
+
+#### **🛡️ Cooling Period Protection**
+
+**Recently sold stocks show:**
+```
+🍎 AAPL: ⏸️ No action - Recently sold
+   ⚠️ 30-day cooling period active
+```
+
+**After 30 days, normal recommendations resume:**
+```
+🍎 AAPL: 🛒 BUY RECOMMENDATION
+   💰 Current Price: $245.50
+   📈 Recommended: +5 shares ($1,227.50)
+```
+
+### 🎯 **Reinvestment Workflow**
+
+**Complete Workflow Example:**
+
+1. **📊 Monitor Running**: `python main.py --monitor --plot --interval 300`
+2. **💸 Sell Stock**: Sell MSFT for $500 through your broker
+3. **📝 Update Config**: Change `sold_stocks = MSFT,500,2025-09-09` in investments.txt
+4. **💾 Save File**: Save the configuration file
+5. **⏱️ Wait**: Next monitoring iteration (up to 5 minutes)
+6. **✅ Automatic Processing**:
+   - Capital: $5,000 → $5,500 ✅
+   - MSFT cooling period: Active ✅
+   - Sale record: Written to file ✅
+   - Portfolio: Rebalanced with new capital ✅
+   - Recommendations: Updated for AMZN, AAPL instead ✅
 
 ## 🔄 **Continuous Monitoring System**
 
@@ -850,6 +1107,7 @@ This sophisticated multi-stage approach ensures optimal portfolio allocation whi
 - `scipy>=1.10.0` - Scientific computing and optimization
 - `matplotlib>=3.7.0` - Plotting and visualization
 - `seaborn>=0.12.0` - Statistical data visualization
+- `openpyxl>=3.1.0` - Excel file support for stock analyzer
 
 **Environment:**
 - **Python**: 3.9+ (tested with virtual environment)
@@ -887,16 +1145,37 @@ If you're upgrading from the monolithic `investment_optimizer.py`:
 
 ## 🎯 **Quick Reference Commands**
 
-**🚀 Most Common Usage:**
+**🚀 Portfolio Optimizer (Most Common):**
 ```bash
 # Start monitoring (recommended for most users)
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --quick-monitor --plot
+/home/ralfahad/stock_env/bin/python main.py --quick-monitor --plot
 
 # Single optimization with dashboard
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --plot
+/home/ralfahad/stock_env/bin/python main.py --plot
 
 # Help and all options
-/home/ralfahad/delopment/mycode/stock_env/bin/python main.py --help
+/home/ralfahad/stock_env/bin/python main.py --help
+```
+
+**📊 Stock Risk vs Return Analyzer:**
+```bash
+# Create comprehensive sample files
+python stock_analyzer.py --create-sample
+
+# Analyze all stocks with 52-week features
+python stock_analyzer.py sample_stocks.xlsx
+
+# Conservative portfolio analysis
+python stock_analyzer.py sample_stocks.xlsx --sheet Conservative_Portfolio
+
+# Aggressive portfolio with extended analysis
+python stock_analyzer.py sample_stocks.xlsx --sheet Aggressive_Portfolio --period 2y
+
+# Custom analysis with specific settings
+python stock_analyzer.py my_stocks.xlsx --output analysis.png --price-period 60d
+
+# Help and all options
+python stock_analyzer.py --help
 ```
 
 ## 🔧 **Troubleshooting & Error Handling**

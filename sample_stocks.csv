@@ -1,0 +1,17 @@
+Symbol,Company,Sector,Industry,Market_Cap,Description,Country,Exchange,Currency,Risk_Level,Dividend
+AAPL,Apple Inc.,Technology,Consumer Electronics,Large Cap,"Leading technology company known for iPhone, iPad, Mac computers and services",USA,NASDAQ,USD,Medium,Yes
+GOOGL,Alphabet Inc.,Technology,Internet Services,Large Cap,"Parent company of Google, leader in search, advertising, and cloud services",USA,NASDAQ,USD,Medium,No
+MSFT,Microsoft Corporation,Technology,Software,Large Cap,"Leading software company with Windows, Office, Azure cloud services",USA,NASDAQ,USD,Low,Yes
+NVDA,NVIDIA Corporation,Technology,Semiconductors,Large Cap,Leading AI and graphics processing unit (GPU) manufacturer,USA,NASDAQ,USD,High,Yes
+AMZN,Amazon.com Inc.,Consumer Discretionary,E-commerce,Large Cap,Leading e-commerce platform and cloud computing provider (AWS),USA,NASDAQ,USD,Medium,No
+SHOP,Shopify Inc.,Technology,E-commerce Software,Mid Cap,E-commerce platform enabling businesses to create online stores,Canada,NYSE,USD,High,No
+TSLA,Tesla Inc.,Consumer Discretionary,Electric Vehicles,Large Cap,Leading electric vehicle manufacturer and clean energy company,USA,NASDAQ,USD,Very High,No
+UBER,Uber Technologies Inc.,Technology,Transportation,Mid Cap,Ride-sharing and food delivery platform,USA,NYSE,USD,High,No
+META,Meta Platforms Inc.,Communication Services,Social Media,Large Cap,"Owner of Facebook, Instagram, WhatsApp, and metaverse technologies",USA,NASDAQ,USD,High,Yes
+SPOT,Spotify Technology S.A.,Communication Services,Music Streaming,Mid Cap,Leading music streaming and podcast platform,Sweden,NYSE,USD,High,No
+NFLX,Netflix Inc.,Communication Services,Streaming,Large Cap,Leading streaming entertainment service with global reach,USA,NASDAQ,USD,Medium,No
+CRM,Salesforce Inc.,Technology,Enterprise Software,Large Cap,Leading customer relationship management (CRM) software provider,USA,NYSE,USD,Medium,No
+NOW,ServiceNow Inc.,Technology,Enterprise Software,Large Cap,Cloud-based platform for digital workflow automation,USA,NYSE,USD,Medium,No
+ORCL,Oracle Corporation,Technology,Database Software,Large Cap,Enterprise software company specializing in database management,USA,NYSE,USD,Low,Yes
+ADBE,Adobe Inc.,Technology,Creative Software,Large Cap,"Creative software suite including Photoshop, Illustrator, and PDF",USA,NASDAQ,USD,Medium,No
+ZM,Zoom Video Communications,Technology,Video Conferencing,Mid Cap,Video conferencing and communication platform,USA,NASDAQ,USD,High,No

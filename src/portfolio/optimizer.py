@@ -75,6 +75,40 @@ class InvestmentOptimizer:
         
         logging.info(f"Optimizer initialized with {len(self.tickers)} stocks")
     
+    def reload_config(self) -> None:
+        """Reload configuration from file to pick up any changes"""
+        try:
+            old_cash = self.config.get('cash', 0)
+            old_stocks = list(self.config.get('stocks', {}).keys())
+            
+            # Reload configuration
+            self.config = load_config(self.config_file)
+            new_tickers = list(self.config['stocks'].keys())
+            
+            # Update tickers if they've changed
+            if new_tickers != self.tickers:
+                self.tickers = new_tickers
+                logging.info(f"Stock list updated: {self.tickers}")
+            
+            # Log any sales processed
+            if 'sales_history' in self.config and self.config['sales_history']:
+                for sale in self.config['sales_history']:
+                    logging.info(f"Sale processed: {sale['symbol']} - Gain/Loss: ${sale['gain_loss']:+.2f}")
+            
+            # Update target return if it's in config
+            if 'target_gain_percentage' in self.config:
+                self.target_return = self.config['target_gain_percentage'] / 100.0
+                logging.info(f"Target return updated: {self.target_return:.1%}")
+            
+            # Log if cash amount changed
+            new_cash = self.config.get('cash', 0)
+            if abs(new_cash - old_cash) > 0.01:  # Significant change
+                logging.info(f"Cash updated: ${old_cash:,.2f} → ${new_cash:,.2f}")
+                
+        except Exception as e:
+            logging.warning(f"Error reloading configuration: {e}")
+    
+    
     def fetch_market_data(self) -> bool:
         """Fetch market data for all stocks"""
         try:
@@ -470,6 +504,9 @@ class InvestmentOptimizer:
     def run_optimization(self) -> bool:
         """Run complete optimization process"""
         try:
+            # Reload configuration to pick up any changes
+            self.reload_config()
+            
             # Display header
             print(f"\n{EMOJIS['fire']} INVESTMENT PORTFOLIO OPTIMIZER - MODULAR VERSION")
             print(f"{EMOJIS['calendar']} {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | {EMOJIS['dart']} Target: {format_percentage(self.target_return * 100)} | {EMOJIS['money_bag']} Capital: {format_currency(self.config['cash'])}")
