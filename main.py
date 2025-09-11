@@ -27,6 +27,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from src.portfolio.optimizer import InvestmentOptimizer
+from src.portfolio.short_trading import ShortTradingManager
 from src.visualization.dashboard import PortfolioVisualizer
 from src.utils.constants import (
     DEFAULT_TARGET_RETURN, DEFAULT_RISK_PER_TRADE, 
@@ -44,6 +45,8 @@ Examples:
   python main.py --plot                    # Run optimization with dashboard
   python main.py --monitor --plot          # Monitor with visualization  
   python main.py --quick-monitor           # 15-minute monitoring mode
+  python main.py --short-trading           # Short trading mode with P&L alerts (uses short_trading.txt)
+  python main.py --short-trading --interval 30  # Short trading with 30-sec updates
   python main.py --cleanup 5               # Keep 5 latest dashboard files
   python main.py --keep-timestamp --plot   # Create timestamped files
         """
@@ -60,6 +63,8 @@ Examples:
                        help='Seconds between updates in monitoring mode (default: 3600 = 1 hour)')
     parser.add_argument('--quick-monitor', action='store_true',
                        help='Run in quick monitoring mode (15-minute intervals)')
+    parser.add_argument('--short-trading', action='store_true',
+                       help='Enable short trading mode with real-time P&L monitoring and alerts (uses separate short_trading.txt config file)')
     
     # Visualization options
     parser.add_argument('--plot', action='store_true',
@@ -166,6 +171,78 @@ def main() -> int:
             # Monitoring mode
             interval = 900 if args.quick_monitor else args.interval  # 15 minutes for quick mode
             run_monitoring_mode(optimizer, visualizer, interval, args.keep_timestamp)
+            
+        elif args.short_trading:
+            # Short Trading mode
+            try:
+                print(f"{EMOJIS['chart']} Starting Short Trading Mode...")
+                print("Real-time P&L monitoring with alerts enabled")
+                print("Using separate short_trading.txt configuration file")
+                print("Press Ctrl+C to stop monitoring\n")
+                
+                # Use shorter interval for short trading if not specified
+                if args.interval == 3600:  # If using default
+                    trading_interval = 60  # 1 minute for short trading
+                else:
+                    trading_interval = args.interval
+                
+                # Read target gain and max loss from short trading config file
+                short_config_file = 'short_trading.txt'
+                config_data = {}
+                
+                # Create default config file if it doesn't exist
+                if not os.path.exists(short_config_file):
+                    default_content = """# Short Trading Configuration
+# Format: key = value
+
+# Trading thresholds
+target_gain_percentage = 25
+maximum_loss_percentage = 5
+
+# Current positions for short trading (format: symbol,buy_price,buy_date)
+# Add ONE position at a time - system will process and clear automatically
+# Example: AAPL,220.50,2025-09-10
+buy_stocks = 
+
+# Trading history (automatically maintained by system)
+# Format: symbol,sale_price,sale_date,gain_loss,gain_loss_percent
+sold_positions = 
+
+# Notes:
+# - Add new positions to buy_stocks one at a time
+# - System automatically processes and clears buy_stocks after adding to portfolio
+# - All gains/losses are tracked in sold_positions
+# - This file is separate from investments.txt to avoid conflicts"""
+                    
+                    with open(short_config_file, 'w') as f:
+                        f.write(default_content)
+                    print(f"✅ Created {short_config_file} with default settings")
+                
+                # Parse config file
+                try:
+                    with open(short_config_file, 'r') as f:
+                        for line in f:
+                            line = line.strip()
+                            if line and not line.startswith('#') and '=' in line:
+                                key, value = line.split('=', 1)
+                                config_data[key.strip()] = value.strip()
+                except Exception as e:
+                    print(f"⚠️  Error reading {short_config_file}: {e}")
+                    print("Using default values: 25% target gain, 5% stop loss")
+
+                target_gain = float(config_data.get('target_gain_percentage', 25))
+                max_loss = float(config_data.get('maximum_loss_percentage', 5))
+                    
+                short_trader = ShortTradingManager(target_gain, max_loss, short_config_file)
+                short_trader.run_monitoring_loop(trading_interval)
+                
+            except KeyboardInterrupt:
+                print(f"\n{EMOJIS['check']} Short trading monitoring stopped by user")
+                logging.info("Short trading monitoring stopped by user")
+            except Exception as e:
+                logging.error(f"Short trading error: {e}")
+                print(f"{EMOJIS['warning']} Short trading error: {e}")
+                return 1
             
         else:
             # Single run mode

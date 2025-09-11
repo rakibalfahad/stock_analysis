@@ -1,0 +1,39 @@
+# Short Trading Configuration
+# Format: key = value
+
+# Trading thresholds
+target_gain_percentage = 25
+maximum_loss_percentage = 5
+
+# Current buy orders (choose one format and uncomment):
+buy_stocks = 
+
+# SUPPORTED FORMATS:
+# 
+# Format 1: Single position
+# buy_stocks = SYMBOL,PRICE,DATE
+# Example: buy_stocks = AAPL,220.50,2025-09-10
+#
+# Format 2: Multiple positions (pipe-separated)
+# buy_stocks = SYMBOL1,PRICE1,DATE1|SYMBOL2,PRICE2,DATE2|SYMBOL3,PRICE3,DATE3
+# Example: buy_stocks = AAPL,220.50,2025-09-10|MSFT,415.75,2025-09-11|GOOGL,185.25,2025-09-09
+#
+# Format 3: Multiple numbered entries
+# buy_stocks_1 = SYMBOL1,PRICE1,DATE1
+# buy_stocks_2 = SYMBOL2,PRICE2,DATE2
+# buy_stocks_3 = SYMBOL3,PRICE3,DATE3
+# Example:
+# buy_stocks_1 = TSLA,250.00,2025-09-10
+# buy_stocks_2 = NVDA,135.50,2025-09-11
+# buy_stocks_3 = META,560.75,2025-09-09
+
+# Trading history (automatically maintained by system)
+# Format: symbol,sale_price,sale_date,gain_loss,gain_loss_percent
+sold_positions = 
+
+# Notes:
+# - System now supports multiple buy orders in one operation
+# - Use pipe (|) to separate multiple positions in buy_stocks
+# - Or use buy_stocks_1, buy_stocks_2, etc. for individual lines
+# - All positions are processed simultaneously and buy_stocks is cleared
+# - This file is separate from investments.txt to avoid conflicts

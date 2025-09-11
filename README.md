@@ -15,6 +15,16 @@ A sophisticated, **modular** investment portfolio optimization system using Mode
 🔥 **Dynamic Configuration Reloading** - Changes to investments.txt picked up automatically  
 💰 **Automated Sale Processing** - Sold stocks automatically update capital and track gains  
 🛡️ **Cooling Period Management** - Recently sold stocks excluded from recommendations  
+🎯 **Short Trading System** - Real-time P&L monitoring with automatic alerts and position tracking  
+
+## 🚀 **New in Version 2.0: Short Trading Mode**
+
+✨ **Real-time P&L Monitoring** - Live profit/loss tracking for active positions  
+📊 **Automatic Alert System** - Smart notifications for target gains and stop losses  
+🔔 **Blinking Critical Alerts** - Eye-catching warnings for sell decisions  
+💰 **Seamless Portfolio Integration** - Works with existing investment configuration  
+⚡ **Flexible Monitoring Speed** - From ultra-fast day trading to regular monitoring  
+🎨 **Professional Display** - Color-coded, formatted tables with live updates  
 
 ## 📁 **Project Structure**
 
@@ -25,7 +35,8 @@ A sophisticated, **modular** investment portfolio optimization system using Mode
 ├── �📁 src/                             # Source code modules
 │   ├── 📁 portfolio/                   # Portfolio optimization
 │   │   ├── __init__.py
-│   │   └── optimizer.py                # InvestmentOptimizer class
+│   │   ├── optimizer.py                # InvestmentOptimizer class
+│   │   └── short_trading.py            # ShortTradingManager - Real-time P&L monitoring
 │   ├── 📁 visualization/               # Dashboard and plotting
 │   │   ├── __init__.py
 │   │   └── dashboard.py                # PortfolioVisualizer class  
@@ -153,7 +164,177 @@ python stock_analyzer.py sample_stocks.xlsx --output tech_analysis.png
 # Analyzes: All 16 stocks across Technology, Communication, Consumer sectors
 ```
 
-## �🚀 **Quick Start**
+## 📊 **Short Trading System - Real-time P&L Monitoring**
+
+### **🎯 Advanced Short Trading Features**
+
+The system includes a **comprehensive short trading module** that provides real-time profit/loss monitoring, automatic alerts, and sophisticated position tracking for active traders.
+
+#### **✨ Core Capabilities:**
+- **📈 Live P&L Tracking** with real-time market data integration
+- **🔔 Smart Alert System** for target gains and stop-loss thresholds
+- **⚡ Blinking Critical Warnings** to grab attention for sell decisions
+- **🎨 Professional Display** with color-coded status indicators
+- **💰 Automatic Portfolio Updates** that sync with your main investment configuration
+- **📊 Customizable Monitoring Intervals** from day trading to regular monitoring
+- **🛡️ Risk Management Integration** with built-in stop-loss calculations
+
+#### **🚀 Quick Start - Short Trading:**
+
+```bash
+# Start real-time short trading monitoring (1-minute updates)
+/home/ralfahad/stock_env/bin/python main.py --short-trading
+
+# Day trading mode (30-second updates)
+/home/ralfahad/stock_env/bin/python main.py --short-trading --interval 30
+
+# Ultra-fast monitoring (5-second updates)
+/home/ralfahad/stock_env/bin/python main.py --short-trading --interval 5
+
+# Help and all short trading options
+/home/ralfahad/stock_env/bin/python main.py --help
+```
+
+### **📋 Short Trading Configuration**
+
+#### **Setting Up Your Position:**
+Add your buy positions to `investments.txt`:
+
+```plaintext
+# Investment Configuration
+total_investment = 5000
+target_gain_percentage = 25         # Alert when stock gains 25%
+maximum_loss_percentage = 5         # Alert when stock loses 5%
+
+# Add ONE position at a time (system processes then clears this field)
+buy_stocks = AAPL,220.50,2025-09-10
+
+# System automatically tracks your positions after processing
+preferred_stocks = MSFT,AMZN,AAPL
+```
+
+#### **How Buy Orders Work:**
+1. **📝 Add Position**: `buy_stocks = SYMBOL,PRICE,DATE`
+2. **🚀 Start Monitoring**: Run short trading mode
+3. **✅ Automatic Processing**: System adds position and clears the field
+4. **📊 Live Tracking**: Real-time P&L monitoring begins
+5. **🔄 Add More**: Add next position using the same process
+
+### **📊 Professional Short Trading Display**
+
+#### **Live Portfolio Status Table:**
+```
+================================================================================
+📊 SHORT TRADING PORTFOLIO STATUS - 2025-09-11 01:00:14
+================================================================================
+Symbol   Buy Price    Current      P&L $        P&L %      Status
+--------------------------------------------------------------------------------
+AAPL     $220.50      $226.78      +$6.28        +2.8%     ✅ HOLD
+MSFT     $415.75      $422.15      +$6.40        +1.5%     ✅ HOLD
+AMZN     $185.25      $179.80      -$5.45        -2.9%     ⚠️ WATCH
+--------------------------------------------------------------------------------
+TOTAL                              +$7.23                   
+================================================================================
+```
+
+#### **Real-time Status Indicators:**
+- **✅ HOLD**: Position performing well, within normal ranges
+- **⚠️ WATCH**: Position showing minor loss, monitor closely
+- **🚨 SELL**: Critical alert - position hit target or stop-loss threshold
+
+### **🔔 Advanced Alert System**
+
+#### **Target Gain Alerts:**
+```
+🚨 SELL ALERT: AAPL reached target gain of 25%! 🚨
+💰 Current: $275.63 | Buy Price: $220.50
+💡 Gain: +$55.13 (+25.0%)
+⭐ RECOMMENDATION: Consider taking profits
+```
+
+#### **Stop Loss Alerts:**
+```
+🚨 SELL ALERT: AMZN hit stop loss threshold! 🚨
+📉 Current: $176.00 | Buy Price: $185.25
+💸 Loss: -$9.25 (-5.0%)
+🛡️ RECOMMENDATION: Consider cutting losses
+```
+
+#### **🚨 Blinking Critical Warnings:**
+When positions hit critical thresholds, the system displays **blinking alerts** in a separate thread:
+```
+🚨 CRITICAL: SELL DECISION REQUIRED 🚨
+🚨 AAPL: +25% TARGET REACHED 🚨
+🚨 AMZN: -5% STOP LOSS HIT 🚨
+[Blinks continuously until positions are resolved]
+```
+
+### **⚡ Monitoring Speed Options**
+
+#### **Recommended Intervals:**
+
+**🏃 Day Trading (Ultra-Fast):**
+```bash
+# 5-10 second updates for active day trading
+/home/ralfahad/stock_env/bin/python main.py --short-trading --interval 5
+```
+
+**📊 Active Trading (Fast):**
+```bash
+# 30-60 second updates for short-term trades
+/home/ralfahad/stock_env/bin/python main.py --short-trading --interval 30
+```
+
+**⚖️ Regular Monitoring (Default):**
+```bash
+# 1-minute updates for standard short trading
+/home/ralfahad/stock_env/bin/python main.py --short-trading
+```
+
+**📈 Position Tracking (Slower):**
+```bash
+# 5-minute updates for position monitoring
+/home/ralfahad/stock_env/bin/python main.py --short-trading --interval 300
+```
+
+### **💡 Short Trading Best Practices**
+
+#### **📋 Position Management:**
+1. **Add One Position at a Time**: System processes sequentially
+2. **Wait for Processing**: Let system clear `buy_stocks` field before adding next
+3. **Monitor Continuously**: Keep short trading mode running during market hours
+4. **Set Realistic Targets**: Default 25% gain, 5% stop-loss are well-tested
+5. **Use Appropriate Intervals**: Match monitoring speed to your trading style
+
+#### **🎯 Risk Management:**
+- **Target Gains**: System alerts at configured percentage (default: 25%)
+- **Stop Losses**: Automatic alerts prevent major losses (default: 5%)
+- **Position Sizing**: Consider total portfolio impact of each position
+- **Time Management**: Don't let positions run indefinitely without review
+
+### **🔄 Integration with Portfolio Optimizer**
+
+The short trading system **integrates perfectly** with your main portfolio optimization:
+
+**1. Portfolio Optimization** (Long-term strategy):
+```bash
+/home/ralfahad/stock_env/bin/python main.py --monitor --plot
+```
+
+**2. Short Trading Mode** (Active position monitoring):
+```bash
+/home/ralfahad/stock_env/bin/python main.py --short-trading
+```
+
+**3. Coordinated Analysis** (Both systems use same configuration):
+- Same `investments.txt` file  
+- Same target thresholds
+- Same risk management principles
+- Coordinated position tracking
+
+**Your comprehensive short trading system is now fully documented and ready for professional active trading!** 🚀📈
+
+## 🚀 **Quick Start**
 
 ### Installation
 ```bash
