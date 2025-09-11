@@ -1,48 +1,99 @@
-# Short Trading Configuration
-# Format: key = value
+################################################################################
+#                          SHORT TRADING CONFIGURATION                          #
+################################################################################
+# Real-time P&L monitoring and portfolio management system
+# Supports buy orders, sell orders, and persistent position tracking
+# Format: key = value (no spaces around equals sign for complex values)
 
-# Trading thresholds
+#==============================================================================
+# TRADING THRESHOLDS
+#==============================================================================
 target_gain_percentage = 25
 maximum_loss_percentage = 5
 
-# Current buy orders (choose one format and uncomment):
+#==============================================================================
+# BUY ORDERS - Add new stock purchases
+#==============================================================================
+# Format: SYMBOL,SHARES,PRICE_PER_SHARE,PURCHASE_DATE
+# When you buy stocks, add them here and they'll be processed automatically
+
+# Single buy order
 buy_stocks = 
 
-# SUPPORTED FORMATS:
+# Multiple buy orders (use numbered fields for easier management)
+buy_stocks_1 = 
+buy_stocks_2 = 
+buy_stocks_3 = 
+buy_stocks_4 = 
+
+# Examples:
+# buy_stocks = AAPL,100,150.25,2025-09-11
+# buy_stocks_1 = TSLA,50,220.00,2025-09-11
+# buy_stocks_2 = MSFT,25,410.50,2025-09-11
+
+#==============================================================================
+# SELL ORDERS - Record stock sales
+#==============================================================================
+# Format: SYMBOL,SHARES_TO_SELL,SALE_PRICE,SALE_DATE
+# When you sell stocks, add them here for P&L calculation and record keeping
+
+# Single sell order
+sell_stocks = 
+
+# Multiple sell orders (use numbered fields for easier management)
+sell_stocks_1 = 
+sell_stocks_2 = 
+sell_stocks_3 = 
+sell_stocks_4 = 
+
+# Examples:
+# sell_stocks = AAPL,50,155.75,2025-09-12
+# sell_stocks_1 = TSLA,25,230.00,2025-09-12
+# sell_stocks_2 = MSFT,10,420.00,2025-09-12
+
+#==============================================================================
+# CURRENT HOLDINGS - Your active portfolio positions
+#==============================================================================
+# Format: SYMBOL,SHARES,PURCHASE_PRICE,PURCHASE_DATE
+# These positions are monitored in real-time for P&L tracking
+# Automatically updated when buy/sell orders are processed
+
+#current_holdings = VERI,473,3.26,2025-09-11|BW,191,2.46,2025-09-11|RAPP,16,22.8,2025-09-11
+
+current_holdings = VERI,473,3.26,2025-09-11|BW,291,2.46,2025-09-11|RAPP,31,22.8,2025-09-11|ASST,5,9.18,2025-09-11
+#==============================================================================
+# TRADING HISTORY - Completed transactions (automatically maintained)
+#==============================================================================
+# Format: SYMBOL,SALE_PRICE,SALE_DATE,GAIN_LOSS_AMOUNT,GAIN_LOSS_PERCENT
+# System automatically records all completed sales here for performance tracking
+
+sold_positions = ASST,9.5,2025-09-11,1.60,3.5|BW,2.5,2025-09-11,4.00,1.6|RAPP,23.0,2025-09-11,3.00,0.9
+
+#==============================================================================
+# SYSTEM INFORMATION
+#==============================================================================
 # 
-# Format 1: Single position
-# buy_stocks = SYMBOL,SHARES,PRICE_PER_SHARE,DATE
-# Example: buy_stocks = AAPL,10,220.50,2025-09-10
+# WORKFLOW:
+# 1. Add buy orders above → System processes them → Moves to current_holdings
+# 2. Add sell orders above → System processes them → Records in sold_positions
+# 3. Monitor real-time P&L with automatic alerts for gains/losses
+# 
+# FEATURES:
+# • Real-time price monitoring and P&L calculation
+# • Automatic buy/sell order processing with validation
+# • Persistent position tracking across sessions
+# • Smart alerts for target gains and stop losses
+# • Complete transaction history and performance tracking
+# 
+# ALERTS:
+# • 🛑 SELL! - Stop loss triggered (>{maximum_loss_percentage}% loss)
+# • 🎯 TARGET! - Target gain reached (>{target_gain_percentage}% gain)  
+# • ⚠️ WATCH - Position showing losses but within limits
+# • ✅ HOLD - Position showing gains or break-even
 #
-# Format 2: Multiple positions (pipe-separated)
-# buy_stocks = SYMBOL1,SHARES1,PRICE1,DATE1|SYMBOL2,SHARES2,PRICE2,DATE2
-# Example: buy_stocks = AAPL,10,220.50,2025-09-10|MSFT,5,415.75,2025-09-11|GOOGL,8,185.25,2025-09-09
+# INTEGRATION:
+# • Separate from investments.txt (long-term portfolio optimization)
+# • Compatible with main.py --short-trading mode
+# • Run: python main.py --short-trading --interval 30
 #
-# Format 3: Multiple numbered entries
-# buy_stocks_1 = SYMBOL1,SHARES1,PRICE1,DATE1
-# buy_stocks_2 = SYMBOL2,SHARES2,PRICE2,DATE2
-# buy_stocks_3 = SYMBOL3,SHARES3,PRICE3,DATE3
-# Example:
-# buy_stocks_1 = TSLA,12,250.00,2025-09-10
-# buy_stocks_2 = NVDA,20,135.50,2025-09-11
-# buy_stocks_3 = META,7,560.75,2025-09-09
-
-# Ready for your actual positions:
-# Uncomment and fill with your real trades:
-# buy_stocks_1 = AAPL,10,220.50,2025-09-11
-# buy_stocks_2 = MSFT,5,415.75,2025-09-11  
-# buy_stocks_3 = GOOGL,8,185.25,2025-09-11
-
-
-# Trading history (automatically maintained by system)
-# Format: symbol,sale_price,sale_date,gain_loss,gain_loss_percent
-sold_positions = 
-
-# Notes:
-# - System now supports multiple buy orders in one operation
-# - Format: SYMBOL,SHARES,PRICE_PER_SHARE,DATE (4 fields required)
-# - Use pipe (|) to separate multiple positions in buy_stocks
-# - Or use buy_stocks_1, buy_stocks_2, etc. for individual lines
-# - All positions are processed simultaneously and buy_stocks is cleared
-# - System tracks actual shares and calculates total P&L correctly
-# - This file is separate from investments.txt to avoid conflicts
+################################################################################

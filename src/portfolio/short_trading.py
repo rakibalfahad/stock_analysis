@@ -44,9 +44,12 @@ class ShortTradingManager:
         self.config_file = config_file
         self.target_gain_pct = target_gain_pct / 100  # Convert to decimal
         self.max_loss_pct = max_loss_pct / 100
-        self.holdings = {}  # {symbol: {'buy_price': float, 'buy_date': str, 'current_price': float}}
+        self.holdings = {}  # {symbol: {'shares': int, 'buy_price': float, 'buy_date': str, 'current_price': float, 'total_investment': float}}
         self.blink_thread = None
         self.stop_blinking = False
+        
+        # Load existing holdings on startup
+        self.load_existing_holdings()
         
     def parse_config_file(self) -> Dict:
         """Parse the short trading configuration file"""
@@ -67,11 +70,79 @@ class ShortTradingManager:
                     line = line.strip()
                     if line and not line.startswith('#') and '=' in line:
                         key, value = line.split('=', 1)
-                        config[key.strip()] = value.strip()
+                        key = key.strip()
+                        value = value.strip()
+                        config[key] = value  # Store all key-value pairs, not just predefined ones
         except Exception as e:
             print(f"❌ Error reading config file: {e}")
             
         return config
+    
+    def load_existing_holdings(self):
+        """Load existing holdings from configuration file"""
+        config = self.parse_config_file()
+        current_holdings = config.get('current_holdings', '').strip()
+        
+        if not current_holdings:
+            return
+            
+        print(f"\n📊 Loading existing holdings...")
+        
+        try:
+            # Parse current holdings: symbol,shares,price,date|symbol,shares,price,date
+            holdings_list = [holding.strip() for holding in current_holdings.split('|')]
+            
+            loaded_count = 0
+            for holding in holdings_list:
+                if not holding:
+                    continue
+                    
+                parts = holding.split(',')
+                if len(parts) != 4:
+                    print(f"⚠️  Invalid holding format: {holding}. Expected: SYMBOL,SHARES,PRICE,DATE")
+                    continue
+                
+                symbol, shares, buy_price, buy_date = [part.strip() for part in parts]
+                shares = int(shares)
+                buy_price = float(buy_price)
+                total_investment = shares * buy_price
+                
+                self.holdings[symbol] = {
+                    'shares': shares,
+                    'buy_price': buy_price,
+                    'buy_date': buy_date,
+                    'current_price': buy_price,  # Will be updated with real prices
+                    'total_investment': total_investment
+                }
+                
+                print(f"📈 Loaded: {symbol} - {shares} shares @ ${buy_price:.2f} = ${total_investment:.2f} (bought {buy_date})")
+                loaded_count += 1
+            
+            if loaded_count > 0:
+                print(f"✅ Loaded {loaded_count} existing position(s) from configuration")
+            
+        except Exception as e:
+            print(f"❌ Error loading existing holdings: {e}")
+    
+    def update_current_holdings(self):
+        """Update current_holdings field with all positions for persistence"""
+        try:
+            # Build current_holdings string from all holdings
+            holdings_list = []
+            for symbol, holding in self.holdings.items():
+                shares = holding['shares']
+                buy_price = holding['buy_price']
+                buy_date = holding['buy_date']
+                holdings_list.append(f"{symbol},{shares},{buy_price},{buy_date}")
+            
+            # Create pipe-separated string
+            current_holdings_str = '|'.join(holdings_list)
+            
+            # Update the config file
+            self.update_config_file({'current_holdings': current_holdings_str})
+            
+        except Exception as e:
+            print(f"❌ Error updating current_holdings: {e}")
     
     def update_config_file(self, updates: Dict[str, str]) -> bool:
         """Update the short trading configuration file with new values"""
@@ -191,13 +262,143 @@ class ShortTradingManager:
             if key.startswith('buy_stocks_'):
                 updates[key] = ''
         
+        # Update current_holdings with new positions (persist them)
+        if processed_count > 0:
+            self.update_current_holdings()
+        
         if self.update_config_file(updates):
             print(f"\n🎯 Summary: {processed_count} positions added, {failed_count} failed")
             if processed_count > 0:
                 symbols = list(self.holdings.keys())
                 print(f"📊 Active positions: {', '.join(symbols)}")
+                print(f"💾 Positions saved to current_holdings for persistence")
         else:
             print(f"⚠️  Positions added but failed to clear buy order fields")
+        
+        return processed_count > 0
+    
+    def process_sold_stocks(self) -> bool:
+        """Process any sold stock transactions from sell_stocks configuration"""
+        config = self.parse_config_file()
+        
+        # Collect all sell orders from different formats
+        sell_orders = []
+        
+        # Format 1: Single or pipe-separated in sell_stocks
+        sell_stocks = config.get('sell_stocks', '').strip()
+        if sell_stocks:
+            if '|' in sell_stocks:
+                # Multiple orders separated by pipe
+                orders = [order.strip() for order in sell_stocks.split('|')]
+                sell_orders.extend(orders)
+            else:
+                # Single order
+                sell_orders.append(sell_stocks)
+        
+        # Format 2: Multiple sell_stocks_N entries
+        for key, value in config.items():
+            if key.startswith('sell_stocks_') and value.strip():
+                sell_orders.append(value.strip())
+        
+        if not sell_orders:
+            return False
+        
+        print(f"\n💸 Processing {len(sell_orders)} sell order(s)...")
+        
+        processed_count = 0
+        failed_count = 0
+        
+        for i, sell_order in enumerate(sell_orders, 1):
+            try:
+                print(f"\n📋 Sell Order {i}/{len(sell_orders)}: {sell_order}")
+                
+                # Parse sell order: symbol,shares_sold,price_per_share,date
+                parts = sell_order.split(',')
+                if len(parts) != 4:
+                    print(f"❌ Invalid format for sell order {i}. Expected: SYMBOL,SHARES,PRICE,DATE")
+                    failed_count += 1
+                    continue
+                
+                symbol = parts[0].strip().upper()
+                shares_sold = int(parts[1].strip())
+                sale_price = float(parts[2].strip())
+                sale_date = parts[3].strip()
+                
+                # Check if we own this stock
+                if symbol not in self.holdings:
+                    print(f"❌ Cannot sell {symbol}: Not found in current holdings")
+                    failed_count += 1
+                    continue
+                
+                # Check if we have enough shares to sell
+                current_shares = self.holdings[symbol]['shares']
+                if shares_sold > current_shares:
+                    print(f"❌ Cannot sell {shares_sold} shares of {symbol}: Only own {current_shares} shares")
+                    failed_count += 1
+                    continue
+                
+                # Calculate P&L for this sale
+                buy_price = self.holdings[symbol]['buy_price']
+                total_sale_value = shares_sold * sale_price
+                total_cost_basis = shares_sold * buy_price
+                gain_loss = total_sale_value - total_cost_basis
+                gain_loss_percent = (gain_loss / total_cost_basis) * 100
+                
+                # Update holdings
+                if shares_sold == current_shares:
+                    # Selling entire position - remove from holdings
+                    del self.holdings[symbol]
+                    print(f"✅ SOLD ENTIRE POSITION: {symbol} - {shares_sold} shares @ ${sale_price:.2f}")
+                else:
+                    # Partial sale - update remaining shares
+                    remaining_shares = current_shares - shares_sold
+                    self.holdings[symbol]['shares'] = remaining_shares
+                    # Update total investment for remaining shares
+                    self.holdings[symbol]['total_investment'] = remaining_shares * buy_price
+                    print(f"✅ PARTIAL SALE: {symbol} - Sold {shares_sold} shares @ ${sale_price:.2f}, {remaining_shares} shares remaining")
+                
+                # Record the sale in sold_positions
+                sale_record = f"{symbol},{sale_price},{sale_date},{gain_loss:.2f},{gain_loss_percent:.1f}"
+                
+                # Update sold_positions in config
+                current_sold = config.get('sold_positions', '').strip()
+                if current_sold:
+                    new_sold = f"{current_sold}|{sale_record}"
+                else:
+                    new_sold = sale_record
+                
+                # Update config with new sold position
+                config['sold_positions'] = new_sold
+                
+                print(f"💰 P&L: ${gain_loss:.2f} ({gain_loss_percent:.1f}%) on {shares_sold} shares")
+                
+                processed_count += 1
+                
+            except (ValueError, IndexError) as e:
+                print(f"❌ Error processing sell order {i}: {e}")
+                failed_count += 1
+        
+        print(f"\n🎯 Sell Summary: {processed_count} transactions completed, {failed_count} failed")
+        
+        if processed_count > 0:
+            # Save updated holdings and sold positions
+            self.update_current_holdings()
+            
+            # Clear sell order fields
+            updates = {'sell_stocks': ''}
+            
+            # Clear any sell_stocks_N fields and update sold_positions
+            for key in config.keys():
+                if key.startswith('sell_stocks_'):
+                    updates[key] = ''
+            
+            # Update sold_positions
+            updates['sold_positions'] = config.get('sold_positions', '')
+            
+            if self.update_config_file(updates):
+                print(f"💾 Holdings updated and sell orders cleared")
+            else:
+                print(f"⚠️  Transactions completed but failed to clear sell order fields")
         
         return processed_count > 0
     
@@ -323,11 +524,11 @@ class ShortTradingManager:
             print("📈 No active short trading positions")
             return
         
-        print(f"\n{'='*80}")
+        print(f"\n{'='*105}")
         print(f"📊 SHORT TRADING PORTFOLIO STATUS - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"{'='*90}")
-        print(f"{'Symbol':<8} {'Shares':<8} {'Buy Price':<12} {'Current':<12} {'Total Value':<12} {'P&L $':<12} {'P&L %':<10} {'Status'}")
-        print(f"{'-'*90}")
+        print(f"{'='*105}")
+        print(f"{'Symbol':<8} {'Shares':<8} {'Buy Price':<12} {'Current':<12} {'Total Value':<12} {'P&L $':<12} {'P&L %':<10} {'Purchase Date':<12} {'Status'}")
+        print(f"{'-'*105}")
         
         total_pnl = 0
         total_investment = 0
@@ -365,43 +566,56 @@ class ShortTradingManager:
             
             print(f"{symbol:<8} {shares:<8} ${buy_price:<11.2f} ${current_price:<11.2f} "
                   f"${current_value:<11.2f} {pnl_color}{pnl_sign}${pnl_amount:<11.2f}{Style.RESET_ALL} "
-                  f"{pnl_color}{pnl_sign}{pnl_percentage:<9.1f}%{Style.RESET_ALL} {status}")
+                  f"{pnl_color}{pnl_sign}{pnl_percentage:<9.1f}%{Style.RESET_ALL} {buy_date:<12} {status}")
         
-        print(f"{'-'*90}")
+        print(f"{'-'*105}")
         total_color = Fore.GREEN if total_pnl >= 0 else Fore.RED
         total_sign = "+" if total_pnl >= 0 else ""
+        total_pnl_pct = (total_pnl/total_investment*100) if total_investment > 0 else 0
         print(f"{'TOTAL':<8} {'':<8} {'':<12} {'':<12} "
-              f"${total_current_value:<11.2f} {total_color}{total_sign}${total_pnl:<11.2f}{Style.RESET_ALL} {'':<10} ")
-        print(f"📊 Total Invested: ${total_investment:.2f} | Current Value: ${total_current_value:.2f}")
-        print(f"{'='*90}")
+              f"${total_current_value:<11.2f} {total_color}{total_sign}${total_pnl:<11.2f}{Style.RESET_ALL} "
+              f"{total_color}{total_sign}{total_pnl_pct:<9.1f}%{Style.RESET_ALL} {'':<12}")
+        print(f"📊 Total Invested: ${total_investment:.2f} | Current Value: ${total_current_value:.2f} | Portfolio P&L: {total_color}{total_sign}${total_pnl:.2f}{Style.RESET_ALL}")
+        print(f"{'='*105}")
     
     def monitor_positions(self) -> List[Dict]:
         """Monitor all positions and return alerts"""
         # Process any new buy orders first
         self.process_buy_orders()
         
-        # Get current prices
+        # Process any sold stock transactions
+        self.process_sold_stocks()
+        
+        # If no holdings yet, show message and return
+        if not self.holdings:
+            print("📊 No active positions to monitor")
+            print("💡 Add positions to 'current_holdings' or 'buy_stocks' in short_trading.txt")
+            return []
+        
+        # Get current prices for existing holdings
         current_prices = self.get_current_prices()
         
         if not current_prices:
-            return []
+            print("⚠️  Unable to fetch current prices. Displaying last known values.")
         
-        # Display portfolio status
+        # Display portfolio status (even with stale prices)
         self.display_portfolio_status()
         
-        # Check for alerts
-        alerts = self.check_alerts()
-        
-        # Display alerts
-        critical_alerts = []
-        for alert in alerts:
-            if alert['type'] in ['TARGET_REACHED', 'STOP_LOSS']:
-                critical_alerts.append(alert)
-                print(f"\n{Fore.RED}{Style.BRIGHT}{'='*60}{Style.RESET_ALL}")
-                print(f"{Fore.RED}{Style.BRIGHT}{alert['message']}{Style.RESET_ALL}")
-                print(f"{Fore.RED}{Style.BRIGHT}{'='*60}{Style.RESET_ALL}")
-            elif alert['type'] == 'WARNING':
-                print(f"\n{Fore.YELLOW}{alert['message']}{Style.RESET_ALL}")
+        # Check for alerts (only if we have current prices)
+        alerts = []
+        if current_prices:
+            alerts = self.check_alerts()
+            
+            # Display alerts
+            critical_alerts = []
+            for alert in alerts:
+                if alert['type'] in ['TARGET_REACHED', 'STOP_LOSS']:
+                    critical_alerts.append(alert)
+                    print(f"\n{Fore.RED}{Style.BRIGHT}{'='*60}{Style.RESET_ALL}")
+                    print(f"{Fore.RED}{Style.BRIGHT}{alert['message']}{Style.RESET_ALL}")
+                    print(f"{Fore.RED}{Style.BRIGHT}{'='*60}{Style.RESET_ALL}")
+                elif alert['type'] == 'WARNING':
+                    print(f"\n{Fore.YELLOW}{alert['message']}{Style.RESET_ALL}")
         
         return alerts
     

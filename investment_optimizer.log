@@ -163,3 +163,34 @@
 2025-09-11 16:10:40,422 - root - INFO - Optimizer initialized with 3 stocks
 2025-09-11 16:19:33,857 - root - INFO - Processed sale: MSFT sold for $500.00, gain/loss: $500.00 (0.0%)
 2025-09-11 16:19:33,857 - root - INFO - Optimizer initialized with 3 stocks
+2025-09-11 16:36:49,940 - root - INFO - Processed sale: MSFT sold for $500.00, gain/loss: $500.00 (0.0%)
+2025-09-11 16:36:49,940 - root - INFO - Optimizer initialized with 3 stocks
+2025-09-11 16:37:24,463 - root - INFO - Processed sale: MSFT sold for $500.00, gain/loss: $500.00 (0.0%)
+2025-09-11 16:37:24,463 - root - INFO - Optimizer initialized with 3 stocks
+2025-09-11 16:42:36,580 - root - INFO - Processed sale: MSFT sold for $500.00, gain/loss: $500.00 (0.0%)
+2025-09-11 16:42:36,580 - root - INFO - Optimizer initialized with 3 stocks
+2025-09-11 16:48:46,002 - root - INFO - Processed sale: MSFT sold for $500.00, gain/loss: $500.00 (0.0%)
+2025-09-11 16:48:46,002 - root - INFO - Optimizer initialized with 3 stocks
+2025-09-11 17:12:24,568 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:12:24,818 - root - INFO - Target return updated: 25.0%
+2025-09-11 17:16:37,717 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:16:48,904 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:17:21,243 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:18:00,821 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:20:16,717 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:20:31,029 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:20:50,103 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:25:12,123 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:27:09,545 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:30:53,562 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:33:11,578 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:44:14,636 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:50:12,619 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:55:54,551 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 17:57:50,463 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 18:05:41,012 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 18:09:00,867 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 18:13:46,685 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 18:16:16,314 - root - INFO - Optimizer initialized with 4 stocks
+2025-09-11 18:16:59,431 - root - INFO - Short trading monitoring stopped by user
+2025-09-11 18:17:05,142 - root - INFO - Optimizer initialized with 4 stocks
