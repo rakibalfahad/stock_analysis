@@ -509,7 +509,9 @@ class StockAnalyzer:
             })
         
         df = pd.DataFrame(summary_data)
-        print(df.to_string(index=False))
+        
+        # Improved formatting with better alignment
+        print(df.to_string(index=False, justify='center', col_space=15, max_colwidth=20))
         
         # Best performers with 52-week analysis
         if len(self.risk_return_data) > 1:
