@@ -149,15 +149,17 @@ class ShortTradingManager:
             try:
                 print(f"\n📋 Order {i}/{len(buy_orders)}: {buy_order}")
                 
-                # Parse buy order: symbol,price,date
+                # Parse buy order: symbol,shares,price_per_share,date
                 parts = buy_order.split(',')
-                if len(parts) != 3:
-                    print(f"❌ Invalid format. Expected: SYMBOL,PRICE,DATE")
+                if len(parts) != 4:
+                    print(f"❌ Invalid format. Expected: SYMBOL,SHARES,PRICE_PER_SHARE,DATE")
                     failed_count += 1
                     continue
                 
-                symbol, buy_price, buy_date = [part.strip() for part in parts]
+                symbol, shares, buy_price, buy_date = [part.strip() for part in parts]
+                shares = int(shares)
                 buy_price = float(buy_price)
+                total_investment = shares * buy_price
                 
                 # Check if symbol already exists in holdings
                 if symbol in self.holdings:
@@ -167,12 +169,14 @@ class ShortTradingManager:
                 
                 # Add to holdings
                 self.holdings[symbol] = {
+                    'shares': shares,
                     'buy_price': buy_price,
                     'buy_date': buy_date,
-                    'current_price': buy_price
+                    'current_price': buy_price,
+                    'total_investment': total_investment
                 }
                 
-                print(f"✅ {symbol} @ ${buy_price:.2f} on {buy_date}")
+                print(f"✅ {symbol}: {shares} shares @ ${buy_price:.2f} = ${total_investment:.2f} on {buy_date}")
                 processed_count += 1
                 
             except Exception as e:
@@ -233,11 +237,16 @@ class ShortTradingManager:
             return 0.0, 0.0
         
         holding = self.holdings[symbol]
+        shares = holding['shares']
         buy_price = holding['buy_price']
         current_price = holding['current_price']
         
-        pnl_amount = current_price - buy_price
-        pnl_percentage = (pnl_amount / buy_price) * 100
+        # P&L calculation with shares
+        total_buy_value = shares * buy_price
+        total_current_value = shares * current_price
+        
+        pnl_amount = total_current_value - total_buy_value
+        pnl_percentage = (pnl_amount / total_buy_value) * 100
         
         return pnl_amount, pnl_percentage
     
@@ -252,20 +261,24 @@ class ShortTradingManager:
             alert_type = None
             message = ""
             
+            # Get holding info for better alerts
+            holding = self.holdings[symbol]
+            shares = holding['shares']
+            
             # Check for target gain
             if pnl_decimal >= self.target_gain_pct:
                 alert_type = "TARGET_REACHED"
-                message = f"🎯 TARGET GAIN REACHED! {symbol}: +{pnl_percentage:.1f}% (${pnl_amount:.2f})"
+                message = f"🎯 TARGET GAIN REACHED! {symbol} ({shares} shares): +{pnl_percentage:.1f}% (${pnl_amount:.2f})"
             
             # Check for maximum loss
             elif pnl_decimal <= -self.max_loss_pct:
                 alert_type = "STOP_LOSS"
-                message = f"🛑 STOP LOSS TRIGGERED! {symbol}: -{abs(pnl_percentage):.1f}% (${pnl_amount:.2f})"
+                message = f"🛑 STOP LOSS TRIGGERED! {symbol} ({shares} shares): -{abs(pnl_percentage):.1f}% (${pnl_amount:.2f})"
             
             # Check for any loss (warning)
             elif pnl_amount < 0:
                 alert_type = "WARNING"
-                message = f"⚠️  LOSS WARNING: {symbol}: -{abs(pnl_percentage):.1f}% (${pnl_amount:.2f})"
+                message = f"⚠️  LOSS WARNING: {symbol} ({shares} shares): -{abs(pnl_percentage):.1f}% (${pnl_amount:.2f})"
             
             if alert_type:
                 alerts.append({
@@ -312,20 +325,29 @@ class ShortTradingManager:
         
         print(f"\n{'='*80}")
         print(f"📊 SHORT TRADING PORTFOLIO STATUS - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"{'='*80}")
-        print(f"{'Symbol':<8} {'Buy Price':<12} {'Current':<12} {'P&L $':<12} {'P&L %':<10} {'Status'}")
-        print(f"{'-'*80}")
+        print(f"{'='*90}")
+        print(f"{'Symbol':<8} {'Shares':<8} {'Buy Price':<12} {'Current':<12} {'Total Value':<12} {'P&L $':<12} {'P&L %':<10} {'Status'}")
+        print(f"{'-'*90}")
         
         total_pnl = 0
+        total_investment = 0
+        total_current_value = 0
         
         for symbol in self.holdings:
             holding = self.holdings[symbol]
+            shares = holding['shares']
             buy_price = holding['buy_price']
             current_price = holding['current_price']
             buy_date = holding['buy_date']
             
+            # Calculate values
+            investment_amount = shares * buy_price
+            current_value = shares * current_price
             pnl_amount, pnl_percentage = self.calculate_pnl(symbol)
+            
             total_pnl += pnl_amount
+            total_investment += investment_amount
+            total_current_value += current_value
             
             # Determine status and color
             if pnl_percentage >= self.target_gain_pct * 100:
@@ -341,16 +363,17 @@ class ShortTradingManager:
             pnl_color = Fore.GREEN if pnl_amount >= 0 else Fore.RED
             pnl_sign = "+" if pnl_amount >= 0 else ""
             
-            print(f"{symbol:<8} ${buy_price:<11.2f} ${current_price:<11.2f} "
-                  f"{pnl_color}{pnl_sign}${pnl_amount:<11.2f}{Style.RESET_ALL} "
+            print(f"{symbol:<8} {shares:<8} ${buy_price:<11.2f} ${current_price:<11.2f} "
+                  f"${current_value:<11.2f} {pnl_color}{pnl_sign}${pnl_amount:<11.2f}{Style.RESET_ALL} "
                   f"{pnl_color}{pnl_sign}{pnl_percentage:<9.1f}%{Style.RESET_ALL} {status}")
         
-        print(f"{'-'*80}")
+        print(f"{'-'*90}")
         total_color = Fore.GREEN if total_pnl >= 0 else Fore.RED
         total_sign = "+" if total_pnl >= 0 else ""
-        print(f"{'TOTAL':<8} {'':<12} {'':<12} "
-              f"{total_color}{total_sign}${total_pnl:<11.2f}{Style.RESET_ALL} {'':<10} ")
-        print(f"{'='*80}")
+        print(f"{'TOTAL':<8} {'':<8} {'':<12} {'':<12} "
+              f"${total_current_value:<11.2f} {total_color}{total_sign}${total_pnl:<11.2f}{Style.RESET_ALL} {'':<10} ")
+        print(f"📊 Total Invested: ${total_investment:.2f} | Current Value: ${total_current_value:.2f}")
+        print(f"{'='*90}")
     
     def monitor_positions(self) -> List[Dict]:
         """Monitor all positions and return alerts"""

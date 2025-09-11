@@ -11,28 +11,27 @@ buy_stocks =
 # SUPPORTED FORMATS:
 # 
 # Format 1: Single position
-# buy_stocks = SYMBOL,PRICE,DATE
-# Example: buy_stocks = AAPL,220.50,2025-09-10
+# buy_stocks = SYMBOL,SHARES,PRICE_PER_SHARE,DATE
+# Example: buy_stocks = AAPL,10,220.50,2025-09-10
 #
 # Format 2: Multiple positions (pipe-separated)
-# buy_stocks = SYMBOL1,PRICE1,DATE1|SYMBOL2,PRICE2,DATE2|SYMBOL3,PRICE3,DATE3
-# Example: buy_stocks = AAPL,220.50,2025-09-10|MSFT,415.75,2025-09-11|GOOGL,185.25,2025-09-09
+# buy_stocks = SYMBOL1,SHARES1,PRICE1,DATE1|SYMBOL2,SHARES2,PRICE2,DATE2
+# Example: buy_stocks = AAPL,10,220.50,2025-09-10|MSFT,5,415.75,2025-09-11|GOOGL,8,185.25,2025-09-09
 #
 # Format 3: Multiple numbered entries
-# buy_stocks_1 = SYMBOL1,PRICE1,DATE1
-# buy_stocks_2 = SYMBOL2,PRICE2,DATE2
-# buy_stocks_3 = SYMBOL3,PRICE3,DATE3
+# buy_stocks_1 = SYMBOL1,SHARES1,PRICE1,DATE1
+# buy_stocks_2 = SYMBOL2,SHARES2,PRICE2,DATE2
+# buy_stocks_3 = SYMBOL3,SHARES3,PRICE3,DATE3
 # Example:
-# buy_stocks_1 = TSLA,250.00,2025-09-10
-# buy_stocks_2 = NVDA,135.50,2025-09-11
-# buy_stocks_3 = META,560.75,2025-09-09
+# buy_stocks_1 = TSLA,12,250.00,2025-09-10
+# buy_stocks_2 = NVDA,20,135.50,2025-09-11
+# buy_stocks_3 = META,7,560.75,2025-09-09
 
-# Example:
-# Example (active positions):
-buy_stocks_1 = VERI,3.27,2025-09-11
-buy_stocks_2 = BW,2.44,2025-09-11
-buy_stocks_3 = RAPP,22.12,2025-09-11
-buy_stocks_4 = ASST,9.29,2025-09-11 
+# Ready for your actual positions:
+# Uncomment and fill with your real trades:
+# buy_stocks_1 = AAPL,10,220.50,2025-09-11
+# buy_stocks_2 = MSFT,5,415.75,2025-09-11  
+# buy_stocks_3 = GOOGL,8,185.25,2025-09-11
 
 
 # Trading history (automatically maintained by system)
@@ -41,7 +40,9 @@ sold_positions =
 
 # Notes:
 # - System now supports multiple buy orders in one operation
+# - Format: SYMBOL,SHARES,PRICE_PER_SHARE,DATE (4 fields required)
 # - Use pipe (|) to separate multiple positions in buy_stocks
 # - Or use buy_stocks_1, buy_stocks_2, etc. for individual lines
 # - All positions are processed simultaneously and buy_stocks is cleared
+# - System tracks actual shares and calculates total P&L correctly
 # - This file is separate from investments.txt to avoid conflicts

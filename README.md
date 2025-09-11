@@ -223,24 +223,27 @@ buy_stocks =
 # buy_stocks_3 = META,560.75,2025-09-09
 ```
 
-#### **🚀 Enhanced Multiple Buy Orders:**
-The system now supports **three different formats** for adding multiple positions:
+#### **🚀 Enhanced Multiple Buy Orders with Shares Tracking:**
+The system now supports **three different formats** for adding multiple positions with **actual share quantities**:
 
 **Format 1 - Single Position:**
 ```plaintext
-buy_stocks = AAPL,220.50,2025-09-10
+buy_stocks = AAPL,10,220.50,2025-09-10
+# Format: SYMBOL,SHARES,PRICE_PER_SHARE,DATE
 ```
 
 **Format 2 - Pipe-Separated Multiple:**
 ```plaintext
-buy_stocks = AAPL,220.50,2025-09-10|MSFT,415.75,2025-09-11|GOOGL,185.25,2025-09-09
+buy_stocks = AAPL,10,220.50,2025-09-10|MSFT,5,415.75,2025-09-11|GOOGL,8,185.25,2025-09-09
+# Format: SYMBOL1,SHARES1,PRICE1,DATE1|SYMBOL2,SHARES2,PRICE2,DATE2
 ```
 
 **Format 3 - Numbered Fields:**
 ```plaintext
-buy_stocks_1 = TSLA,250.00,2025-09-10
-buy_stocks_2 = NVDA,135.50,2025-09-11
-buy_stocks_3 = META,560.75,2025-09-09
+buy_stocks_1 = TSLA,12,250.00,2025-09-10
+buy_stocks_2 = NVDA,20,135.50,2025-09-11
+buy_stocks_3 = META,7,560.75,2025-09-09
+# Format: SYMBOL,SHARES,PRICE_PER_SHARE,DATE
 ```
 
 #### **💰 How Multiple Buy Orders Work:**
@@ -401,7 +404,48 @@ The short trading system operates **independently** while coordinating with your
 /home/ralfahad/stock_env/bin/python main.py --short-trading --interval 30
 ```
 
-**Your comprehensive dual-system trading setup is now fully documented and ready for professional active trading!** 🚀📈
+### **💼 Complete Trading Workflow Integration**
+
+#### **🔄 From Portfolio Recommendations to Live Monitoring:**
+
+**Step 1: Get Portfolio Recommendations**
+```bash
+# Run portfolio optimizer to get buy recommendations
+/home/ralfahad/stock_env/bin/python main.py --plot
+```
+**Output Example:**
+```
+🍎 AAPL: 🛍️ BUY RECOMMENDATION
+   💰 Current Price: $228.63
+   📈 Recommended: +10 shares ($2,286.30)
+   📊 Portfolio Weight: 17.9% (optimal)
+```
+
+**Step 2: Execute Actual Trades** (through your broker)
+- Buy the recommended quantities at market prices
+- Note the actual shares and prices you paid
+
+**Step 3: Record Real Positions** (in short_trading.txt)
+```plaintext
+# Enter what you actually bought:
+buy_stocks_1 = AAPL,10,220.50,2025-09-11    # Bought 10 shares at $220.50
+buy_stocks_2 = MSFT,5,415.75,2025-09-11     # Bought 5 shares at $415.75
+buy_stocks_3 = GOOGL,8,185.25,2025-09-11    # Bought 8 shares at $185.25
+```
+
+**Step 4: Start Real-time Monitoring**
+```bash
+# Monitor your actual positions with live P&L tracking
+/home/ralfahad/stock_env/bin/python main.py --short-trading
+```
+
+**🎯 Key Benefits of This Integration:**
+- ✅ **Optimal Allocation**: Portfolio optimizer tells you what to buy
+- 💰 **Real Tracking**: Short trading tracks what you actually bought
+- 📈 **Accurate P&L**: Based on real shares and real purchase prices
+- 🎨 **Complete Picture**: From recommendation to reality to monitoring
+
+**Your comprehensive dual-system trading setup bridges the gap between theory and practice!** 🚀📈
 
 ## 🚀 **Quick Start**
 
