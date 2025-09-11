@@ -45,7 +45,8 @@ A sophisticated, **modular** investment portfolio optimization system using Mode
 │       ├── constants.py                # Constants and configuration
 │       ├── config.py                   # File handling utilities
 │       └── helpers.py                  # Calculation helpers
-├── ⚙️ investments.txt                  # Portfolio configuration (auto-updating)
+├── ⚙️ investments.txt                  # Portfolio optimization configuration
+├── 💰 short_trading.txt                # Short trading configuration (separate)
 ├── 📊 portfolio_dashboard.png          # Latest dashboard (auto-generated)
 ├── 📊 portfolio_dashboard_*.png        # Timestamped dashboards (optional)
 ├── 📊 sample_stocks.xlsx               # Comprehensive sample Excel file
@@ -197,28 +198,75 @@ The system includes a **comprehensive short trading module** that provides real-
 
 ### **📋 Short Trading Configuration**
 
-#### **Setting Up Your Position:**
-Add your buy positions to `investments.txt`:
+#### **🔥 NEW: Separate Configuration System**
+Short trading now uses a **separate configuration file** (`short_trading.txt`) to prevent conflicts with portfolio optimization:
 
 ```plaintext
-# Investment Configuration
-total_investment = 5000
+# short_trading.txt - Separate configuration for active trading
+# Trading thresholds
 target_gain_percentage = 25         # Alert when stock gains 25%
 maximum_loss_percentage = 5         # Alert when stock loses 5%
 
-# Add ONE position at a time (system processes then clears this field)
-buy_stocks = AAPL,220.50,2025-09-10
+# Current buy orders (choose one format):
+buy_stocks = 
 
-# System automatically tracks your positions after processing
-preferred_stocks = MSFT,AMZN,AAPL
+# SUPPORTED FORMATS:
+# Format 1: Single position
+# buy_stocks = AAPL,220.50,2025-09-10
+#
+# Format 2: Multiple positions (pipe-separated)
+# buy_stocks = AAPL,220.50,2025-09-10|MSFT,415.75,2025-09-11|GOOGL,185.25,2025-09-09
+#
+# Format 3: Multiple numbered entries
+# buy_stocks_1 = TSLA,250.00,2025-09-10
+# buy_stocks_2 = NVDA,135.50,2025-09-11
+# buy_stocks_3 = META,560.75,2025-09-09
 ```
 
-#### **How Buy Orders Work:**
-1. **📝 Add Position**: `buy_stocks = SYMBOL,PRICE,DATE`
-2. **🚀 Start Monitoring**: Run short trading mode
-3. **✅ Automatic Processing**: System adds position and clears the field
-4. **📊 Live Tracking**: Real-time P&L monitoring begins
-5. **🔄 Add More**: Add next position using the same process
+#### **🚀 Enhanced Multiple Buy Orders:**
+The system now supports **three different formats** for adding multiple positions:
+
+**Format 1 - Single Position:**
+```plaintext
+buy_stocks = AAPL,220.50,2025-09-10
+```
+
+**Format 2 - Pipe-Separated Multiple:**
+```plaintext
+buy_stocks = AAPL,220.50,2025-09-10|MSFT,415.75,2025-09-11|GOOGL,185.25,2025-09-09
+```
+
+**Format 3 - Numbered Fields:**
+```plaintext
+buy_stocks_1 = TSLA,250.00,2025-09-10
+buy_stocks_2 = NVDA,135.50,2025-09-11
+buy_stocks_3 = META,560.75,2025-09-09
+```
+
+#### **💰 How Multiple Buy Orders Work:**
+1. **📝 Choose Format**: Use any of the three supported formats
+2. **📋 Add Positions**: Enter multiple stocks simultaneously
+3. **🚀 Start Monitoring**: Run `--short-trading` mode
+4. **⚡ Batch Processing**: System processes all positions at once
+5. **🧹 Auto Cleanup**: All buy order fields cleared after processing
+6. **📊 Live Tracking**: Real-time P&L monitoring for all positions
+
+#### **✅ Processing Example:**
+```
+💰 Processing 3 buy order(s)...
+
+📋 Order 1/3: AAPL,220.50,2025-09-10
+✅ AAPL @ $220.50 on 2025-09-10
+
+� Order 2/3: MSFT,415.75,2025-09-11
+✅ MSFT @ $415.75 on 2025-09-11
+
+📋 Order 3/3: GOOGL,185.25,2025-09-09
+✅ GOOGL @ $185.25 on 2025-09-09
+
+🎯 Summary: 3 positions added, 0 failed
+📊 Active positions: AAPL, MSFT, GOOGL
+```
 
 ### **📊 Professional Short Trading Display**
 
@@ -300,39 +348,60 @@ When positions hit critical thresholds, the system displays **blinking alerts** 
 ### **💡 Short Trading Best Practices**
 
 #### **📋 Position Management:**
-1. **Add One Position at a Time**: System processes sequentially
-2. **Wait for Processing**: Let system clear `buy_stocks` field before adding next
-3. **Monitor Continuously**: Keep short trading mode running during market hours
-4. **Set Realistic Targets**: Default 25% gain, 5% stop-loss are well-tested
-5. **Use Appropriate Intervals**: Match monitoring speed to your trading style
+1. **🔥 NEW - Batch Processing**: Add multiple positions simultaneously using any format
+2. **📋 Choose Your Format**: Single line, pipe-separated, or numbered fields - all work equally well
+3. **⚡ Efficient Workflow**: Process 3-5 positions at once instead of one-at-a-time
+4. **📊 Monitor Continuously**: Keep short trading mode running during market hours
+5. **🎯 Set Realistic Targets**: Default 25% gain, 5% stop-loss are well-tested
+6. **⏱️ Use Appropriate Intervals**: Match monitoring speed to your trading style
+
+#### **💰 Multiple Orders Best Practices:**
+- **📋 Format Consistency**: Pick one format and stick with it for clarity
+- **🔍 Duplicate Prevention**: System automatically skips stocks already in holdings
+- **✅ Verify Processing**: Check the processing summary for success/failure counts
+- **🧹 Auto Cleanup**: All buy order fields cleared automatically after processing
+- **📊 Batch Monitoring**: All positions added to real-time tracking simultaneously
 
 #### **🎯 Risk Management:**
 - **Target Gains**: System alerts at configured percentage (default: 25%)
 - **Stop Losses**: Automatic alerts prevent major losses (default: 5%)
 - **Position Sizing**: Consider total portfolio impact of each position
 - **Time Management**: Don't let positions run indefinitely without review
+- **🔥 NEW - Portfolio Diversification**: Use multiple orders to spread risk across sectors
 
 ### **🔄 Integration with Portfolio Optimizer**
 
-The short trading system **integrates perfectly** with your main portfolio optimization:
+The short trading system operates **independently** while coordinating with your main portfolio optimization:
 
 **1. Portfolio Optimization** (Long-term strategy):
 ```bash
 /home/ralfahad/stock_env/bin/python main.py --monitor --plot
+# Uses: investments.txt
 ```
 
 **2. Short Trading Mode** (Active position monitoring):
 ```bash
 /home/ralfahad/stock_env/bin/python main.py --short-trading
+# Uses: short_trading.txt (separate configuration)
 ```
 
-**3. Coordinated Analysis** (Both systems use same configuration):
-- Same `investments.txt` file  
-- Same target thresholds
-- Same risk management principles
-- Coordinated position tracking
+**3. 🔥 NEW: Separate Configuration Benefits:**
+- **📁 No Configuration Conflicts**: Each system uses its own file
+- **🔄 Independent Operation**: Run both systems simultaneously without interference
+- **🎯 Specialized Settings**: Customize thresholds for each trading strategy
+- **🧹 Clean Separation**: Portfolio optimization and active trading don't mix
+- **📊 Coordinated Analysis**: Systems can run in parallel for comprehensive coverage
 
-**Your comprehensive short trading system is now fully documented and ready for professional active trading!** 🚀📈
+**4. 💡 Recommended Workflow:**
+```bash
+# Terminal 1: Long-term portfolio monitoring
+/home/ralfahad/stock_env/bin/python main.py --monitor --plot --interval 300
+
+# Terminal 2: Short-term active trading
+/home/ralfahad/stock_env/bin/python main.py --short-trading --interval 30
+```
+
+**Your comprehensive dual-system trading setup is now fully documented and ready for professional active trading!** 🚀📈
 
 ## 🚀 **Quick Start**
 
