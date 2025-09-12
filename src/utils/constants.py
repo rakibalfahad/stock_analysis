@@ -31,7 +31,15 @@ EMOJIS = {
     'red_circle': '🔴',
     'folder': '📁',
     'trash': '🗑️',
-    'magnifying_glass': '🔍'
+    'magnifying_glass': '🔍',
+    'vs': '⚡',
+    'trophy': '🏆',
+    'building': '🏢',
+    'checkmark': '✅',
+    'balance': '⚖️',
+    'star': '⭐',
+    'thumbs_up': '👍',
+    'thinking': '🤔'
 }
 
 # Default stock configuration

@@ -438,3 +438,182 @@ Expected Gain:
             print(f"{EMOJIS['trash']} Cleaned up {deleted_count} old dashboard file(s)")
             if keep_latest > 0 and len(files) > keep_latest:
                 print(f"{EMOJIS['folder']} Kept {min(keep_latest, len(files))} latest files")
+    
+    def create_comparison_dashboard(self, comparison_result: Dict[str, Any], save_file: bool = True) -> Optional[str]:
+        """
+        Create a visual comparison dashboard for two stocks
+        
+        Args:
+            comparison_result: Result from StockComparator.compare_stocks()
+            save_file: Whether to save the dashboard as a file
+            
+        Returns:
+            Filename if saved, None otherwise
+        """
+        if not self.enable_plotting or comparison_result.get('error'):
+            return None
+        
+        try:
+            # Extract data
+            symbol1 = comparison_result['symbol1']
+            symbol2 = comparison_result['symbol2']
+            stock1_data = comparison_result['stock1_data']
+            stock2_data = comparison_result['stock2_data']
+            scores = comparison_result['scores']
+            category_scores = comparison_result['category_scores']
+            rec = comparison_result['recommendation']
+            strategy = comparison_result['strategy']
+            
+            # Create figure with subplots
+            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
+            fig.suptitle(f'Stock Comparison Dashboard: {symbol1} vs {symbol2}\n'
+                        f'{strategy.title()} Strategy | Recommendation: {rec["choice"]} ({rec["confidence"]:.0%} confidence)',
+                        fontsize=16, fontweight='bold', y=0.95)
+            
+            # 1. Overall Scores Comparison (Top Left)
+            scores_data = [scores['stock1'], scores['stock2']]
+            colors = ['#2E8B57' if scores['stock1'] > scores['stock2'] else '#CD5C5C',
+                     '#2E8B57' if scores['stock2'] > scores['stock1'] else '#CD5C5C']
+            
+            bars = ax1.bar([symbol1, symbol2], scores_data, color=colors, alpha=0.8)
+            ax1.set_title('Overall Weighted Scores', fontweight='bold')
+            ax1.set_ylabel('Score')
+            ax1.set_ylim(0, 1)
+            
+            # Add score labels on bars
+            for bar, score in zip(bars, scores_data):
+                height = bar.get_height()
+                ax1.text(bar.get_x() + bar.get_width()/2., height + 0.01,
+                        f'{score:.3f}', ha='center', va='bottom', fontweight='bold')
+            
+            # 2. Category Breakdown (Top Right)
+            categories = list(category_scores.keys())
+            stock1_cat_scores = [category_scores[cat][0] for cat in categories]
+            stock2_cat_scores = [category_scores[cat][1] for cat in categories]
+            
+            x = np.arange(len(categories))
+            width = 0.35
+            
+            ax2.bar(x - width/2, stock1_cat_scores, width, label=symbol1, alpha=0.8, color='#1f77b4')
+            ax2.bar(x + width/2, stock2_cat_scores, width, label=symbol2, alpha=0.8, color='#ff7f0e')
+            
+            ax2.set_title('Category Score Breakdown', fontweight='bold')
+            ax2.set_ylabel('Category Score')
+            ax2.set_xticks(x)
+            ax2.set_xticklabels([cat.replace('_', '\n').title() for cat in categories], rotation=45, ha='right')
+            ax2.legend()
+            ax2.set_ylim(0, 1)
+            
+            # 3. Key Metrics Comparison (Bottom Left)
+            key_metrics = {
+                'P/E Ratio': (stock1_data.get('pe_ratio'), stock2_data.get('pe_ratio')),
+                'ROE': (stock1_data.get('roe'), stock2_data.get('roe')),
+                'Revenue Growth': (stock1_data.get('revenue_growth'), stock2_data.get('revenue_growth')),
+                'Debt/Equity': (stock1_data.get('debt_to_equity'), stock2_data.get('debt_to_equity')),
+                'Beta': (stock1_data.get('beta'), stock2_data.get('beta'))
+            }
+            
+            # Filter out None values and create comparison
+            valid_metrics = {k: v for k, v in key_metrics.items() if v[0] is not None and v[1] is not None}
+            
+            if valid_metrics:
+                metric_names = list(valid_metrics.keys())
+                metric_values1 = [valid_metrics[m][0] for m in metric_names]
+                metric_values2 = [valid_metrics[m][1] for m in metric_names]
+                
+                # Normalize values for visualization (0-1 scale)
+                normalized_vals1 = []
+                normalized_vals2 = []
+                
+                for i, metric in enumerate(metric_names):
+                    val1, val2 = metric_values1[i], metric_values2[i]
+                    
+                    # Handle negative values and normalization
+                    if val1 <= 0 or val2 <= 0:
+                        normalized_vals1.append(0.5)
+                        normalized_vals2.append(0.5)
+                    else:
+                        max_val = max(val1, val2)
+                        min_val = min(val1, val2)
+                        range_val = max_val - min_val if max_val != min_val else 1
+                        
+                        # For metrics where lower is better (P/E, Debt/Equity, Beta)
+                        if metric in ['P/E Ratio', 'Debt/Equity', 'Beta']:
+                            norm1 = 1 - (val1 - min_val) / range_val
+                            norm2 = 1 - (val2 - min_val) / range_val
+                        else:
+                            norm1 = (val1 - min_val) / range_val
+                            norm2 = (val2 - min_val) / range_val
+                        
+                        normalized_vals1.append(norm1)
+                        normalized_vals2.append(norm2)
+                
+                x_pos = np.arange(len(metric_names))
+                ax3.bar(x_pos - 0.2, normalized_vals1, 0.4, label=symbol1, alpha=0.8, color='#1f77b4')
+                ax3.bar(x_pos + 0.2, normalized_vals2, 0.4, label=symbol2, alpha=0.8, color='#ff7f0e')
+                
+                ax3.set_title('Key Metrics Comparison (Normalized)', fontweight='bold')
+                ax3.set_ylabel('Relative Performance (0-1)')
+                ax3.set_xticks(x_pos)
+                ax3.set_xticklabels(metric_names, rotation=45, ha='right')
+                ax3.legend()
+                ax3.set_ylim(0, 1)
+            
+            # 4. Price Performance Chart (Bottom Right)
+            try:
+                # Get recent price data for both stocks
+                end_date = datetime.now()
+                start_date = end_date - timedelta(days=180)  # 6 months
+                
+                stock1_hist = yf.download(symbol1, start=start_date, end=end_date, progress=False)['Close']
+                stock2_hist = yf.download(symbol2, start=start_date, end=end_date, progress=False)['Close']
+                
+                if not stock1_hist.empty and not stock2_hist.empty:
+                    # Normalize to starting price (percentage change)
+                    stock1_norm = (stock1_hist / stock1_hist.iloc[0] - 1) * 100
+                    stock2_norm = (stock2_hist / stock2_hist.iloc[0] - 1) * 100
+                    
+                    ax4.plot(stock1_norm.index, stock1_norm.values, label=f'{symbol1}', color='#1f77b4', linewidth=2)
+                    ax4.plot(stock2_norm.index, stock2_norm.values, label=f'{symbol2}', color='#ff7f0e', linewidth=2)
+                    
+                    ax4.set_title('6-Month Price Performance', fontweight='bold')
+                    ax4.set_ylabel('Return (%)')
+                    ax4.legend()
+                    ax4.grid(True, alpha=0.3)
+                    ax4.axhline(y=0, color='black', linestyle='-', alpha=0.5)
+                    
+                    # Add current return annotations
+                    final_return1 = stock1_norm.iloc[-1]
+                    final_return2 = stock2_norm.iloc[-1]
+                    ax4.text(0.02, 0.98, f'{symbol1}: {final_return1:+.1f}%', 
+                            transform=ax4.transAxes, va='top', bbox=dict(boxstyle='round', facecolor='#1f77b4', alpha=0.2))
+                    ax4.text(0.02, 0.90, f'{symbol2}: {final_return2:+.1f}%',
+                            transform=ax4.transAxes, va='top', bbox=dict(boxstyle='round', facecolor='#ff7f0e', alpha=0.2))
+                
+            except Exception as e:
+                logging.warning(f"Could not create price chart: {e}")
+                ax4.text(0.5, 0.5, 'Price chart unavailable', ha='center', va='center', transform=ax4.transAxes)
+                ax4.set_title('Price Performance Chart', fontweight='bold')
+            
+            # Add recommendation box
+            rec_text = f"RECOMMENDATION: {rec['choice']}\nConfidence: {rec['confidence']:.0%}\nStrategy: {strategy.title()}"
+            fig.text(0.02, 0.02, rec_text, fontsize=12, fontweight='bold',
+                    bbox=dict(boxstyle='round,pad=0.5', facecolor='lightgreen' if rec['choice'] != 'NEUTRAL' else 'lightyellow', alpha=0.8))
+            
+            plt.tight_layout()
+            plt.subplots_adjust(top=0.90, bottom=0.15)
+            
+            if save_file:
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                filename = f"stock_comparison_{symbol1}_vs_{symbol2}_{timestamp}.png"
+                plt.savefig(filename, dpi=300, bbox_inches='tight', facecolor='white')
+                plt.show()
+                return filename
+            else:
+                plt.show()
+                return None
+                
+        except Exception as e:
+            logging.error(f"Error creating comparison dashboard: {e}")
+            print(f"{EMOJIS['warning']} Could not create comparison dashboard: {e}")
+            return None

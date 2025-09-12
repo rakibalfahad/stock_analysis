@@ -28,6 +28,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from src.portfolio.optimizer import InvestmentOptimizer
 from src.portfolio.short_trading import ShortTradingManager
+from src.portfolio.stock_comparator import StockComparator
 from src.visualization.dashboard import PortfolioVisualizer
 from src.utils.constants import (
     DEFAULT_TARGET_RETURN, DEFAULT_RISK_PER_TRADE, 
@@ -42,13 +43,32 @@ def create_argument_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python main.py --plot                    # Run optimization with dashboard
-  python main.py --monitor --plot          # Monitor with visualization  
-  python main.py --quick-monitor           # 15-minute monitoring mode
+  python main.py --plot                    # Run optimization with intelligent filtering & dashboard
+  python main.py --monitor --plot          # Monitor with visualization & filtering 
+  python main.py --quick-monitor           # 15-minute monitoring mode with filtering
+  python main.py --no-filter --plot        # Run without filtering (analyze all stocks)
+  python main.py --filtering-mode conservative  # Conservative risk filtering
+  python main.py --filtering-mode aggressive    # More aggressive filtering (higher risk tolerance)
+  python main.py --compare AAPL MSFT       # Compare two stocks with balanced strategy
+  python main.py --compare TSLA NVDA --strategy growth  # Compare with growth-focused weighting
+  python main.py --compare JNJ PG --strategy income     # Compare dividend stocks
   python main.py --short-trading           # Short trading mode with P&L alerts (uses short_trading.txt)
-  python main.py --short-trading --interval 30  # Short trading with 30-sec updates
+  python main.py --short-trading --interval 30      # Short trading with 30-sec updates
   python main.py --cleanup 5               # Keep 5 latest dashboard files
   python main.py --keep-timestamp --plot   # Create timestamped files
+
+Intelligent Stock Filtering:
+  The system automatically analyzes all stocks in investments.txt and determines optimal
+  P/E ratio and volatility thresholds based on market conditions. It then recommends only
+  the best stocks based on comprehensive financial metrics. Use --filtering-mode to adjust
+  risk tolerance: conservative (low risk), moderate (balanced), aggressive (higher risk).
+
+Stock Comparison:
+  Compare any two stocks using normalized metrics and strategy-based weighting. The system
+  evaluates valuation, profitability, growth, financial health, risk, and dividends to
+  provide a clear recommendation. Choose from investment strategies: growth (focuses on
+  growth metrics), value (emphasizes valuation), income (prioritizes dividends), stability
+  (emphasizes financial health), or balanced (equal weighting).
         """
     )
     
@@ -65,6 +85,10 @@ Examples:
                        help='Run in quick monitoring mode (15-minute intervals)')
     parser.add_argument('--short-trading', action='store_true',
                        help='Enable short trading mode with real-time P&L monitoring and alerts (uses separate short_trading.txt config file)')
+    parser.add_argument('--compare', nargs=2, metavar=('STOCK1', 'STOCK2'),
+                       help='Compare two stocks and get recommendation (e.g., --compare AAPL MSFT)')
+    parser.add_argument('--strategy', choices=['growth', 'value', 'income', 'stability', 'balanced'],
+                       default='balanced', help='Investment strategy for comparison weighting (default: balanced)')
     
     # Visualization options
     parser.add_argument('--plot', action='store_true',
@@ -85,6 +109,14 @@ Examples:
                        help=f'Risk per trade as fraction of capital (default: {DEFAULT_RISK_PER_TRADE} = {DEFAULT_RISK_PER_TRADE*100:.0f}%%)')
     parser.add_argument('--atr-multiplier', type=float, default=DEFAULT_ATR_MULTIPLIER,
                        help=f'ATR multiplier for stop-loss (default: {DEFAULT_ATR_MULTIPLIER})')
+    parser.add_argument('--no-filter', action='store_true',
+                       help='Disable intelligent stock filtering (analyze all stocks from config)')
+    
+    # Filtering criteria (advanced)
+    parser.add_argument('--min-market-cap', type=float, default=1.0,
+                       help='Minimum market cap in billions (default: 1.0B)')
+    parser.add_argument('--filtering-mode', choices=['conservative', 'moderate', 'aggressive'], 
+                       default='moderate', help='Risk tolerance for stock filtering (default: moderate)')
     
     # Logging
     parser.add_argument('--log-level', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], 
@@ -162,8 +194,14 @@ def main() -> int:
             config_file=args.config,
             target_return=args.target_return,
             risk_per_trade=args.risk_per_trade,
-            atr_multiplier=args.atr_multiplier
+            atr_multiplier=args.atr_multiplier,
+            enable_filtering=not args.no_filter,
+            filtering_mode=args.filtering_mode
         )
+        
+        # Update basic filtering criteria if provided
+        if not args.no_filter and hasattr(optimizer, 'stock_filter') and optimizer.stock_filter:
+            optimizer.stock_filter.min_market_cap = args.min_market_cap * 1e9  # Convert to actual value
         
         visualizer = PortfolioVisualizer(enable_plotting=args.plot)
         
@@ -172,6 +210,43 @@ def main() -> int:
             interval = 900 if args.quick_monitor else args.interval  # 15 minutes for quick mode
             run_monitoring_mode(optimizer, visualizer, interval, args.keep_timestamp)
             
+        elif args.compare:
+            # Stock Comparison mode
+            try:
+                print(f"{EMOJIS['vs']} Stock Comparison Mode")
+                stock1, stock2 = args.compare
+                
+                # Initialize stock comparator
+                comparator = StockComparator(investment_strategy=args.strategy)
+                
+                # Perform comparison
+                result = comparator.compare_stocks(stock1, stock2)
+                
+                # Print results
+                comparator.print_comparison_results(result)
+                
+                # Create detailed metrics table
+                if not result.get('error'):
+                    metrics_df = comparator.get_detailed_metrics_comparison(result)
+                    if not metrics_df.empty:
+                        print(f"\n{EMOJIS['chart']} DETAILED METRICS TABLE:")
+                        print("=" * 70)
+                        print(metrics_df.to_string(index=False))
+                    
+                    # Create visual comparison dashboard if plotting enabled
+                    if args.plot or args.compare:
+                        visualizer = PortfolioVisualizer(enable_plotting=True)
+                        dashboard_file = visualizer.create_comparison_dashboard(result, save_file=not args.no_save)
+                        if dashboard_file:
+                            print(f"\n{EMOJIS['chart']} Comparison dashboard saved as {dashboard_file}")
+                
+                return 0
+                
+            except Exception as e:
+                logging.error(f"Stock comparison error: {e}")
+                print(f"{EMOJIS['warning']} Comparison error: {e}")
+                return 1
+        
         elif args.short_trading:
             # Short Trading mode
             try:

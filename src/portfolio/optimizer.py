@@ -25,6 +25,7 @@ from ..utils.helpers import (
     calculate_volatility, portfolio_performance, is_in_cooling_period,
     format_recommendation, progress_bar
 )
+from .stock_filter import StockFilter
 
 class InvestmentOptimizer:
     """
@@ -37,7 +38,9 @@ class InvestmentOptimizer:
                  risk_per_trade: float = DEFAULT_RISK_PER_TRADE,
                  atr_multiplier: float = DEFAULT_ATR_MULTIPLIER,
                  period: str = DEFAULT_PERIOD,
-                 interval: str = DEFAULT_INTERVAL):
+                 interval: str = DEFAULT_INTERVAL,
+                 enable_filtering: bool = True,
+                 filtering_mode: str = 'moderate'):
         """
         Initialize the optimizer
         
@@ -48,6 +51,8 @@ class InvestmentOptimizer:
             atr_multiplier: ATR multiplier for stop-loss
             period: Data period for analysis
             interval: Data interval
+            enable_filtering: Enable intelligent stock filtering
+            filtering_mode: Risk tolerance for filtering ('conservative', 'moderate', 'aggressive')
         """
         self.config_file = config_file
         self.target_return = target_return
@@ -55,10 +60,24 @@ class InvestmentOptimizer:
         self.atr_multiplier = atr_multiplier
         self.period = period
         self.interval = interval
+        self.enable_filtering = enable_filtering
+        self.filtering_mode = filtering_mode
         
         # Load configuration
         self.config = load_config(config_file)
-        self.tickers = list(self.config['stocks'].keys())
+        self.all_tickers = list(self.config['stocks'].keys())  # All stocks from config
+        self.tickers = self.all_tickers.copy()  # Filtered stocks for optimization
+        
+        # Initialize adaptive stock filter
+        if self.enable_filtering:
+            self.stock_filter = StockFilter(
+                filtering_mode=filtering_mode,
+                min_market_cap=1e9,   # $1B minimum
+                min_volume=1e6,       # $1M daily volume
+                max_debt_to_equity=1.0
+            )
+        else:
+            self.stock_filter = None
         
         # Market data storage
         self.data = None
@@ -67,13 +86,20 @@ class InvestmentOptimizer:
         self.expected_returns = {}
         self.volatilities = {}
         
+        # Filtering results
+        self.filtered_stocks = {}
+        self.recommended_stocks = []
+        self.avoided_stocks = []
+        
         # Optimization results
         self.optimal_weights = None
         self.portfolio_return = None
         self.portfolio_volatility = None
         self.additional_capital_needed = 0  # Additional capital needed for full utilization
         
-        logging.info(f"Optimizer initialized with {len(self.tickers)} stocks")
+        logging.info(f"Optimizer initialized with {len(self.all_tickers)} stocks")
+        if self.enable_filtering:
+            logging.info(f"Adaptive stock filtering enabled in '{filtering_mode}' mode")
     
     def reload_config(self) -> None:
         """Reload configuration from file to pick up any changes"""
@@ -108,6 +134,110 @@ class InvestmentOptimizer:
         except Exception as e:
             logging.warning(f"Error reloading configuration: {e}")
     
+    
+    def run_stock_filtering(self) -> bool:
+        """Run intelligent stock filtering to identify best investment opportunities"""
+        if not self.enable_filtering or not self.stock_filter:
+            logging.info("Stock filtering disabled - using all configured stocks")
+            return True
+        
+        try:
+            print(f"\n{EMOJIS['magnifying_glass']} INTELLIGENT STOCK FILTERING")
+            print("=" * 60)
+            print(f"Analyzing {len(self.all_tickers)} stocks from configuration...")
+            
+            # Analyze all stocks from config
+            self.filtered_stocks = self.stock_filter.filter_stocks(self.all_tickers)
+            
+            # Get recommendations
+            self.recommended_stocks, self.avoided_stocks = self.stock_filter.get_filtered_recommendations(self.all_tickers)
+            
+            # Print detailed filtering results
+            self.stock_filter.print_filtering_results(self.filtered_stocks)
+            
+            # Ensure we have at least some recommended stocks
+            min_stocks_needed = self.stock_filter.mode_params[self.stock_filter.filtering_mode]['min_stocks_target']
+            
+            if len(self.recommended_stocks) >= min_stocks_needed:
+                self.tickers = self.recommended_stocks
+                print(f"\n{EMOJIS['check']} Portfolio will focus on {len(self.tickers)} recommended stocks")
+                
+                # Update config to only include recommended stocks for optimization
+                filtered_config_stocks = {}
+                for ticker in self.tickers:
+                    if ticker in self.config['stocks']:
+                        filtered_config_stocks[ticker] = self.config['stocks'][ticker]
+                
+                # Temporarily update stocks for optimization
+                self.original_stocks_config = self.config['stocks'].copy()
+                self.config['stocks'] = filtered_config_stocks
+                
+                logging.info(f"Stock filtering complete: {len(self.tickers)} recommended, {len(self.avoided_stocks)} avoided")
+                return True
+            else:
+                print(f"\n{EMOJIS['warning']} Only {len(self.recommended_stocks)} stocks passed strict filtering!")
+                print(f"Relaxing criteria to ensure at least {min_stocks_needed} stocks for diversification...")
+                
+                # Get the best stocks even if they don't meet all criteria
+                self._relax_filtering_criteria()
+                self.recommended_stocks, self.avoided_stocks = self.stock_filter.get_filtered_recommendations(self.all_tickers)
+                
+                if self.recommended_stocks:
+                    self.tickers = self.recommended_stocks
+                    print(f"{EMOJIS['check']} Relaxed filtering selected {len(self.tickers)} stocks")
+                    
+                    # Update config for optimization
+                    filtered_config_stocks = {}
+                    for ticker in self.tickers:
+                        if ticker in self.config['stocks']:
+                            filtered_config_stocks[ticker] = self.config['stocks'][ticker]
+                    
+                    self.original_stocks_config = self.config['stocks'].copy()
+                    self.config['stocks'] = filtered_config_stocks
+                    
+                    logging.info(f"Relaxed filtering complete: {len(self.tickers)} selected")
+                    return True
+                else:
+                    print(f"{EMOJIS['warning']} Even relaxed filtering failed - using all stocks as fallback")
+                    logging.warning("All filtering attempts failed - using all stocks")
+                    return True
+                
+        except Exception as e:
+            logging.error(f"Error in stock filtering: {e}")
+            print(f"{EMOJIS['warning']} Stock filtering failed: {e}")
+            print("Proceeding with all configured stocks...")
+            return True
+    
+    def _relax_filtering_criteria(self) -> None:
+        """Relax filtering criteria to ensure minimum stock selection"""
+        try:
+            if not self.stock_filter:
+                return
+            
+            print(f"{EMOJIS['computer']} Relaxing filtering criteria...")
+            
+            # Increase thresholds to be more permissive
+            original_pe = self.stock_filter.max_pe_ratio
+            original_vol = self.stock_filter.max_volatility
+            original_beta = self.stock_filter.max_beta
+            
+            self.stock_filter.max_pe_ratio = min(original_pe * 1.5, 40)  # Increase P/E limit
+            self.stock_filter.max_volatility = min(original_vol * 1.3, 0.60)  # Increase volatility limit
+            self.stock_filter.max_beta = min(original_beta * 1.2, 2.5)  # Increase beta limit
+            self.stock_filter.min_market_cap = max(self.stock_filter.min_market_cap * 0.5, 500e6)  # Reduce market cap requirement
+            
+            print(f"   📊 P/E: {original_pe:.1f} → {self.stock_filter.max_pe_ratio:.1f}")
+            print(f"   📈 Volatility: {original_vol:.1%} → {self.stock_filter.max_volatility:.1%}")
+            print(f"   ⚖️  Beta: {original_beta:.2f} → {self.stock_filter.max_beta:.2f}")
+            print(f"   🏢 Market Cap: ${self.stock_filter.min_market_cap/1e9:.1f}B")
+            
+            # Re-evaluate all stocks with relaxed criteria
+            for symbol, analysis in self.filtered_stocks.items():
+                if not analysis.get('error'):
+                    analysis['recommendation'] = self.stock_filter._generate_recommendation(analysis)
+            
+        except Exception as e:
+            logging.error(f"Error relaxing filtering criteria: {e}")
     
     def fetch_market_data(self) -> bool:
         """Fetch market data for all stocks"""
@@ -442,17 +572,46 @@ class InvestmentOptimizer:
         print(f"{EMOJIS['chart']} PORTFOLIO ANALYSIS & RECOMMENDATIONS")
         print("=" * 70)
         
+        # Stock filtering summary (if enabled)
+        if self.enable_filtering and hasattr(self, 'filtered_stocks'):
+            print(f"\n{EMOJIS['magnifying_glass']} Stock Filtering Summary:")
+            print(f"   📊 Total Stocks Analyzed: {len(self.all_tickers)}")
+            print(f"   ✅ Recommended for Investment: {len(self.recommended_stocks)}")
+            print(f"   ⚠️  Avoided due to Risk/Criteria: {len(self.avoided_stocks)}")
+            
+            if self.avoided_stocks:
+                print(f"   🛑 Stocks Filtered Out: {', '.join(self.avoided_stocks[:5])}")
+                if len(self.avoided_stocks) > 5:
+                    print(f"      (and {len(self.avoided_stocks) - 5} more...)")
+        
         # Current holdings
         print(f"\n{EMOJIS['money_bag']} Current Holdings:")
         total_value = 0
         has_holdings = False
         
-        for ticker, data in self.config['stocks'].items():
+        # Use original config if we have filtered stocks
+        stocks_to_check = getattr(self, 'original_stocks_config', self.config['stocks'])
+        
+        for ticker, data in stocks_to_check.items():
             if data['shares'] > 0:
                 current_price = self.current_prices.get(ticker, 0)
+                if current_price == 0 and ticker in self.all_tickers:
+                    # Try to get price from filtered analysis
+                    if hasattr(self, 'filtered_stocks') and ticker in self.filtered_stocks:
+                        current_price = self.filtered_stocks[ticker].get('current_price', 0)
+                
                 value = data['shares'] * current_price
                 total_value += value
-                print(f"   {ticker}: {data['shares']} shares @ {format_currency(current_price)} = {format_currency(value)}")
+                
+                # Add filtering status
+                status_indicator = ""
+                if self.enable_filtering and hasattr(self, 'filtered_stocks'):
+                    if ticker in self.recommended_stocks:
+                        status_indicator = " ✅"
+                    elif ticker in self.avoided_stocks:
+                        status_indicator = " ⚠️"
+                
+                print(f"   {ticker}: {data['shares']} shares @ {format_currency(current_price)} = {format_currency(value)}{status_indicator}")
                 has_holdings = True
         
         if not has_holdings:
@@ -502,7 +661,7 @@ class InvestmentOptimizer:
             print(f"{EMOJIS['warning']} Additional Capital Needed: {format_currency(self.additional_capital_needed)} to fully utilize portfolio")
     
     def run_optimization(self) -> bool:
-        """Run complete optimization process"""
+        """Run complete optimization process with intelligent stock filtering"""
         try:
             # Reload configuration to pick up any changes
             self.reload_config()
@@ -511,7 +670,11 @@ class InvestmentOptimizer:
             print(f"\n{EMOJIS['fire']} INVESTMENT PORTFOLIO OPTIMIZER - MODULAR VERSION")
             print(f"{EMOJIS['calendar']} {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | {EMOJIS['dart']} Target: {format_percentage(self.target_return * 100)} | {EMOJIS['money_bag']} Capital: {format_currency(self.config['cash'])}")
             
-            # Fetch data
+            # Run stock filtering (if enabled)
+            if not self.run_stock_filtering():
+                return False
+            
+            # Fetch data for filtered stocks
             if not self.fetch_market_data():
                 return False
             
