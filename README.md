@@ -7,14 +7,15 @@
 1. [Getting Started](#-getting-started)
 2. [Basic Usage](#-basic-usage)
 3. [Core Features](#-core-features)
-4. [Configuration Guide](#-configuration-guide)
-5. [Portfolio Optimization](#-portfolio-optimization)
-6. [Stock Comparison System](#-stock-comparison-system)
-7. [Short Trading Mode](#-short-trading-mode)
-8. [Stock Risk Analysis Tool](#-stock-risk-analysis-tool)
-9. [Advanced Features](#-advanced-features)
-10. [Troubleshooting](#-troubleshooting)
-11. [Development & Technical](#-development--technical)
+4. [Portfolio Summary Dashboard](#-portfolio-summary-dashboard)
+5. [Configuration Guide](#-configuration-guide)
+6. [Portfolio Optimization](#-portfolio-optimization)
+7. [Stock Comparison System](#-stock-comparison-system)
+8. [Short Trading Mode](#-short-trading-mode)
+9. [Stock Risk Analysis Tool](#-stock-risk-analysis-tool)
+10. [Advanced Features](#-advanced-features)
+11. [Troubleshooting](#-troubleshooting)
+12. [Development & Technical](#-development--technical)
 
 ---
 
@@ -41,6 +42,9 @@
 ### First Run - Quick Test
 
 ```bash
+# View complete portfolio overview
+/home/ralfahad/stock_env/bin/python portfolio_summary.py
+
 # Test the system with a simple portfolio optimization
 /home/ralfahad/stock_env/bin/python main.py --plot
 
@@ -55,6 +59,9 @@
 ### Essential Commands
 
 ```bash
+# Complete portfolio overview dashboard (RECOMMENDED FIRST)
+/home/ralfahad/stock_env/bin/python portfolio_summary.py
+
 # Portfolio optimization with dashboard
 /home/ralfahad/stock_env/bin/python main.py --plot
 
@@ -85,6 +92,7 @@ When you run the optimizer, you'll see:
 
 ### 🎯 What's New in Version 2.0
 
+- **📊 Portfolio Summary Dashboard** - Comprehensive overview of holdings, P&L, risk analysis, and allocation
 - **🧠 Intelligent Stock Comparison** - Advanced two-stock analysis with strategy-based scoring
 - **⚡ Adaptive Stock Filtering** - AI-driven filtering with automatic threshold determination
 - **💰 Investment Configuration Integration** - Complete system integration with your preferences
@@ -102,6 +110,86 @@ When you run the optimizer, you'll see:
 - **Professional visualization and reporting**
 - **Automated alert systems**
 - **Configuration-driven operation**
+
+---
+
+## 📊 Portfolio Summary Dashboard
+
+### Overview
+
+The Portfolio Summary Dashboard provides a comprehensive, at-a-glance view of your entire investment portfolio. This is the **recommended starting point** for understanding your current financial position.
+
+### Key Features
+
+- **📊 Investment Targets & Configuration** - Shows your budget, targets, and risk profile
+- **💰 Current Holdings Analysis** - Live P&L tracking with real-time market prices
+- **📈 Trading History** - Complete record of sold positions and performance metrics
+- **⚖️ Portfolio Allocation** - How much of your budget is invested vs available cash
+- **🛡️ Risk Analysis** - Concentration risk, diversification, and position sizing warnings
+- **🎯 Smart Recommendations** - Actionable insights based on your portfolio state
+
+### Quick Start
+
+```bash
+# Run the complete portfolio dashboard
+/home/ralfahad/stock_env/bin/python portfolio_summary.py
+```
+
+### Dashboard Sections
+
+#### 🎯 Investment Configuration & Targets
+```
+💰 Total Investment Budget: $3,000
+📈 Target Gain Percentage: 25%
+🛑 Maximum Loss Tolerance: 5%
+⚖️ Risk Profile: Conservative (Reward:Risk = 5.0:1)
+```
+
+#### 📊 Current Active Holdings
+```
+Symbol   Shares   Buy Price    Current      Investment   Current Value  P&L $        P&L %
+VERI     473      $3.26        $3.73        $1,541.98    $1,764.29      +$222.31     +14.4%
+BW       291      $2.46        $2.78        $715.86      $808.98        +$93.12      +13.0%
+RAPP     31       $22.80       $23.76       $706.80      $736.56        +$29.76      +4.2%
+```
+
+#### 💸 Sold Positions History
+```
+Symbol   Sale Price   Sale Date    P&L Amount   P&L %      Performance
+ASST     $9.50        2025-09-11   +$1.60       +3.5%      ✅ PROFIT
+BW       $2.50        2025-09-11   +$4.00       +1.6%      ✅ PROFIT
+```
+
+#### ⚖️ Portfolio Allocation Analysis
+```
+💰 Investment Budget: $3,000.00
+📊 Current Allocation: $2,964.64 (98.8%)
+💵 Available Cash: $35.36 (1.2%)
+📊 Allocation: [██████████████████████████████████████████████░] 98.8%
+```
+
+#### 🛡️ Risk Analysis
+```
+📊 Portfolio Concentration:
+   VERI: $1,541.98 (52.0% - HIGH RISK)
+   BW: $715.86 (24.1% - MODERATE)
+   RAPP: $706.80 (23.8% - MODERATE)
+```
+
+### When to Use the Dashboard
+
+- **📅 Daily Check-ins** - Quick overview of portfolio performance
+- **🎯 Before Making Trades** - Understand current allocation and risk
+- **📊 Portfolio Rebalancing** - Identify concentration risks and opportunities
+- **📈 Performance Review** - Track realized vs unrealized gains
+- **🛡️ Risk Management** - Monitor position sizes and diversification
+
+### Integration with Other Tools
+
+The dashboard reads from both configuration files and integrates with:
+- `main.py --plot` - Portfolio optimization recommendations
+- `main.py --short-trading` - Real-time position monitoring
+- `main.py --compare` - Stock-by-stock analysis
 
 ---
 
@@ -145,6 +233,7 @@ buy_stocks = AAPL,10,220.50,2025-09-10
 ```
 📦 stock_analysis/
 ├── 🐍 main.py                          # Main entry point
+├── 📊 portfolio_summary.py             # **Portfolio Dashboard** - Complete overview
 ├── 📊 stock_analyzer.py                # Standalone risk analysis tool
 ├── 📁 src/                             # Source code modules
 │   ├── 📁 portfolio/                   # Portfolio optimization
@@ -535,6 +624,9 @@ Investment Management System - September 2025
 
 ### Most Used Commands
 ```bash
+# Portfolio overview dashboard (START HERE)
+/home/ralfahad/stock_env/bin/python portfolio_summary.py
+
 # Portfolio optimization
 /home/ralfahad/stock_env/bin/python main.py --plot
 
@@ -551,9 +643,11 @@ Investment Management System - September 2025
 /home/ralfahad/stock_env/bin/python main.py --help
 ```
 
-### Configuration Files
+### Key Files
+- `portfolio_summary.py` - **Comprehensive portfolio dashboard**
 - `investments.txt` - Portfolio optimization settings
 - `short_trading.txt` - Active trading positions
+- `main.py` - Core system entry point
 
 ### Output Files
 - `portfolio_dashboard.png` - Latest optimization results
