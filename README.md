@@ -22,34 +22,36 @@
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **Python 3.9+** (tested environment)
-- **Virtual Environment**: `/home/ralfahad/stock_env/`
-- **Platform**: Linux (optimized)
+- **Python 3.9+** (recommended)
+- **Virtual Environment** (recommended for package isolation)
+- **Platform**: Cross-platform (Linux, macOS, Windows)
 
 ### Installation & Setup
 
 ```bash
-# 1. Activate your virtual environment
-/home/ralfahad/stock_env/bin/python
+# 1. Create and activate virtual environment (recommended)
+python -m venv your_env_name
+source your_env_name/bin/activate  # Linux/macOS
+# your_env_name\Scripts\activate   # Windows
 
-# 2. Verify installation
-/home/ralfahad/stock_env/bin/python main.py --help
+# 2. Install dependencies
+pip install -r requirements.txt
 
-# 3. Install dependencies if needed
-/home/ralfahad/stock_env/bin/pip install -r requirements.txt
+# 3. Verify installation
+python main.py --help
 ```
 
 ### First Run - Quick Test
 
 ```bash
 # View complete portfolio overview
-/home/ralfahad/stock_env/bin/python portfolio_summary.py
+python portfolio_summary.py
 
 # Test the system with a simple portfolio optimization
-/home/ralfahad/stock_env/bin/python main.py --plot
+python main.py --plot
 
 # Test stock comparison feature
-/home/ralfahad/stock_env/bin/python main.py --compare AAPL MSFT --plot
+python main.py --compare AAPL MSFT --plot
 ```
 
 ---
@@ -60,22 +62,22 @@
 
 ```bash
 # Complete portfolio overview dashboard (RECOMMENDED FIRST)
-/home/ralfahad/stock_env/bin/python portfolio_summary.py
+python portfolio_summary.py
 
 # Portfolio optimization with dashboard
-/home/ralfahad/stock_env/bin/python main.py --plot
+python main.py --plot
 
 # Stock comparison (NEW FEATURE)
-/home/ralfahad/stock_env/bin/python main.py --compare AAPL MSFT --plot
+python main.py --compare AAPL MSFT --plot
 
 # Real-time monitoring (15-minute intervals)
-/home/ralfahad/stock_env/bin/python main.py --quick-monitor --plot
+python main.py --quick-monitor --plot
 
 # Short trading mode
-/home/ralfahad/stock_env/bin/python main.py --short-trading
+python main.py --short-trading
 
 # Show all available options
-/home/ralfahad/stock_env/bin/python main.py --help
+python main.py --help
 ```
 
 ### Understanding the Output
@@ -132,7 +134,7 @@ The Portfolio Summary Dashboard provides a comprehensive, at-a-glance view of yo
 
 ```bash
 # Run the complete portfolio dashboard
-/home/ralfahad/stock_env/bin/python portfolio_summary.py
+python portfolio_summary.py
 ```
 
 ### Dashboard Sections
@@ -262,13 +264,13 @@ The system uses **Modern Portfolio Theory** to:
 
 ```bash
 # Single optimization with dashboard
-/home/ralfahad/stock_env/bin/python main.py --plot
+python main.py --plot
 
 # Optimization without saving dashboard
-/home/ralfahad/stock_env/bin/python main.py --plot --no-save
+python main.py --plot --no-save
 
 # Custom target return (30% annually)
-/home/ralfahad/stock_env/bin/python main.py --plot --target-return 0.30
+python main.py --plot --target-return 0.30
 ```
 
 ### Continuous Monitoring
@@ -277,16 +279,16 @@ The system uses **Modern Portfolio Theory** to:
 
 ```bash
 # Quick monitoring (15-minute intervals) - RECOMMENDED
-/home/ralfahad/stock_env/bin/python main.py --quick-monitor --plot
+python main.py --quick-monitor --plot
 
 # Custom interval monitoring (5 minutes)
-/home/ralfahad/stock_env/bin/python main.py --monitor --plot --interval 300
+python main.py --monitor --plot --interval 300
 
 # Hourly monitoring
-/home/ralfahad/stock_env/bin/python main.py --monitor --plot
+python main.py --monitor --plot
 
 # Active monitoring (every minute)
-/home/ralfahad/stock_env/bin/python main.py --monitor --plot --interval 60
+python main.py --monitor --plot --interval 60
 ```
 
 ### Understanding Recommendations
@@ -312,13 +314,13 @@ Compare any two stocks with intelligent, strategy-based analysis that uses your 
 
 ```bash
 # Basic comparison with balanced strategy
-/home/ralfahad/stock_env/bin/python main.py --compare AAPL MSFT
+python main.py --compare AAPL MSFT
 
 # Growth-focused comparison with charts
-/home/ralfahad/stock_env/bin/python main.py --compare AAPL GOOGL --strategy growth --plot
+python main.py --compare AAPL GOOGL --strategy growth --plot
 
 # Value investing comparison
-/home/ralfahad/stock_env/bin/python main.py --compare BRK.B JPM --strategy value --plot
+python main.py --compare BRK.B JPM --strategy value --plot
 ```
 
 ### Available Strategies
@@ -365,13 +367,13 @@ Real-time profit/loss monitoring for active trading positions with automatic ale
 
 ```bash
 # Start monitoring with default 1-minute updates
-/home/ralfahad/stock_env/bin/python main.py --short-trading
+python main.py --short-trading
 
 # Day trading mode (30-second updates)
-/home/ralfahad/stock_env/bin/python main.py --short-trading --interval 30
+python main.py --short-trading --interval 30
 
 # Ultra-fast monitoring (5-second updates)
-/home/ralfahad/stock_env/bin/python main.py --short-trading --interval 5
+python main.py --short-trading --interval 5
 ```
 
 ### Adding Positions
@@ -435,22 +437,59 @@ TOTAL                                       +$51.20
 
 ### Overview
 
-Standalone tool for comprehensive stock risk vs return analysis with 52-week positioning and professional visualizations.
+Comprehensive stock analysis system with **dual output options**: professional visualization charts and detailed Excel reports. Performs risk vs return analysis with 52-week positioning, sector analysis, and performance metrics.
+
+### 🆕 **Two Analysis Tools Available:**
+
+#### **📊 Visual Charts (`stock_analyzer.py`)**
+- **Professional PNG charts** with risk vs return scatter plots
+- **52-week positioning indicators** (🔥 Near High, ⚡ Mid-Range, ❄️ Near Low)
+- **Dual color coding** for Sharpe ratios and market positioning
+- **Side-by-side visualizations** with comprehensive statistics
+
+#### **📈 Excel Reports (`stock_analyzer_excel.py`)**
+- **Multi-sheet Excel workbooks** with detailed analysis
+- **7 comprehensive sheets**: Analysis, Summary, Sectors, Top Performers, High Risk, Near Highs, Errors
+- **Sortable and filterable data** for in-depth analysis
+- **Complete metrics** including company info, sectors, and market caps
 
 ### Quick Start
 
+#### **For Visual Analysis (PNG Charts):**
 ```bash
 # Create sample files
 python stock_analyzer.py --create-sample
 
-# Analyze all stocks
-python stock_analyzer.py sample_stocks.xlsx
+# Analyze stocks from your Excel file
+python stock_analyzer.py your_stocks.xlsx
 
-# Analyze specific portfolio
-python stock_analyzer.py sample_stocks.xlsx --sheet Conservative_Portfolio
+# Custom chart output name
+python stock_analyzer.py your_stocks.xlsx --output my_analysis.png
 
-# 2-year analysis with custom output
-python stock_analyzer.py sample_stocks.xlsx --period 2y --output my_analysis.png
+# 2-year analysis period
+python stock_analyzer.py your_stocks.xlsx --period 2y
+```
+
+#### **For Excel Reports (Detailed Data):**
+```bash
+# Generate comprehensive Excel report
+python stock_analyzer_excel.py your_stocks.xlsx
+
+# Custom Excel output name
+python stock_analyzer_excel.py your_stocks.xlsx --output detailed_analysis.xlsx
+
+# Analyze specific sheet
+python stock_analyzer_excel.py your_stocks.xlsx --sheet Portfolio1
+
+# Different analysis period
+python stock_analyzer_excel.py your_stocks.xlsx --period 2y --output results.xlsx
+```
+
+#### **For Complete Analysis (Both Outputs):**
+```bash
+# Generate both chart and Excel report
+python stock_analyzer.py your_stocks.xlsx --output visual_analysis.png
+python stock_analyzer_excel.py your_stocks.xlsx --output data_analysis.xlsx
 ```
 
 ### Sample Excel Structure
@@ -486,20 +525,20 @@ The system includes 6 professional analysis sheets:
 
 ```bash
 # Keep timestamped files for history
-/home/ralfahad/stock_env/bin/python main.py --plot --keep-timestamp
+python main.py --plot --keep-timestamp
 
 # Clean up old files (keep 5 latest)
-/home/ralfahad/stock_env/bin/python main.py --cleanup 5
+python main.py --cleanup 5
 ```
 
 ### Custom Parameters
 
 ```bash
 # Custom target return (30%)
-/home/ralfahad/stock_env/bin/python main.py --plot --target-return 0.30
+python main.py --plot --target-return 0.30
 
 # Lower risk per trade (1%)
-/home/ralfahad/stock_env/bin/python main.py --plot --risk-per-trade 0.01
+python main.py --plot --risk-per-trade 0.01
 ```
 
 ### Dual System Operation
@@ -508,10 +547,10 @@ Run both systems simultaneously for comprehensive coverage:
 
 ```bash
 # Terminal 1: Long-term portfolio monitoring
-/home/ralfahad/stock_env/bin/python main.py --monitor --plot --interval 300
+python main.py --monitor --plot --interval 300
 
 # Terminal 2: Short-term active trading
-/home/ralfahad/stock_env/bin/python main.py --short-trading --interval 30
+python main.py --short-trading --interval 30
 ```
 
 ### Integration Workflow
@@ -580,9 +619,9 @@ All functionality remains intact.
 
 ```bash
 # Test individual components
-/home/ralfahad/stock_env/bin/python -c "from src.utils.constants import EMOJIS; print(f'Loaded {len(EMOJIS)} emojis')"
+python -c "from src.utils.constants import EMOJIS; print(f'Loaded {len(EMOJIS)} emojis')"
 
-/home/ralfahad/stock_env/bin/python -c "from src.portfolio.optimizer import InvestmentOptimizer; print('Portfolio module loaded')"
+python -c "from src.portfolio.optimizer import InvestmentOptimizer; print('Portfolio module loaded')"
 ```
 
 ### Dependencies
@@ -625,22 +664,22 @@ Investment Management System - September 2025
 ### Most Used Commands
 ```bash
 # Portfolio overview dashboard (START HERE)
-/home/ralfahad/stock_env/bin/python portfolio_summary.py
+python portfolio_summary.py
 
 # Portfolio optimization
-/home/ralfahad/stock_env/bin/python main.py --plot
+python main.py --plot
 
 # Stock comparison  
-/home/ralfahad/stock_env/bin/python main.py --compare AAPL MSFT --plot
+python main.py --compare AAPL MSFT --plot
 
 # Continuous monitoring
-/home/ralfahad/stock_env/bin/python main.py --quick-monitor --plot
+python main.py --quick-monitor --plot
 
 # Short trading
-/home/ralfahad/stock_env/bin/python main.py --short-trading
+python main.py --short-trading
 
 # Help
-/home/ralfahad/stock_env/bin/python main.py --help
+python main.py --help
 ```
 
 ### Key Files

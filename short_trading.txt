@@ -60,14 +60,14 @@ sell_stocks_4 =
 
 #current_holdings = VERI,473,3.26,2025-09-11|BW,191,2.46,2025-09-11|RAPP,16,22.8,2025-09-11
 
-current_holdings = VERI,473,3.26,2025-09-11|BW,291,2.46,2025-09-11|RAPP,31,22.8,2025-09-11|ASST,5,9.18,2025-09-11
+current_holdings = VERI,473,3.26,2025-09-11|BW,291,2.46,2025-09-11|RAPP,31,22.8,2025-09-11
 #==============================================================================
 # TRADING HISTORY - Completed transactions (automatically maintained)
 #==============================================================================
 # Format: SYMBOL,SALE_PRICE,SALE_DATE,GAIN_LOSS_AMOUNT,GAIN_LOSS_PERCENT
 # System automatically records all completed sales here for performance tracking
 
-sold_positions = ASST,9.5,2025-09-11,1.60,3.5|BW,2.5,2025-09-11,4.00,1.6|RAPP,23.0,2025-09-11,3.00,0.9
+sold_positions = ASST,9.5,2025-09-11,1.60,3.5|BW,2.5,2025-09-11,4.00,1.6|RAPP,23.0,2025-09-11,3.00,0.9|ASST,9.18,2025-09-12,0.00,0.0
 
 #==============================================================================
 # SYSTEM INFORMATION

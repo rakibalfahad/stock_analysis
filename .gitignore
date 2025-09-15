@@ -54,7 +54,14 @@ test_*.png
 simple_tickers.*
 ticker_column.*
 
-# Temporary analysis files
+# Generated analysis files (Excel)
+*_analysis.xlsx
+*_analysis.csv
+short_ticker*.xlsx
+analysis_*.xlsx
+detailed_*.xlsx
+
+# Temporary analysis files (Images)
 *_analysis.png
 comprehensive_*.png
 detailed_*.png
@@ -62,10 +69,11 @@ enhanced_*.png
 risk_return_*.png
 tech_stocks_*.png
 final_*.png
+stock_analysis.png
 
 # Logs
 *.log
 
 # Keep only the main portfolio dashboard
 !portfolio_dashboard.png
-!final_demo_moderate.pnginvestment_optimizer.log
+!final_demo_moderate.png
