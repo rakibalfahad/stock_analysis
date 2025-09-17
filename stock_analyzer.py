@@ -20,33 +20,30 @@ Author: Investment Management System
 Date: September 2025
 """
 
-import sys
 import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
 import seaborn as sns
+from bokeh.plotting import figure, output_file as bokeh_output_file, save as bokeh_save
+from bokeh.models import ColumnDataSource, HoverTool
+from bokeh.resources import CDN
 import yfinance as yf
 import warnings
-from datetime import datetime, timedelta
-from typing import List, Dict, Tuple, Optional
+from datetime import datetime
 import argparse
 
-# Suppress warnings for cleaner output
 warnings.filterwarnings('ignore', category=FutureWarning, module='yfinance')
 warnings.filterwarnings('ignore', message='.*auto_adjust.*')
 warnings.filterwarnings('ignore', message='.*Glyph.*missing.*')
 warnings.filterwarnings('ignore', message='.*findfont.*')
 
-# Set style for professional plots
 plt.style.use('seaborn-v0_8')
 sns.set_palette("husl")
 
-# Constants with fallback text
 EMOJIS = {
     'chart': '📊',
-    'money': '💰', 
+    'money': '💰',
     'rocket': '🚀',
     'target': '🎯',
     'fire': '🔥',
@@ -56,13 +53,6 @@ EMOJIS = {
     'computer': '🧮'
 }
 
-# Text fallbacks for titles (emoji-free)
-TITLE_TEXT = {
-    'chart': 'CHART',
-    'fire': 'ANALYSIS',
-    'target': 'TARGET'
-}
-
 class StockAnalyzer:
     """
     Stock Risk vs Return analyzer with 30-day price trend visualization
@@ -70,8 +60,7 @@ class StockAnalyzer:
     
     def __init__(self, excel_file: str, period: str = '1y', price_period: str = '30d', sheet_name: str = None):
         """
-        Initialize the analyzer
-        
+        Initialize the analyzer.
         Args:
             excel_file: Path to Excel file containing stock symbols
             period: Period for risk/return calculation (default: 1y)
@@ -91,7 +80,10 @@ class StockAnalyzer:
         print(f"{EMOJIS['calendar']} {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         
     def load_stock_symbols(self) -> bool:
-        """Load stock symbols from Excel or CSV file with sheet selection"""
+        """
+        Load stock symbols from Excel or CSV file with sheet selection.
+        Returns True if successful, False otherwise.
+        """
         try:
             print(f"\n{EMOJIS['chart']} Loading stock symbols from {self.excel_file}...")
             
@@ -185,7 +177,10 @@ class StockAnalyzer:
             return False
     
     def fetch_market_data(self) -> bool:
-        """Fetch market data for all stocks"""
+        """
+        Fetch market data for all stocks.
+        Returns True if successful, False otherwise.
+        """
         try:
             print(f"\n{EMOJIS['computer']} Fetching market data for {len(self.stock_symbols)} stocks...")
             
@@ -258,7 +253,9 @@ class StockAnalyzer:
             return False
     
     def calculate_risk_return_metrics(self) -> None:
-        """Calculate risk and return metrics for each stock"""
+        """
+        Calculate risk and return metrics for each stock.
+        """
         print(f"\n{EMOJIS['computer']} Calculating risk and return metrics...")
         
         for symbol, data in self.stock_data.items():
@@ -319,7 +316,9 @@ class StockAnalyzer:
         print(f"{EMOJIS['check']} Calculated metrics for {len(self.risk_return_data)} stocks")
     
     def _calculate_max_drawdown(self, prices: pd.Series) -> float:
-        """Calculate maximum drawdown"""
+        """
+        Calculate maximum drawdown.
+        """
         try:
             cumulative = (1 + prices.pct_change()).cumprod()
             running_max = cumulative.expanding().max()
@@ -329,36 +328,360 @@ class StockAnalyzer:
             return 0.0
     
     def create_visualizations(self, output_file: str = 'stock_analysis.png') -> bool:
-        """Create side-by-side risk vs return and price trend plots"""
+        """
+        Create side-by-side risk vs return and price trend plots (PNG and interactive HTML).
+        Returns True if successful, False otherwise.
+        """
         try:
             print(f"\n{EMOJIS['chart']} Creating visualizations...")
             
-            # Create figure with side-by-side subplots
+            # Always create PNG version first
+            png_file = output_file if output_file.lower().endswith('.png') else output_file.replace('.html', '.png')
             fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
             fig.suptitle(f'Stock Market Analysis Dashboard - {datetime.now().strftime("%Y-%m-%d")}', 
                         fontsize=16, fontweight='bold')
-            
-            # Plot 1: Risk vs Return Analysis
             self._create_risk_return_plot(ax1)
-            
-            # Plot 2: 30-Day Price Trends  
             self._create_price_trend_plot(ax2)
-            
-            # Adjust layout and save
             plt.tight_layout()
-            plt.savefig(output_file, dpi=300, bbox_inches='tight', facecolor='white')
-            print(f"{EMOJIS['check']} Analysis saved as {output_file}")
-            
-            # Show plot
+            plt.savefig(png_file, dpi=300, bbox_inches='tight', facecolor='white')
+            print(f"{EMOJIS['check']} Static analysis saved as {png_file}")
             plt.show()
-            return True
             
+            # Also create interactive HTML version
+            html_file = png_file.replace('.png', '.html')
+            self._create_bokeh_visualizations(html_file)
+            print(f"{EMOJIS['check']} Interactive analysis saved as {html_file}")
+            print(f"\n{EMOJIS['computer']} Generated both formats:")
+            print(f"   📊 Static PNG: {png_file}")
+            print(f"   🔍 Interactive HTML: {html_file} (with zoom/reset tools)")
+            
+            return True
         except Exception as e:
             print(f"{EMOJIS['warning']} Error creating visualizations: {e}")
             return False
+
+    def _create_bokeh_visualizations(self, output_file: str):
+        """
+        Create highly informative interactive Bokeh HTML visualizations optimized for many stocks.
+        """
+        from bokeh.layouts import column
+        from bokeh.models import LegendItem, Legend, Span, Label, DataTable, TableColumn, Div
+        from bokeh.palettes import Category20, Set3
+        from bokeh.plotting import show
+        import itertools
+        
+        # Prepare comprehensive risk/return data
+        symbols = list(self.risk_return_data.keys())
+        risks = [self.risk_return_data[s]['risk_percentage'] for s in symbols]
+        returns = [self.risk_return_data[s]['return_percentage'] for s in symbols]
+        market_caps = [self.risk_return_data[s]['market_cap_proxy'] for s in symbols]
+        week52_positions = [self.risk_return_data[s]['52_week_position'] for s in symbols]
+        sharpe_ratios = [self.risk_return_data[s]['sharpe_ratio'] for s in symbols]
+        current_prices = [self.risk_return_data[s]['current_price'] for s in symbols]
+        week52_highs = [self.risk_return_data[s]['52_week_high'] for s in symbols]
+        week52_lows = [self.risk_return_data[s]['52_week_low'] for s in symbols]
+        max_drawdowns = [self.risk_return_data[s]['max_drawdown'] for s in symbols]
+
+        # Generate color palette for many stocks
+        if len(symbols) <= 20:
+            color_palette = Category20[20] if len(symbols) > 10 else Category20[max(3, len(symbols))]
+        else:
+            # For more than 20 stocks, cycle through multiple palettes
+            color_palette = list(itertools.islice(itertools.cycle(Category20[20] + Set3[12]), len(symbols)))
+
+        # Normalize bubble sizes with better scaling
+        if market_caps:
+            max_cap = max(market_caps)
+            min_cap = min(market_caps)
+            cap_range = max_cap - min_cap if max_cap > min_cap else 1
+            bubble_sizes = [(cap - min_cap) / cap_range * 40 + 12 for cap in market_caps]
+        else:
+            bubble_sizes = [20] * len(symbols)
+
+        # Enhanced border color and styling for 52-week position
+        def border_color(pos):
+            if pos > 80:
+                return 'darkgreen'
+            elif pos > 50:
+                return 'orange' 
+            else:
+                return 'red'
+
+        def position_icon(pos):
+            if pos > 80:
+                return '🔥'
+            elif pos > 50:
+                return '⚡'
+            else:
+                return '❄️'
+
+        borders = [border_color(pos) for pos in week52_positions]
+        position_icons = [position_icon(pos) for pos in week52_positions]
+
+        TOOLS = 'xwheel_zoom,xbox_zoom,box_zoom,reset,hover,save,pan,crosshair'
+
+        # Create informative header
+        header_html = f"""
+        <div style="text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                    color: white; padding: 20px; border-radius: 10px; margin: 10px;">
+            <h1>📊 Stock Analysis Dashboard</h1>
+            <h3>Comprehensive Risk vs Return Analysis with 52-Week Position Indicators</h3>
+            <p><strong>Analysis Date:</strong> {datetime.now().strftime('%B %d, %Y at %H:%M:%S')}</p>
+            <p><strong>Stocks Analyzed:</strong> {len(symbols)} | <strong>Period:</strong> {self.period} | 
+               <strong>Price Trends:</strong> {self.price_period}</p>
+            <div style="margin-top: 15px;">
+                <span style="background: darkgreen; padding: 5px 10px; border-radius: 5px; margin: 5px;">
+                    🔥 Near 52W High (>80%)</span>
+                <span style="background: orange; padding: 5px 10px; border-radius: 5px; margin: 5px;">
+                    ⚡ Mid-Range (50-80%)</span>
+                <span style="background: red; padding: 5px 10px; border-radius: 5px; margin: 5px;">
+                    ❄️ Near 52W Low (<50%)</span>
+            </div>
+        </div>
+        """
+        header_div = Div(text=header_html, width=1000, height=200)
+
+        # Risk vs Return scatter plot with comprehensive information
+        p1 = figure(title='📈 Risk vs Return Analysis with Market Cap & 52-Week Position', 
+                   width=1000, height=700, tools=TOOLS,
+                   title_location="above")
+        
+        # Add market statistics as reference lines
+        avg_risk = sum(risks) / len(risks)
+        avg_return = sum(returns) / len(returns)
+        
+        # Add reference lines with labels
+        risk_line = Span(location=avg_risk, dimension='height', line_color='blue', 
+                        line_dash='dashed', line_width=2, line_alpha=0.7)
+        return_line = Span(location=avg_return, dimension='width', line_color='green', 
+                          line_dash='dashed', line_width=2, line_alpha=0.7)
+        p1.add_layout(risk_line)
+        p1.add_layout(return_line)
+        
+        # Add labels for reference lines
+        risk_label = Label(x=avg_risk+1, y=max(returns)*0.9, text=f'Avg Risk: {avg_risk:.1f}%',
+                          text_color='blue', text_font_size='10pt')
+        return_label = Label(x=max(risks)*0.1, y=avg_return+1, text=f'Avg Return: {avg_return:.1f}%',
+                           text_color='green', text_font_size='10pt')
+        p1.add_layout(risk_label)
+        p1.add_layout(return_label)
+        
+        # Create individual scatter points with comprehensive data
+        scatter_renderers = []
+        for i, symbol in enumerate(symbols):
+            source = ColumnDataSource(data=dict(
+                x=[risks[i]],
+                y=[returns[i]],
+                size=[bubble_sizes[i]],
+                border=[borders[i]],
+                symbol=[symbol],
+                sharpe=[sharpe_ratios[i]],
+                week52=[week52_positions[i]],
+                current_price=[current_prices[i]],
+                week52_high=[week52_highs[i]],
+                week52_low=[week52_lows[i]],
+                market_cap=[market_caps[i]],
+                max_drawdown=[max_drawdowns[i]],
+                position_icon=[position_icons[i]],
+                performance_rating=[
+                    'Excellent' if sharpe_ratios[i] > 1.5 else
+                    'Good' if sharpe_ratios[i] > 1.0 else
+                    'Fair' if sharpe_ratios[i] > 0.5 else
+                    'Poor'
+                ]
+            ))
+            
+            renderer = p1.scatter('x', 'y', size='size', color=color_palette[i], 
+                                line_color='border', line_width=3, alpha=0.8, source=source)
+            scatter_renderers.append((f"{symbol} {position_icons[i]}", [renderer]))
+
+        # Enhanced hover tool with comprehensive information
+        hover1 = HoverTool(tooltips=[
+            ("🏢 Symbol", "@symbol"),
+            ("📊 Performance", "@performance_rating"),  
+            ("💰 Current Price", "$@current_price{0.00}"),
+            ("📈 Expected Return", "@y{0.2f}%"),
+            ("⚖️ Risk (Volatility)", "@x{0.2f}%"),
+            ("🎯 Sharpe Ratio", "@sharpe{0.3f}"),
+            ("📏 52W Position", "@week52{0.1f}% @position_icon"),
+            ("🔝 52W High", "$@week52_high{0.00}"),
+            ("🔻 52W Low", "$@week52_low{0.00}"),
+            ("💼 Market Cap Proxy", "@market_cap{0.0} M"),
+            ("📉 Max Drawdown", "@max_drawdown{0.2%}")
+        ])
+        p1.add_tools(hover1)
+        
+        p1.xaxis.axis_label = 'Risk (Volatility %) → Higher Risk →'
+        p1.yaxis.axis_label = '← Higher Return ← Expected Return (%)'
+        
+        # Create toggleable legend with position indicators
+        legend_items = [LegendItem(label=label, renderers=renderers) for label, renderers in scatter_renderers]
+        legend1 = Legend(items=legend_items, location='top_left', click_policy="hide", label_text_font_size="9pt")
+        p1.add_layout(legend1)
+        p1.grid.grid_line_alpha = 0.3
+
+        # Add informative subtitle
+        p1.add_layout(Label(x=max(risks)*0.02, y=max(returns)*0.95, 
+                           text=f"Bubble Size = Market Cap | Border Color = 52W Position | Click Legend to Toggle",
+                           text_font_size="10pt", text_color="gray"))
+
+        # Price trends plot with enhanced information
+        p2 = figure(title='📈 30-Day Price Trends (Normalized to Starting Price = 100)', 
+                   width=1000, height=600, tools=TOOLS, x_axis_type='datetime',
+                   title_location="above")
+        
+        # Add 0% reference line
+        zero_line = Span(location=100, dimension='width', line_color='black', 
+                        line_dash='solid', line_width=1, line_alpha=0.8)
+        p2.add_layout(zero_line)
+        
+        # Create individual line plots with performance data
+        line_renderers = []
+        performance_summary = []
+        
+        for i, (symbol, data) in enumerate(self.price_trend_data.items()):
+            prices = data['Close'].dropna()
+            if len(prices) > 5:
+                norm_prices = (prices / prices.iloc[0]) * 100
+                dates = prices.index.to_pydatetime()
+                
+                # Calculate additional metrics
+                price_change = ((prices.iloc[-1] / prices.iloc[0]) - 1) * 100
+                max_gain = ((norm_prices.max() / 100) - 1) * 100
+                max_loss = ((norm_prices.min() / 100) - 1) * 100
+                volatility = norm_prices.std()
+                
+                performance_summary.append({
+                    'symbol': symbol,
+                    'change': price_change,
+                    'max_gain': max_gain,
+                    'max_loss': max_loss,
+                    'volatility': volatility
+                })
+                
+                source = ColumnDataSource(data=dict(
+                    x=dates,
+                    y=norm_prices.values,
+                    symbol=[symbol] * len(dates),
+                    raw_price=[prices.iloc[j] for j in range(len(dates))],
+                    change_pct=[((norm_prices.iloc[j] / 100) - 1) * 100 for j in range(len(dates))],
+                    date_str=[d.strftime('%Y-%m-%d') for d in dates]
+                ))
+                
+                line_renderer = p2.line('x', 'y', line_width=3, color=color_palette[i], 
+                                      alpha=0.8, source=source)
+                circle_renderer = p2.scatter('x', 'y', size=6, color=color_palette[i], 
+                                           alpha=0.9, source=source)
+                
+                # Add final value annotation
+                final_change = f"{price_change:+.1f}%"
+                final_label = Label(x=dates[-1], y=norm_prices.iloc[-1], 
+                                  text=f"{symbol}: {final_change}",
+                                  text_font_size="9pt", text_color=color_palette[i])
+                p2.add_layout(final_label)
+                
+                line_renderers.append((f"{symbol} ({final_change})", [line_renderer, circle_renderer]))
+
+        # Enhanced hover for price trends
+        hover2 = HoverTool(tooltips=[
+            ("📅 Date", "@date_str"),
+            ("🏢 Symbol", "@symbol"),  
+            ("💰 Price", "$@raw_price{0.00}"),
+            ("📊 Normalized", "@y{0.1f}"),
+            ("📈 Change", "@change_pct{0.2f}%")
+        ])
+        p2.add_tools(hover2)
+
+        p2.xaxis.axis_label = 'Date'
+        p2.yaxis.axis_label = 'Normalized Price (Starting Price = 100)'
+        
+        # Create toggleable legend for price trends
+        if line_renderers:
+            legend_items2 = [LegendItem(label=label, renderers=renderers) for label, renderers in line_renderers]
+            legend2 = Legend(items=legend_items2, location='top_left', click_policy="hide", label_text_font_size="9pt")
+            p2.add_layout(legend2)
+            
+        p2.grid.grid_line_alpha = 0.3
+
+        # Add performance statistics table
+        if performance_summary:
+            perf_df = pd.DataFrame(performance_summary)
+            
+            # Create summary statistics
+            best_performer = perf_df.loc[perf_df['change'].idxmax()]
+            worst_performer = perf_df.loc[perf_df['change'].idxmin()]
+            most_volatile = perf_df.loc[perf_df['volatility'].idxmax()]
+            least_volatile = perf_df.loc[perf_df['volatility'].idxmin()]
+            
+            stats_html = f"""
+            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; 
+                        padding: 20px; border-radius: 10px; margin: 10px;">
+                <h3>📊 30-Day Performance Summary</h3>
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-around;">
+                    <div style="margin: 10px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 5px;">
+                        <h4>🏆 Best Performer</h4>
+                        <p><strong>{best_performer['symbol']}</strong>: <span style="color: #4ade80;">{best_performer['change']:+.2f}%</span></p>
+                    </div>
+                    <div style="margin: 10px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 5px;">
+                        <h4>📉 Worst Performer</h4>
+                        <p><strong>{worst_performer['symbol']}</strong>: <span style="color: #f87171;">{worst_performer['change']:+.2f}%</span></p>
+                    </div>
+                    <div style="margin: 10px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 5px;">
+                        <h4>🌊 Most Volatile</h4>
+                        <p><strong>{most_volatile['symbol']}</strong>: {most_volatile['volatility']:.2f} std</p>
+                    </div>
+                    <div style="margin: 10px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 5px;">
+                        <h4>🎯 Most Stable</h4>
+                        <p><strong>{least_volatile['symbol']}</strong>: {least_volatile['volatility']:.2f} std</p>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; text-align: center;">
+                    <p><strong>Average Return:</strong> {perf_df['change'].mean():.2f}% | 
+                       <strong>Market Volatility:</strong> {perf_df['volatility'].mean():.2f}</p>
+                </div>
+            </div>
+            """
+            stats_div = Div(text=stats_html, width=1000, height=300)
+        else:
+            stats_div = Div(text="<p>No performance data available</p>", width=1000, height=50)
+
+        # Create comprehensive footer with analysis insights
+        footer_html = f"""
+        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; 
+                    padding: 20px; border-radius: 10px; margin: 10px;">
+            <h3>🎯 Key Investment Insights</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h4>📊 Risk Analysis</h4>
+                    <p>• <strong>Avg Portfolio Risk:</strong> {avg_risk:.1f}%</p>
+                    <p>• <strong>Risk Range:</strong> {min(risks):.1f}% - {max(risks):.1f}%</p>
+                    <p>• <strong>Best Sharpe Ratio:</strong> {max(sharpe_ratios):.2f}</p>
+                </div>
+                <div>
+                    <h4>💰 Return Analysis</h4>
+                    <p>• <strong>Avg Expected Return:</strong> {avg_return:.1f}%</p>
+                    <p>• <strong>Return Range:</strong> {min(returns):.1f}% - {max(returns):.1f}%</p>
+                    <p>• <strong>Stocks Near 52W High:</strong> {sum(1 for pos in week52_positions if pos > 80)}</p>
+                </div>
+            </div>
+            <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 5px;">
+                <p><strong>💡 Tips:</strong> Click legend items to hide/show stocks • Use zoom tools for detailed analysis • 
+                   Hover over points for comprehensive data • Larger bubbles = Higher market cap</p>
+            </div>
+        </div>
+        """
+        footer_div = Div(text=footer_html, width=1000, height=250)
+
+        # Use column layout for comprehensive vertical information display
+        layout = column(header_div, p1, stats_div, p2, footer_div)
+        
+        bokeh_output_file(output_file, title="Comprehensive Stock Analysis Dashboard")
+        bokeh_save(layout, resources=CDN)
     
     def _create_risk_return_plot(self, ax) -> None:
-        """Create risk vs return scatter plot"""
+        """
+        Create risk vs return scatter plot.
+        """
         ax.set_title('Risk vs Return Analysis', fontsize=14, fontweight='bold')
         
         if not self.risk_return_data:
@@ -441,7 +764,9 @@ class StockAnalyzer:
         cbar.set_label('Sharpe Ratio\n(Fill Color)', rotation=270, labelpad=20)
     
     def _create_price_trend_plot(self, ax) -> None:
-        """Create 30-day price trend plot"""
+        """
+        Create 30-day price trend plot.
+        """
         ax.set_title('30-Day Price Trends (Normalized)', fontsize=14, fontweight='bold')
         
         if not self.price_trend_data:
@@ -484,7 +809,9 @@ class StockAnalyzer:
         ax.tick_params(axis='x', rotation=45)
     
     def print_summary_statistics(self) -> None:
-        """Print summary statistics with 52-week high/low information"""
+        """
+        Print summary statistics with 52-week high/low information.
+        """
         print(f"\n{EMOJIS['money']} SUMMARY STATISTICS WITH 52-WEEK DATA")
         print("=" * 100)
         
@@ -543,7 +870,10 @@ class StockAnalyzer:
             print(f"\n💡 LEGEND: 🔥 = Near High | ⚡ = Mid-Range | ❄️ = Near Low")
     
     def analyze(self, output_file: str = 'stock_analysis.png') -> bool:
-        """Run complete analysis"""
+        """
+        Run complete analysis.
+        Returns True if successful, False otherwise.
+        """
         try:
             # Load symbols
             if not self.load_stock_symbols():
@@ -575,7 +905,9 @@ class StockAnalyzer:
             return False
 
 def create_sample_excel_file(filename: str = 'sample_stocks.xlsx') -> None:
-    """Create a comprehensive sample Excel file with detailed stock information"""
+    """
+    Create a comprehensive sample Excel file with detailed stock information.
+    """
     print(f"\n{EMOJIS['rocket']} Creating comprehensive sample Excel file...")
     
     # Diverse portfolio across sectors with detailed information
@@ -758,15 +1090,17 @@ def create_sample_excel_file(filename: str = 'sample_stocks.xlsx') -> None:
     print(f"\n💡 Tip: Open the Excel file to see all sheets and detailed instructions!")
 
 def main():
-    """Main function with command line interface"""
+    """
+    Main function with command line interface.
+    """
     parser = argparse.ArgumentParser(
         description='Stock Risk vs Return Analysis Tool - Generate professional stock analysis charts',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python stock_analyzer.py stocks.xlsx                      # Analyze stocks from Excel file
-  python stock_analyzer.py stocks.csv                       # Analyze stocks from CSV file
-  python stock_analyzer.py stocks.xlsx --output analysis.png # Custom output filename
+  python stock_analyzer.py stocks.xlsx                      # Analyze stocks (generates PNG + HTML)
+  python stock_analyzer.py stocks.csv                       # Analyze stocks from CSV (generates PNG + HTML)
+  python stock_analyzer.py stocks.xlsx --output analysis.png # Custom output filename (generates both formats)
   python stock_analyzer.py --create-sample                  # Create sample files
   python stock_analyzer.py stocks.xlsx --period 2y          # Use 2-year historical data
   python stock_analyzer.py stocks.xlsx --price-period 60d   # Show 60-day price trends
@@ -785,7 +1119,11 @@ File Format:
   MSFT    | Microsoft
 
 Output:
-  Creates a professional side-by-side chart with:
+  Creates professional side-by-side charts in BOTH formats:
+  • PNG: High-quality static image for presentations/reports
+  • HTML: Interactive version with zoom/reset tools for detailed analysis
+  
+  Charts include:
   1. Risk vs Return scatter plot with:
      - Bubble sizes representing market cap proxy
      - Fill colors showing Sharpe ratio (green=excellent, red=poor)
@@ -799,7 +1137,7 @@ Output:
     
     parser.add_argument('file', nargs='?', help='Excel (.xlsx, .xls) or CSV (.csv) file containing stock symbols')
     parser.add_argument('--output', '-o', default='stock_analysis.png', 
-                       help='Output PNG file name (default: stock_analysis.png)')
+                       help='Output file name (generates both PNG and HTML versions, default: stock_analysis.png)')
     parser.add_argument('--period', default='1y', 
                        help='Period for risk/return analysis: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max (default: 1y)')
     parser.add_argument('--price-period', default='30d',
