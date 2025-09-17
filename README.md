@@ -13,9 +13,22 @@
 7. [Stock Comparison System](#-stock-comparison-system)
 8. [Short Trading Mode](#-short-trading-mode)
 9. [Stock Risk Analysis Tool](#-stock-risk-analysis-tool)
-10. [Advanced Features](#-advanced-features)
-11. [Troubleshooting](#-troubleshooting)
-12. [Development & Technical](#-development--technical)
+10. [Live Stock Market News Fetcher](#-live-stock-market-news-fe- **💾 `news_cache.json`** - Cached news data and timestamps (always created for performance)
+- **📊 Custom CSV files** - Only created when using `--export filename.csv`
+- **🚫 No automatic files** - Clean workspace by default
+
+### ✅ **Recent Improvements**
+
+- **🧹 Clean Workspace**: No more automatic CSV file creation
+- **🎯 Working Limits**: `--limit` parameter now works correctly in continuous mode
+- **⚡ Better Performance**: Reduced disk I/O during monitoring
+- **🎛️ Full Control**: Export data only when you explicitly request it
+- **💾 Smart Caching**: Maintains performance benefits without file clutter
+
+---)
+11. [Advanced Features](#-advanced-features)
+12. [Troubleshooting](#-troubleshooting)
+13. [Development & Technical](#-development--technical)
 
 ---
 
@@ -519,7 +532,266 @@ The system includes 6 professional analysis sheets:
 
 ---
 
-## 🔧 Advanced Features
+## � Live Stock Market News Fetcher
+
+### Overview
+
+A comprehensive **free, unlimited** stock market news fetcher that monitors live market news across all sectors and automatically identifies affected stocks. Features multiple news sources, intelligent stock detection, sentiment analysis, and continuous monitoring capabilities.
+
+### 🆕 **Key Features:**
+
+- **🆓 Free & No Limits**: Uses public RSS feeds and free APIs without restrictions
+- **🌍 Generalized Market Coverage**: Monitors all sectors, not just specific stocks  
+- **🎯 Smart Stock Detection**: Automatically identifies affected stocks in headlines
+- **📊 Three Operating Modes**: General, Major Sectors, and Specific Stocks
+- **💡 Sentiment Analysis**: Classifies news as positive/negative/neutral
+- **🏷️ News Categorization**: Earnings, mergers, analyst reports, regulatory, etc.
+- **📊 CSV Export**: Automatic data export for analysis
+- **⏰ Continuous Monitoring**: Real-time updates with customizable intervals
+- **🌐 Multiple Sources**: Yahoo Finance, MarketWatch, YFinance API
+- **💾 Smart Caching**: Prevents duplicate fetches and maintains history
+
+### 🚀 **Quick Start**
+
+```bash
+# Install additional dependencies
+pip install feedparser requests python-dateutil
+
+# General market news (RECOMMENDED - all sectors)
+python stock_news_fetcher.py --general
+
+# Major market sectors (84+ symbols across all sectors)
+python stock_news_fetcher.py
+
+# Monitor specific stocks only
+python stock_news_fetcher.py --stocks AAPL GOOGL TSLA NVDA
+
+# Show limited results
+python stock_news_fetcher.py --general --limit 10
+```
+
+### 📊 **Three Operating Modes**
+
+#### **1. 🌍 General Mode (--general) - RECOMMENDED**
+```bash
+python stock_news_fetcher.py --general
+```
+- **✅ Best for**: Comprehensive market intelligence
+- **📊 Coverage**: ALL market news across sectors
+- **🎯 Detection**: Automatically finds any stock symbols in headlines
+- **📈 Includes**: Indices (SPY, QQQ), crypto (BTC-USD, ETH-USD), commodities (GLD, USO)
+- **🔍 Smart Filtering**: Focuses on real ticker symbols, filters noise
+
+#### **2. 📊 Major Sectors Mode (Default)**
+```bash
+python stock_news_fetcher.py
+```
+- **✅ Best for**: Broad market sector coverage
+- **📊 Coverage**: 84+ major market symbols across sectors:
+  - **Indices & ETFs**: SPY, QQQ, DIA, IWM, VTI, VOO, VEA, VWO
+  - **Technology**: AAPL, GOOGL, MSFT, AMZN, META, NVDA, TSLA, NFLX
+  - **Healthcare**: JNJ, PFE, UNH, ABBV, BMY, MRK, LLY, TMO
+  - **Financial**: JPM, BAC, WFC, GS, MS, BRK-B, V, MA, COIN
+  - **Energy**: XOM, CVX, COP, SLB, EOG, NEE, DUK, SO
+  - **Consumer**: WMT, TGT, HD, LOW, NKE, SBUX, MCD, DIS
+  - **Industrial**: CAT, BA, GE, MMM, HON, UPS, FDX, LMT
+  - **Commodities**: GLD, SLV, USO, UNG, GOLD, NEM, FCX, AA
+  - **Crypto**: BTC-USD, ETH-USD, COIN, MSTR, RIOT, MARA
+  - **Bonds**: TLT, IEF, SHY, HYG, LQD, TIP
+
+#### **3. 🎯 Specific Stocks Mode (--stocks)**
+```bash
+python stock_news_fetcher.py --stocks AAPL GOOGL TSLA NVDA
+```
+- **✅ Best for**: Focused portfolio monitoring
+- **📊 Coverage**: Only specified symbols
+- **🎯 Perfect for**: Tracking specific positions or watchlists
+
+### ⏰ **Continuous Monitoring**
+
+```bash
+# General mode with continuous monitoring (every 60 minutes)
+python stock_news_fetcher.py --general --continuous
+
+# Quick updates every 30 minutes, show top 5 items
+python stock_news_fetcher.py --general --continuous --interval 30 --limit 5
+
+# Day trading mode (every 5 minutes), top 3 news items
+python stock_news_fetcher.py --general --continuous --interval 5 --limit 3
+
+# Run for specific number of updates then stop
+python stock_news_fetcher.py --general --continuous --iterations 10 --limit 8
+```
+
+### 📊 **Sample Output**
+
+```
+🚀 Stock Market News Fetcher Initialized
+📊 General market news monitoring (all sectors and symbols)
+🗞️ Using 5 news sources
+
+🗞️ LATEST STOCK MARKET NEWS (8 items)
+====================================================================================================
+
+1. 📈 💰 Federal Reserve Policy Decision Pending
+   🏢 Affected Stocks: TLT
+   📅 2025-09-17 12:29 | 🌐 Market News (General)
+   📊 Sentiment: Positive | 📂 Category: Regulatory
+   📄 Financial markets await central bank announcement affecting bonds TLT and equities
+
+2. ➡️ 📰 Stock Market Indices Hit Record Highs  
+   🏢 Affected Stocks: SPY, QQQ, DIA
+   📅 2025-09-17 12:29 | 🌐 Market News (General)
+   📊 Sentiment: Neutral | 📂 Category: General
+   📄 Major indices SPY, QQQ, and DIA reach new peaks amid investor optimism
+
+3. ➡️ 📰 Cryptocurrency Market Shows Volatility
+   🏢 Affected Stocks: BTC-USD, ETH-USD
+   📅 2025-09-17 12:29 | 🌐 Market News (General)
+   📊 Sentiment: Neutral | 📂 Category: General
+   📄 Bitcoin BTC-USD and Ethereum ETH-USD experience significant price swings
+
+📊 STOCK MENTION STATISTICS
+==================================================
+ 1. SPY: 3 mentions
+    ➡️ Stock Market Indices Hit Record Highs...
+    ➡️ S&P 500 Reaches New All-Time High on Tech Rally...
+ 2. QQQ: 2 mentions
+    ➡️ Stock Market Indices Hit Record Highs...
+    ➡️ S&P 500 Reaches New All-Time High on Tech Rally...
+```
+
+### 💾 **Data Export & Caching**
+
+#### **CSV Export (On Demand)**
+CSV files are only created when explicitly requested:
+```bash
+# Export to custom file
+python stock_news_fetcher.py --general --export my_market_news.csv
+
+# No CSV files created by default
+python stock_news_fetcher.py --general  # Clean run, no files
+```
+
+#### **Smart Caching**
+- `news_cache.json` - Prevents duplicate API calls
+- Maintains news history between runs
+- Automatic cache updates with timestamps
+
+### 🔄 **Integration with Trading Systems**
+
+The news fetcher complements your existing tools:
+
+```bash
+# Morning routine: Check news + portfolio
+python stock_news_fetcher.py --general --limit 15
+python portfolio_summary.py
+
+# Pre-market analysis
+python stock_news_fetcher.py --general --continuous --interval 30 &
+python main.py --quick-monitor --plot
+
+# Active trading monitoring
+python stock_news_fetcher.py --general --continuous --interval 5 &
+python main.py --short-trading --interval 30
+```
+
+### 🎯 **News Categories & Sentiment**
+
+#### **📂 Categories Detected:**
+- **💰 Earnings**: Revenue, profits, quarterly reports, guidance
+- **🤝 Merger**: Acquisitions, takeovers, corporate deals  
+- **⚖️ Lawsuit**: Legal issues, court cases, settlements
+- **🚀 Product**: Launches, innovations, patents, releases
+- **🤜 Partnership**: Collaborations, agreements, contracts
+- **📊 Analyst**: Upgrades, downgrades, price targets, ratings
+- **🏛️ Regulatory**: FDA approvals, investigations, compliance
+- **💵 Financial**: Dividends, buybacks, debt, financing, IPOs
+
+#### **📊 Sentiment Analysis:**
+- **📈 Positive**: "surge", "gain", "beat", "strong", "growth", "approval"
+- **📉 Negative**: "drop", "decline", "miss", "weak", "concern", "warning"  
+- **➡️ Neutral**: Balanced or purely factual headlines
+
+### 🎮 **GitHub Copilot Integration**
+
+The news fetcher is perfectly structured for GitHub Copilot assistance:
+
+```python
+# Type function names and let Copilot suggest implementations
+def add_new_stock_source():
+    # Copilot will suggest RSS feed integration
+
+# Type filtering logic and get suggestions  
+if 'earnings' in headline.lower():
+    # Copilot suggests categorization logic
+
+# For CSV export enhancements
+df.to_csv(filename, 
+    # Copilot suggests encoding, separators, etc.
+```
+
+### 📋 **Complete Command Reference**
+
+```bash
+# Basic Operations
+python stock_news_fetcher.py --general                    # General market news
+python stock_news_fetcher.py                              # Major sectors (84+ symbols)
+python stock_news_fetcher.py --stocks AAPL GOOGL TSLA     # Specific stocks
+
+# Continuous Monitoring  
+python stock_news_fetcher.py --general --continuous       # Every 60 minutes
+python stock_news_fetcher.py --general --continuous --interval 30  # Every 30 minutes
+python stock_news_fetcher.py --general --continuous --iterations 5 # 5 updates then stop
+
+# Output Control
+python stock_news_fetcher.py --general --limit 15         # Show 15 latest items
+python stock_news_fetcher.py --general --export news.csv  # Export to CSV file
+python stock_news_fetcher.py --general --continuous --interval 30 --limit 5  # Continuous with limit
+
+# Advanced Options
+python stock_news_fetcher.py --general --cache my_cache.json       # Custom cache file
+python stock_news_fetcher.py --help                               # Show all options
+```
+
+### 🎯 **Use Cases**
+
+#### **📈 For Active Traders:**
+```bash
+# Pre-market news scan (no files created)
+python stock_news_fetcher.py --general --limit 20
+
+# Continuous day trading alerts (clean monitoring)  
+python stock_news_fetcher.py --general --continuous --interval 5 --limit 3
+```
+
+#### **💼 For Portfolio Managers:**
+```bash
+# Daily market intelligence (clean monitoring)
+python stock_news_fetcher.py --general --continuous --interval 60 --limit 10
+
+# Sector-specific monitoring
+python stock_news_fetcher.py --stocks SPY QQQ DIA VTI --continuous --limit 8
+```
+
+#### **🔍 For Market Researchers:**
+```bash
+# Comprehensive data collection with export
+python stock_news_fetcher.py --general --continuous --interval 60 --export research_data.csv
+
+# Historical news analysis (export when needed)
+python stock_news_fetcher.py --general --iterations 20 --interval 30 --export historical.csv
+```
+
+### 📁 **Generated Files**
+
+- ** `news_cache.json`** - Cached news data and timestamps (always created for performance)
+- **� Custom CSV files** - Only created when using `--export filename.csv`
+- **🚫 No automatic files** - Clean workspace by default
+
+---
+
+## �🔧 Advanced Features
 
 ### File Management
 
@@ -669,6 +941,9 @@ python portfolio_summary.py
 # Portfolio optimization
 python main.py --plot
 
+# Live market news (general mode - all sectors)
+python stock_news_fetcher.py --general
+
 # Stock comparison  
 python main.py --compare AAPL MSFT --plot
 
@@ -678,12 +953,16 @@ python main.py --quick-monitor --plot
 # Short trading
 python main.py --short-trading
 
+# Continuous news monitoring (every 30 minutes)
+python stock_news_fetcher.py --general --continuous --interval 30
+
 # Help
 python main.py --help
 ```
 
 ### Key Files
 - `portfolio_summary.py` - **Comprehensive portfolio dashboard**
+- `stock_news_fetcher.py` - **Live market news fetcher** (free, unlimited, all sectors)
 - `investments.txt` - Portfolio optimization settings
 - `short_trading.txt` - Active trading positions
 - `main.py` - Core system entry point
@@ -691,6 +970,8 @@ python main.py --help
 ### Output Files
 - `portfolio_dashboard.png` - Latest optimization results
 - `stock_comparison_*.png` - Comparison charts
+- `stock_news_*.csv` - Market news exports with timestamps
+- `news_cache.json` - Cached news data and history
 - `sample_stocks.xlsx` - Example data
 
 **🚀 Ready to optimize your investment portfolio? Start with the Quick Start section above!**

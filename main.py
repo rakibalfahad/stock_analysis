@@ -5,7 +5,7 @@ Investment Portfolio Optimizer - Main Entry Point
 Clean, modular investment portfolio optimization system using Modern Portfolio Theory.
 
 Usage:
-    python main.py --plot                    # Run with visualization
+    python main.py --plot                    # Run with visualization (PNG + interactive HTML)
     python main.py --monitor                 # Run in monitoring mode
     python main.py --quick-monitor           # 15-minute monitoring
     python main.py --cleanup 5               # Clean old files, keep 5 latest
@@ -43,8 +43,8 @@ def create_argument_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python main.py --plot                    # Run optimization with intelligent filtering & dashboard
-  python main.py --monitor --plot          # Monitor with visualization & filtering 
+  python main.py --plot                    # Run optimization with intelligent filtering & dashboard (PNG + HTML)
+  python main.py --monitor --plot          # Monitor with visualization & filtering (PNG + HTML)
   python main.py --quick-monitor           # 15-minute monitoring mode with filtering
   python main.py --no-filter --plot        # Run without filtering (analyze all stocks)
   python main.py --filtering-mode conservative  # Conservative risk filtering
@@ -92,7 +92,7 @@ Stock Comparison:
     
     # Visualization options
     parser.add_argument('--plot', action='store_true',
-                       help='Enable dynamic plotting and visualization')
+                       help='Enable dynamic plotting and visualization (generates both PNG and interactive HTML)')
     parser.add_argument('--no-save', action='store_true', 
                        help='Do not save dashboard to file')
     parser.add_argument('--keep-timestamp', action='store_true',
