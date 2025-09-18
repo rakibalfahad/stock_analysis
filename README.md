@@ -77,8 +77,11 @@ python main.py --compare AAPL MSFT --plot
 # Complete portfolio overview dashboard (RECOMMENDED FIRST)
 python portfolio_summary.py
 
-# Portfolio optimization with dashboard
+# Portfolio optimization with intelligent filtering (uses 'aggressive' mode by default)
 python main.py --plot
+
+# Portfolio optimization with ALL stocks (no filtering)
+python main.py --plot --no-filter
 
 # Stock comparison (NEW FEATURE)
 python main.py --compare AAPL MSFT --plot
@@ -109,7 +112,7 @@ When you run the optimizer, you'll see:
 
 - **📊 Portfolio Summary Dashboard** - Comprehensive overview of holdings, P&L, risk analysis, and allocation
 - **🧠 Intelligent Stock Comparison** - Advanced two-stock analysis with strategy-based scoring
-- **⚡ Adaptive Stock Filtering** - AI-driven filtering with automatic threshold determination
+- **🧠 Intelligent Stock Filtering** - Multi-level risk assessment with conservative/moderate/aggressive modes
 - **💰 Investment Configuration Integration** - Complete system integration with your preferences
 - **📊 Real-time Short Trading** - Live P&L monitoring with automatic alerts
 - **🔄 Continuous Monitoring** - Real-time portfolio tracking with customizable intervals
@@ -314,6 +317,107 @@ python main.py --monitor --plot --interval 60
    🎯 Expected Return: 12.5%
    🛡️ Risk Level: Moderate
 ```
+
+---
+
+## 🧠 Intelligent Stock Filtering System
+
+### Overview
+
+The **Intelligent Stock Filtering System** is a sophisticated risk management tool that automatically analyzes and filters stocks based on multiple financial criteria. This prevents the optimizer from investing in potentially risky stocks that don't meet your risk tolerance.
+
+### How It Works
+
+The system analyzes each stock in your `preferred_stocks` list and assigns a recommendation:
+- ✅ **BUY** - Stocks that pass all criteria and are recommended for investment
+- ⏸️ **HOLD** - Stocks with mixed signals that may be worth holding but not buying
+- ⚠️ **AVOID** - Stocks that fail some criteria due to elevated risk factors
+- 🛑 **STRONG_AVOID** - Stocks that fail multiple criteria and should be avoided
+
+### Filtering Modes
+
+Choose your risk tolerance level:
+
+```bash
+# Conservative filtering (most restrictive - safest stocks only)
+python main.py --plot --filtering-mode conservative
+
+# Moderate filtering (balanced approach - default until recently)
+python main.py --plot --filtering-mode moderate
+
+# Aggressive filtering (least restrictive - allows higher risk stocks)
+python main.py --plot --filtering-mode aggressive
+
+# No filtering (use ALL configured stocks regardless of risk)
+python main.py --plot --no-filter
+```
+
+### Key Filtering Criteria
+
+| Criteria | Conservative | Moderate | Aggressive |
+|----------|-------------|----------|------------|
+| **P/E Ratio** | < 25 | < 35 | < 45 |
+| **Volatility** | < 20% | < 35% | < 50% |
+| **Market Cap** | > $10B | > $1B | > $500M |
+| **Beta** | < 1.2 | < 1.5 | < 2.0 |
+| **Debt/Equity** | < 50% | < 100% | < 150% |
+
+### Adaptive Thresholds
+
+The system automatically calculates optimal thresholds based on your stock universe:
+
+```
+🧮 ADAPTIVE THRESHOLDS DETERMINED (AGGRESSIVE MODE)
+============================================================
+📊 Max P/E Ratio: 46.2 (based on 7 stocks)
+📈 Max Volatility: 44.5% (based on 8 stocks)
+⚖️  Max Beta: 1.53
+🏢 Min Market Cap: $1.0B
+💧 Min Daily Volume: $1.0M
+```
+
+### Sample Filtering Output
+
+```
+📊 STOCK FILTERING RESULTS
+======================================================================
+
+✅ AMZN - BUY
+   💰 Price: $231.62 | 📊 Score: +15 | Confidence: 75%
+   ✅ Positives: Adequate market cap: $2470.2B, Good liquidity: $8375.2M daily
+
+⚠️ NVDA - AVOID
+   💰 Price: $170.29 | 📊 Score: -45 | Confidence: 90%
+   ⚠️ Concerns: High P/E ratio: 48.4 (max: 46.2), High volatility: 49.8% (max: 44.5%)
+
+📊 FILTERING SUMMARY
+✅ Recommended to BUY: 2 stocks (MSFT, AMZN)
+⚠️ Recommended to AVOID: 3 stocks (NFLX, NVDA, TSLA)
+```
+
+### Automatic Relaxation
+
+If too few stocks pass filtering, the system automatically relaxes criteria to ensure diversification:
+
+```
+⚠️ Only 1 stocks passed strict filtering!
+Relaxing criteria to ensure at least 5 stocks for diversification...
+🧮 Relaxing filtering criteria...
+   📊 P/E: 36.9 → 40.0
+   📈 Volatility: 34.3% → 44.5%
+   ⚖️ Beta: 1.50 → 1.80
+```
+
+### When to Use Each Mode
+
+- **Conservative**: For retirement accounts, risk-averse investors, or market uncertainty
+- **Moderate**: Balanced approach for most investors (previous default)
+- **Aggressive**: For growth-focused portfolios, younger investors, or bull markets (current default)
+- **No Filter**: For experienced investors who want complete control over their stock selection
+
+### Why Filtering Was Added
+
+Without filtering, the optimizer might allocate significant capital to high-risk stocks (high volatility, excessive P/E ratios, or overleveraged companies), which could lead to substantial losses during market downturns.
 
 ---
 

@@ -8,7 +8,7 @@ maximum_loss_percentage = 5
 # Preferred stocks to analyze (comma-separated)
 # You can change these to any stock symbols you prefer
 # Mix of different risk profiles for filtering demonstration
-preferred_stocks = VERI,BW,RAPP,ASST,AAPL,MSFT,GOOGL,AMZN,TSLA,NVDA,META,NFLX
+preferred_stocks = AAPL,MSFT,GOOGL,AMZN,TSLA,NVDA,META,NFLX
 
 # Sold stocks (format: stock_symbol,sale_price,sale_date)
 # Example: AAPL,150.50,2025-09-05

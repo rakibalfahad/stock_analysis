@@ -1,0 +1,94 @@
+{
+  "news": [
+    {
+      "headline": "Federal Reserve Policy Decision Pending",
+      "summary": "Financial markets await central bank announcement affecting bonds TLT and equities",
+      "url": "https://www.marketwatch.com",
+      "source": "Market News (General)",
+      "published": "2025-09-17T17:32:33.298816",
+      "affected_stocks": [
+        "TLT"
+      ],
+      "sentiment": "neutral",
+      "category": "general",
+      "alert_level": "urgent",
+      "is_breaking": false
+    },
+    {
+      "headline": "Stock Market Indices Hit Record Highs",
+      "summary": "Major indices SPY, QQQ, and DIA reach new peaks amid investor optimism",
+      "url": "https://www.marketwatch.com",
+      "source": "Market News (General)",
+      "published": "2025-09-17T17:32:33.298754",
+      "affected_stocks": [
+        "QQQ",
+        "SPY",
+        "DIA"
+      ],
+      "sentiment": "neutral",
+      "category": "general",
+      "alert_level": "normal",
+      "is_breaking": false
+    },
+    {
+      "headline": "",
+      "summary": "",
+      "url": "",
+      "source": "YFinance (Yahoo Finance)",
+      "published": "2025-09-17T17:32:33.205875",
+      "affected_stocks": [
+        "SPY"
+      ],
+      "sentiment": "neutral",
+      "category": "general",
+      "alert_level": "normal",
+      "is_breaking": false
+    },
+    {
+      "headline": "Cryptocurrency Market Shows Volatility",
+      "summary": "Bitcoin BTC-USD and Ethereum ETH-USD experience significant price swings",
+      "url": "https://finance.yahoo.com",
+      "source": "Market News (General)",
+      "published": "2025-09-17T17:32:32.923627",
+      "affected_stocks": [
+        "BTC-USD",
+        "ETH-USD"
+      ],
+      "sentiment": "neutral",
+      "category": "general",
+      "alert_level": "normal",
+      "is_breaking": false
+    },
+    {
+      "headline": "S&P 500 Reaches New All-Time High on Tech Rally",
+      "summary": "Broad market indices SPY and QQQ lead gains as technology sector surges",
+      "url": "https://finance.yahoo.com",
+      "source": "Market News (General)",
+      "published": "2025-09-17T17:32:32.923508",
+      "affected_stocks": [
+        "S&P",
+        "QQQ",
+        "SPY"
+      ],
+      "sentiment": "neutral",
+      "category": "general",
+      "alert_level": "normal",
+      "is_breaking": false
+    },
+    {
+      "headline": "Amazon says it had best-ever Thanksgiving Holiday week with record sales and number of items sold",
+      "summary": "",
+      "url": "https://www.marketwatch.com/story/amazon-says-it-had-best-ever-thanksgiving-holiday-week-with-record-sales-and-number-of-items-sold-786e0143?mod=mw_rss_marketpulse",
+      "source": "MarketWatch RSS",
+      "published": "2024-12-03T14:05:00",
+      "affected_stocks": [
+        "AMZN"
+      ],
+      "sentiment": "neutral",
+      "category": "general",
+      "alert_level": "normal",
+      "is_breaking": false
+    }
+  ],
+  "last_updated": "2025-09-17T17:32:35.977752"
+}

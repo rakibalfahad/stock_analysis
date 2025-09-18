@@ -691,7 +691,7 @@ Expected Gain:
             p1.yaxis.axis_label = 'Allocation (%)'
             
             # Add value labels on bars
-            for i, (bar, value) in enumerate(zip(bars.glyph, values)):
+            for i, value in enumerate(values):
                 label = Label(x=i, y=value+1, text=f'{value}%', text_align='center', text_font_size='12pt')
                 p1.add_layout(label)
             

@@ -256,26 +256,51 @@ class InvestmentOptimizer:
             
             # Handle single vs multiple tickers
             if len(self.tickers) == 1:
-                self.data = pd.DataFrame(self.data)
-                self.data.columns = pd.MultiIndex.from_tuples(
-                    [(col, self.tickers[0]) for col in self.data.columns]
-                )
+                # For single ticker, create a proper MultiIndex structure
+                ticker = self.tickers[0]
+                if not isinstance(self.data.columns, pd.MultiIndex):
+                    # Create MultiIndex structure for consistency
+                    self.data.columns = pd.MultiIndex.from_tuples(
+                        [(col, ticker) for col in self.data.columns]
+                    )
             
             # Calculate current prices and ATR values
             fresh_data_count = 0
             for ticker in self.tickers:
                 try:
-                    close_prices = self.data['Close'][ticker].dropna()
+                    # Handle both MultiIndex and single-level index
+                    if isinstance(self.data.columns, pd.MultiIndex):
+                        if ('Close', ticker) in self.data.columns:
+                            close_prices = self.data['Close'][ticker].dropna()
+                        else:
+                            logging.warning(f"Close data not found for {ticker}")
+                            continue
+                    else:
+                        # Single ticker case - data might be direct DataFrame
+                        if 'Close' in self.data.columns:
+                            close_prices = self.data['Close'].dropna()
+                        else:
+                            logging.warning(f"Close column not found in data for {ticker}")
+                            continue
+                    
                     if not close_prices.empty:
                         self.current_prices[ticker] = float(close_prices.iloc[-1])
                         fresh_data_count += 1
                         
-                        # Calculate ATR
-                        ticker_data = pd.DataFrame({
-                            'High': self.data['High'][ticker],
-                            'Low': self.data['Low'][ticker], 
-                            'Close': self.data['Close'][ticker]
-                        })
+                        # Calculate ATR with proper data structure
+                        if isinstance(self.data.columns, pd.MultiIndex):
+                            ticker_data = pd.DataFrame({
+                                'High': self.data['High'][ticker],
+                                'Low': self.data['Low'][ticker], 
+                                'Close': self.data['Close'][ticker]
+                            })
+                        else:
+                            ticker_data = pd.DataFrame({
+                                'High': self.data['High'],
+                                'Low': self.data['Low'], 
+                                'Close': self.data['Close']
+                            })
+                        
                         atr = calculate_atr(ticker_data)
                         self.atr_values[ticker] = float(atr.iloc[-1]) if not atr.empty else 0.0
                         
@@ -286,8 +311,14 @@ class InvestmentOptimizer:
             
             # Show summary of fresh data
             if fresh_data_count > 0:
-                latest_date = self.data['Close'][self.tickers[0]].dropna().index[-1].strftime('%Y-%m-%d')
-                print(f"   ✅ Fresh data retrieved for {fresh_data_count} stocks (latest: {latest_date})")
+                try:
+                    if isinstance(self.data.columns, pd.MultiIndex):
+                        latest_date = self.data['Close'][self.tickers[0]].dropna().index[-1].strftime('%Y-%m-%d')
+                    else:
+                        latest_date = self.data['Close'].dropna().index[-1].strftime('%Y-%m-%d')
+                    print(f"   ✅ Fresh data retrieved for {fresh_data_count} stocks (latest: {latest_date})")
+                except:
+                    print(f"   ✅ Fresh data retrieved for {fresh_data_count} stocks")
             
             print(f"{progress_bar(100, 100)} {EMOJIS['check']} Data fetched successfully")
             return True
@@ -301,9 +332,26 @@ class InvestmentOptimizer:
         try:
             for ticker in self.tickers:
                 try:
-                    returns = calculate_returns(
-                        pd.DataFrame({'Close': self.data['Close'][ticker]})
-                    )
+                    # Handle both MultiIndex and single-level index
+                    if isinstance(self.data.columns, pd.MultiIndex):
+                        if ('Close', ticker) in self.data.columns:
+                            close_data = self.data['Close'][ticker]
+                        else:
+                            logging.warning(f"Close data not found for {ticker}")
+                            self.expected_returns[ticker] = 0.0
+                            self.volatilities[ticker] = 0.1
+                            continue
+                    else:
+                        # Single ticker case
+                        if 'Close' in self.data.columns:
+                            close_data = self.data['Close']
+                        else:
+                            logging.warning(f"Close column not found for {ticker}")
+                            self.expected_returns[ticker] = 0.0
+                            self.volatilities[ticker] = 0.1
+                            continue
+                    
+                    returns = calculate_returns(pd.DataFrame({'Close': close_data}))
                     
                     if not returns.empty:
                         self.expected_returns[ticker] = calculate_expected_return(returns)

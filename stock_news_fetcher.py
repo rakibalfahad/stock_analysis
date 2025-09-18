@@ -34,6 +34,20 @@ import feedparser
 from urllib.parse import quote_plus
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
+try:
+    import tkinter as tk
+    from tkinter import messagebox
+    TKINTER_AVAILABLE = True
+except ImportError:
+    TKINTER_AVAILABLE = False
+    print("⚠️ tkinter not available - popup alerts disabled")
+
+try:
+    from plyer import notification
+    PLYER_AVAILABLE = True
+except ImportError:
+    PLYER_AVAILABLE = False
+    print("⚠️ plyer not available - system notifications disabled")
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
@@ -53,6 +67,8 @@ class NewsItem:
     affected_stocks: List[str]
     sentiment: str
     category: str
+    alert_level: str = 'normal'  # 'breaking', 'urgent', 'high', 'normal'
+    is_breaking: bool = False
 
 class StockNewsFetcher:
     """
@@ -99,6 +115,27 @@ class StockNewsFetcher:
             'analyst': ['upgrade', 'downgrade', 'target', 'rating', 'analyst'],
             'regulatory': ['fda', 'approval', 'regulation', 'investigation', 'probe'],
             'financial': ['dividend', 'buyback', 'debt', 'financing', 'ipo', 'stock split']
+        }
+        
+        # Breaking news alert keywords and configuration
+        self.breaking_keywords = {
+            'breaking': ['breaking', 'alert', 'urgent', 'emergency', 'crisis', 'halt', 'suspend'],
+            'market_crash': ['crash', 'plunge', 'collapse', 'panic', 'meltdown', 'bloodbath'],
+            'major_events': ['fed', 'federal reserve', 'interest rate', 'inflation', 'recession', 'war', 'geopolitical'],
+            'circuit_breaker': ['circuit breaker', 'trading halt', 'market halt', 'suspended'],
+            'earnings_surprise': ['beats', 'misses', 'guidance cut', 'warning', 'outlook'],
+            'merger_announcement': ['announces merger', 'acquisition deal', 'buyout offer'],
+            'bankruptcy': ['bankruptcy', 'chapter 11', 'insolvency', 'liquidation'],
+            'regulatory_action': ['sec investigation', 'doj probe', 'regulatory action', 'fda rejection']
+        }
+        
+        # Alert thresholds and settings
+        self.alert_settings = {
+            'enable_popups': True,
+            'enable_system_notifications': True,
+            'breaking_threshold': 3,  # Number of breaking keywords to trigger alert
+            'market_hours_only': False,  # Set to True to only alert during market hours
+            'sound_alerts': True
         }
         
         print("🚀 Stock Market News Fetcher Initialized")
@@ -289,6 +326,180 @@ class StockNewsFetcher:
         else:
             return 'neutral'
     
+    def _detect_breaking_news(self, headline: str, summary: str = '') -> Tuple[str, bool]:
+        """
+        Detect breaking news and determine alert level
+        Returns: (alert_level, is_breaking)
+        """
+        text = (headline + ' ' + summary).lower()
+        breaking_score = 0
+        alert_categories = []
+        
+        # Check each category of breaking news keywords
+        for category, keywords in self.breaking_keywords.items():
+            matches = sum(1 for keyword in keywords if keyword in text)
+            if matches > 0:
+                breaking_score += matches
+                alert_categories.append(category)
+        
+        # Determine alert level based on score and categories
+        is_breaking = False
+        alert_level = 'normal'
+        
+        if breaking_score >= self.alert_settings['breaking_threshold']:
+            is_breaking = True
+            alert_level = 'breaking'
+        elif 'market_crash' in alert_categories or 'circuit_breaker' in alert_categories:
+            is_breaking = True
+            alert_level = 'breaking'
+        elif 'major_events' in alert_categories or 'bankruptcy' in alert_categories:
+            alert_level = 'urgent'
+        elif breaking_score >= 2:
+            alert_level = 'high'
+        elif breaking_score >= 1:
+            alert_level = 'medium'
+        
+        return alert_level, is_breaking
+    
+    def _is_market_hours(self) -> bool:
+        """
+        Check if current time is during market hours (9:30 AM - 4:00 PM EST, Mon-Fri)
+        """
+        now = datetime.now()
+        # Simplified market hours check (doesn't account for holidays)
+        if now.weekday() >= 5:  # Weekend
+            return False
+        
+        market_open = now.replace(hour=9, minute=30, second=0, microsecond=0)
+        market_close = now.replace(hour=16, minute=0, second=0, microsecond=0)
+        
+        return market_open <= now <= market_close
+    
+    def _show_popup_alert(self, news_item: NewsItem):
+        """
+        Show popup alert for breaking news
+        """
+        if not TKINTER_AVAILABLE or not self.alert_settings['enable_popups']:
+            return
+        
+        try:
+            # Create a new root window for the alert
+            root = tk.Tk()
+            root.withdraw()  # Hide the main window
+            root.attributes('-topmost', True)  # Keep on top
+            
+            # Determine alert icon and title based on alert level
+            if news_item.alert_level == 'breaking':
+                icon = 'error'
+                title = '🚨 BREAKING NEWS ALERT 🚨'
+            elif news_item.alert_level == 'urgent':
+                icon = 'warning'
+                title = '⚠️ URGENT MARKET NEWS ⚠️'
+            elif news_item.alert_level == 'high':
+                icon = 'warning'
+                title = '📢 HIGH PRIORITY NEWS 📢'
+            else:
+                icon = 'info'
+                title = '📰 Market News Alert'
+            
+            # Format the message
+            stocks_text = ', '.join(news_item.affected_stocks) if news_item.affected_stocks else 'Market-wide'
+            message = f"{news_item.headline}\n\n" + \
+                     f"Affected Stocks: {stocks_text}\n" + \
+                     f"Sentiment: {news_item.sentiment.title()}\n" + \
+                     f"Category: {news_item.category.title()}\n" + \
+                     f"Source: {news_item.source}\n" + \
+                     f"Time: {news_item.published.strftime('%Y-%m-%d %H:%M:%S')}"
+            
+            # Show the alert
+            messagebox.showinfo(title, message, icon=icon)
+            
+            # Destroy the root window
+            root.destroy()
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Could not show popup alert: {e}")
+    
+    def _show_system_notification(self, news_item: NewsItem):
+        """
+        Show system notification for breaking news
+        """
+        if not PLYER_AVAILABLE or not self.alert_settings['enable_system_notifications']:
+            return
+        
+        try:
+            # Determine notification title and urgency
+            if news_item.is_breaking:
+                title = "🚨 BREAKING NEWS ALERT"
+                timeout = 10
+            elif news_item.alert_level == 'urgent':
+                title = "⚠️ URGENT MARKET NEWS"
+                timeout = 8
+            elif news_item.alert_level == 'high':
+                title = "📢 HIGH PRIORITY NEWS"
+                timeout = 6
+            else:
+                title = "📰 Market News Alert"
+                timeout = 4
+            
+            # Format message (keep it short for notifications)
+            stocks_text = ', '.join(news_item.affected_stocks[:3]) if news_item.affected_stocks else 'Market'
+            if len(news_item.affected_stocks) > 3:
+                stocks_text += f" +{len(news_item.affected_stocks)-3} more"
+            
+            message = f"{news_item.headline[:100]}...\n" + \
+                     f"Stocks: {stocks_text}\n" + \
+                     f"Sentiment: {news_item.sentiment.title()}"
+            
+            # Show system notification
+            notification.notify(
+                title=title,
+                message=message,
+                timeout=timeout,
+                app_name="Stock News Fetcher"
+            )
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Could not show system notification: {e}")
+    
+    def _trigger_alerts(self, news_item: NewsItem):
+        """
+        Trigger appropriate alerts for breaking news
+        """
+        # Check if we should alert during current time
+        if self.alert_settings['market_hours_only'] and not self._is_market_hours():
+            return
+        
+        # Only alert for high priority news
+        if news_item.alert_level in ['breaking', 'urgent', 'high']:
+            # Console alert (always shown)
+            alert_emoji = {
+                'breaking': '🚨🚨🚨',
+                'urgent': '⚠️⚠️⚠️',
+                'high': '📢📢📢'
+            }
+            
+            print(f"\n{alert_emoji.get(news_item.alert_level, '📰')} {news_item.alert_level.upper()} ALERT {alert_emoji.get(news_item.alert_level, '📰')}")
+            print(f"📰 {news_item.headline}")
+            print(f"🏢 Affected Stocks: {', '.join(news_item.affected_stocks) if news_item.affected_stocks else 'Market-wide'}")
+            print(f"📊 Sentiment: {news_item.sentiment.title()} | Category: {news_item.category.title()}")
+            print(f"🌐 Source: {news_item.source} | Time: {news_item.published.strftime('%H:%M:%S')}")
+            print("=" * 100)
+            
+            # System notification
+            self._show_system_notification(news_item)
+            
+            # Popup alert for breaking news only
+            if news_item.is_breaking:
+                self._show_popup_alert(news_item)
+            
+            # Optional: Play sound alert (basic beep)
+            if self.alert_settings['sound_alerts']:
+                try:
+                    print("\a")  # ASCII bell character
+                except:
+                    pass
+    
     def _fetch_yahoo_finance_news(self) -> List[NewsItem]:
         """
         Fetch news from Yahoo Finance RSS feed and web scraping
@@ -308,8 +519,9 @@ class StockNewsFetcher:
                 if affected_stocks:  # Only include if stocks are mentioned
                     sentiment = self._analyze_sentiment(headline)
                     category = self._categorize_news(headline, summary)
+                    alert_level, is_breaking = self._detect_breaking_news(headline, summary)
                     
-                    news_items.append(NewsItem(
+                    news_item = NewsItem(
                         headline=headline,
                         summary=summary,
                         url=url,
@@ -317,8 +529,16 @@ class StockNewsFetcher:
                         published=published,
                         affected_stocks=affected_stocks,
                         sentiment=sentiment,
-                        category=category
-                    ))
+                        category=category,
+                        alert_level=alert_level,
+                        is_breaking=is_breaking
+                    )
+                    
+                    news_items.append(news_item)
+                    
+                    # Trigger alerts if necessary
+                    if alert_level in ['breaking', 'urgent', 'high']:
+                        self._trigger_alerts(news_item)
             
             # If RSS doesn't work, try alternative approach with generalized market news
             if not news_items:
@@ -337,16 +557,28 @@ class StockNewsFetcher:
                 for headline, summary in sample_headlines:
                     affected_stocks = self._extract_stock_symbols(headline + ' ' + summary)
                     if affected_stocks:
-                        news_items.append(NewsItem(
+                        sentiment = self._analyze_sentiment(headline)
+                        category = self._categorize_news(headline, summary)
+                        alert_level, is_breaking = self._detect_breaking_news(headline, summary)
+                        
+                        news_item = NewsItem(
                             headline=headline,
                             summary=summary,
                             url="https://finance.yahoo.com",
                             source='Market News (General)',
                             published=datetime.now(),
                             affected_stocks=affected_stocks,
-                            sentiment=self._analyze_sentiment(headline),
-                            category=self._categorize_news(headline, summary)
-                        ))
+                            sentiment=sentiment,
+                            category=category,
+                            alert_level=alert_level,
+                            is_breaking=is_breaking
+                        )
+                        
+                        news_items.append(news_item)
+                        
+                        # Trigger alerts if necessary
+                        if alert_level in ['breaking', 'urgent', 'high']:
+                            self._trigger_alerts(news_item)
             
             logger.info(f"📰 Fetched {len(news_items)} relevant news items from Yahoo Finance")
             
@@ -373,8 +605,9 @@ class StockNewsFetcher:
                 if affected_stocks:
                     sentiment = self._analyze_sentiment(headline)
                     category = self._categorize_news(headline, summary)
+                    alert_level, is_breaking = self._detect_breaking_news(headline, summary)
                     
-                    news_items.append(NewsItem(
+                    news_item = NewsItem(
                         headline=headline,
                         summary=summary,
                         url=url,
@@ -382,8 +615,16 @@ class StockNewsFetcher:
                         published=published,
                         affected_stocks=affected_stocks,
                         sentiment=sentiment,
-                        category=category
-                    ))
+                        category=category,
+                        alert_level=alert_level,
+                        is_breaking=is_breaking
+                    )
+                    
+                    news_items.append(news_item)
+                    
+                    # Trigger alerts if necessary
+                    if alert_level in ['breaking', 'urgent', 'high']:
+                        self._trigger_alerts(news_item)
             
             # Add generalized market news if RSS doesn't provide enough
             if len(news_items) < 5:
@@ -403,16 +644,28 @@ class StockNewsFetcher:
                 for headline, summary in sample_news[:8]:
                     affected_stocks = self._extract_stock_symbols(headline + ' ' + summary)
                     if affected_stocks:
-                        news_items.append(NewsItem(
+                        sentiment = self._analyze_sentiment(headline)
+                        category = self._categorize_news(headline, summary)
+                        alert_level, is_breaking = self._detect_breaking_news(headline, summary)
+                        
+                        news_item = NewsItem(
                             headline=headline,
                             summary=summary,
                             url="https://www.marketwatch.com",
                             source='Market News (General)',
                             published=datetime.now(),
                             affected_stocks=affected_stocks,
-                            sentiment=self._analyze_sentiment(headline),
-                            category=self._categorize_news(headline, summary)
-                        ))
+                            sentiment=sentiment,
+                            category=category,
+                            alert_level=alert_level,
+                            is_breaking=is_breaking
+                        )
+                        
+                        news_items.append(news_item)
+                        
+                        # Trigger alerts if necessary
+                        if alert_level in ['breaking', 'urgent', 'high']:
+                            self._trigger_alerts(news_item)
             
             logger.info(f"📊 Fetched {len(news_items)} relevant news items from MarketWatch")
             
@@ -450,8 +703,9 @@ class StockNewsFetcher:
                         
                         sentiment = self._analyze_sentiment(headline)
                         category = self._categorize_news(headline, summary)
+                        alert_level, is_breaking = self._detect_breaking_news(headline, summary)
                         
-                        news_items.append(NewsItem(
+                        news_item = NewsItem(
                             headline=headline,
                             summary=summary,
                             url=url,
@@ -459,8 +713,16 @@ class StockNewsFetcher:
                             published=published,
                             affected_stocks=affected_stocks,
                             sentiment=sentiment,
-                            category=category
-                        ))
+                            category=category,
+                            alert_level=alert_level,
+                            is_breaking=is_breaking
+                        )
+                        
+                        news_items.append(news_item)
+                        
+                        # Trigger alerts if necessary
+                        if alert_level in ['breaking', 'urgent', 'high']:
+                            self._trigger_alerts(news_item)
                     
                     time.sleep(0.1)  # Small delay to avoid rate limiting
                     
@@ -540,7 +802,8 @@ class StockNewsFetcher:
         
         for i, item in enumerate(items_to_show, 1):
             # Sentiment emoji
-            sentiment_emoji = {'positive': '📈', 'negative': '📉', 'neutral': '➡️'}[item.sentiment]
+            sentiment_mapping = {'positive': '📈', 'negative': '📉', 'neutral': '➡️', 'urgent': '⚠️'}
+            sentiment_emoji = sentiment_mapping.get(item.sentiment, '➡️')
             
             # Category emoji
             category_emojis = {
@@ -550,10 +813,19 @@ class StockNewsFetcher:
             }
             category_emoji = category_emojis.get(item.category, '📰')
             
-            print(f"\n{i}. {sentiment_emoji} {category_emoji} {item.headline}")
+            # Alert level emoji
+            alert_emojis = {
+                'breaking': '🚨', 'urgent': '⚠️', 'high': '📢', 'medium': '🔔', 'normal': ''
+            }
+            alert_emoji = alert_emojis.get(item.alert_level, '')
+            
+            # Breaking news indicator
+            breaking_indicator = " [BREAKING]" if item.is_breaking else ""
+            
+            print(f"\n{i}. {alert_emoji} {sentiment_emoji} {category_emoji} {item.headline}{breaking_indicator}")
             print(f"   🏢 Affected Stocks: {', '.join(item.affected_stocks) if item.affected_stocks else 'None detected'}")
             print(f"   📅 {item.published.strftime('%Y-%m-%d %H:%M')} | 🌐 {item.source}")
-            print(f"   📊 Sentiment: {item.sentiment.title()} | 📂 Category: {item.category.title()}")
+            print(f"   📊 Sentiment: {item.sentiment.title()} | 📂 Category: {item.category.title()} | 🚨 Alert: {item.alert_level.title()}")
             
             if item.summary and len(item.summary) > 10:
                 # Limit summary length
@@ -584,6 +856,8 @@ class StockNewsFetcher:
                     'Affected_Stocks': ', '.join(item.affected_stocks),
                     'Sentiment': item.sentiment,
                     'Category': item.category,
+                    'Alert_Level': item.alert_level,
+                    'Is_Breaking': item.is_breaking,
                     'Source': item.source,
                     'Published': item.published.strftime('%Y-%m-%d %H:%M:%S'),
                     'Summary': item.summary,
@@ -627,8 +901,34 @@ class StockNewsFetcher:
             # Show latest news for this stock
             stock_news = [item for item in news_items if stock in item.affected_stocks][:2]
             for news in stock_news:
-                sentiment_emoji = {'positive': '📈', 'negative': '📉', 'neutral': '➡️'}[news.sentiment]
-                print(f"     {sentiment_emoji} {news.headline[:80]}...")
+                sentiment_mapping = {'positive': '📈', 'negative': '📉', 'neutral': '➡️', 'urgent': '⚠️'}
+                sentiment_emoji = sentiment_mapping.get(news.sentiment, '➡️')
+                alert_indicator = f" [{news.alert_level.upper()}]" if news.alert_level != 'normal' else ""
+                print(f"     {sentiment_emoji} {news.headline[:80]}...{alert_indicator}")
+    
+    def display_breaking_news_summary(self, news_items: List[NewsItem]):
+        """
+        Display summary of breaking and high-priority news
+        """
+        breaking_news = [item for item in news_items if item.alert_level in ['breaking', 'urgent', 'high']]
+        
+        if not breaking_news:
+            print("\n✅ No breaking or urgent news alerts")
+            return
+        
+        print(f"\n🚨 BREAKING & URGENT NEWS SUMMARY ({len(breaking_news)} alerts)")
+        print("=" * 70)
+        
+        for item in breaking_news:
+            alert_emoji = {'breaking': '🚨', 'urgent': '⚠️', 'high': '📢'}[item.alert_level]
+            breaking_tag = " [BREAKING]" if item.is_breaking else ""
+            
+            print(f"\n{alert_emoji} {item.alert_level.upper()}{breaking_tag}")
+            print(f"📰 {item.headline}")
+            print(f"🏢 Stocks: {', '.join(item.affected_stocks) if item.affected_stocks else 'Market-wide'}")
+            print(f"📊 {item.sentiment.title()} | {item.category.title()} | {item.published.strftime('%H:%M:%S')}")
+        
+        print("=" * 70)
     
     def continuous_monitoring(self, interval_minutes: int = 60, max_iterations: int = None, limit: int = None):
         """
@@ -645,6 +945,9 @@ class StockNewsFetcher:
                 
                 # Fetch latest news
                 news_items = self.fetch_all_news()
+                
+                # Display breaking news summary first
+                self.display_breaking_news_summary(news_items)
                 
                 # Display latest news
                 self.display_news(news_items, limit=limit)
@@ -680,7 +983,9 @@ class StockNewsFetcher:
             'published': item.published.isoformat(),
             'affected_stocks': item.affected_stocks,
             'sentiment': item.sentiment,
-            'category': item.category
+            'category': item.category,
+            'alert_level': item.alert_level,
+            'is_breaking': item.is_breaking
         }
 
 def main():
@@ -699,13 +1004,20 @@ Examples:
   python stock_news_fetcher.py --general --continuous    # General mode with continuous monitoring
   python stock_news_fetcher.py --export news.csv         # Export to custom CSV file
   python stock_news_fetcher.py --limit 20                # Show only 20 latest news items
+  python stock_news_fetcher.py --no-alerts               # Disable all alert notifications
+  python stock_news_fetcher.py --no-popups               # Disable popup alerts (keep console alerts)
+  python stock_news_fetcher.py --market-hours-only       # Only show alerts during market hours
 
 Features:
   • Fetches from multiple free sources (Yahoo Finance, MarketWatch, RSS feeds)
   • Identifies affected stocks in headlines automatically
   • Sentiment analysis (positive/negative/neutral)
   • News categorization (earnings, mergers, analyst reports, etc.)
-  • CSV export functionality
+  • 🚨 BREAKING NEWS ALERTS with popup notifications
+  • Real-time alert system with multiple priority levels
+  • System notifications and popup warnings
+  • Market hours detection for alert timing
+  • CSV export functionality with alert information
   • Real-time continuous monitoring
   • No API limits or restrictions
   • Caching to avoid duplicate fetches
@@ -720,6 +1032,10 @@ Features:
     parser.add_argument('--export', type=str, help='Export to CSV file')
     parser.add_argument('--cache', type=str, default='news_cache.json', help='Cache file path')
     parser.add_argument('--iterations', type=int, help='Maximum iterations for continuous mode')
+    parser.add_argument('--no-alerts', action='store_true', help='Disable all alert notifications')
+    parser.add_argument('--no-popups', action='store_true', help='Disable popup alerts (keep console alerts)')
+    parser.add_argument('--market-hours-only', action='store_true', help='Only show alerts during market hours')
+    parser.add_argument('--no-sound', action='store_true', help='Disable sound alerts')
     
     args = parser.parse_args()
     
@@ -730,6 +1046,17 @@ Features:
             cache_file=args.cache,
             general_mode=args.general
         )
+        
+        # Apply alert settings from command line
+        if args.no_alerts:
+            fetcher.alert_settings['enable_popups'] = False
+            fetcher.alert_settings['enable_system_notifications'] = False
+        if args.no_popups:
+            fetcher.alert_settings['enable_popups'] = False
+        if args.market_hours_only:
+            fetcher.alert_settings['market_hours_only'] = True
+        if args.no_sound:
+            fetcher.alert_settings['sound_alerts'] = False
         
         if args.continuous:
             # Continuous monitoring mode
@@ -742,6 +1069,9 @@ Features:
             # Single fetch mode
             print("🔄 Fetching latest stock market news...")
             news_items = fetcher.fetch_all_news()
+            
+            # Display breaking news summary first
+            fetcher.display_breaking_news_summary(news_items)
             
             # Display news
             fetcher.display_news(news_items, limit=args.limit)

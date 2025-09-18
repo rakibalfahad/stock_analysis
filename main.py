@@ -116,7 +116,7 @@ Stock Comparison:
     parser.add_argument('--min-market-cap', type=float, default=1.0,
                        help='Minimum market cap in billions (default: 1.0B)')
     parser.add_argument('--filtering-mode', choices=['conservative', 'moderate', 'aggressive'], 
-                       default='moderate', help='Risk tolerance for stock filtering (default: moderate)')
+                       default='aggressive', help='Risk tolerance for stock filtering (default: aggressive)')
     
     # Logging
     parser.add_argument('--log-level', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], 
