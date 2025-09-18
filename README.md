@@ -13,19 +13,7 @@
 7. [Stock Comparison System](#-stock-comparison-system)
 8. [Short Trading Mode](#-short-trading-mode)
 9. [Stock Risk Analysis Tool](#-stock-risk-analysis-tool)
-10. [Live Stock Market News Fetcher](#-live-stock-market-news-fe- **💾 `news_cache.json`** - Cached news data and timestamps (always created for performance)
-- **📊 Custom CSV files** - Only created when using `--export filename.csv`
-- **🚫 No automatic files** - Clean workspace by default
-
-### ✅ **Recent Improvements**
-
-- **🧹 Clean Workspace**: No more automatic CSV file creation
-- **🎯 Working Limits**: `--limit` parameter now works correctly in continuous mode
-- **⚡ Better Performance**: Reduced disk I/O during monitoring
-- **🎛️ Full Control**: Export data only when you explicitly request it
-- **💾 Smart Caching**: Maintains performance benefits without file clutter
-
----)
+10. [Live Stock Market News Fetcher](#-live-stock-market-news-fetcher)
 11. [Advanced Features](#-advanced-features)
 12. [Troubleshooting](#-troubleshooting)
 13. [Development & Technical](#-development--technical)
@@ -636,7 +624,7 @@ The system includes 6 professional analysis sheets:
 
 ---
 
-## � Live Stock Market News Fetcher
+## 📡 Live Stock Market News Fetcher
 
 ### Overview
 
@@ -817,23 +805,7 @@ python main.py --short-trading --interval 30
 - **📉 Negative**: "drop", "decline", "miss", "weak", "concern", "warning"  
 - **➡️ Neutral**: Balanced or purely factual headlines
 
-### 🎮 **GitHub Copilot Integration**
 
-The news fetcher is perfectly structured for GitHub Copilot assistance:
-
-```python
-# Type function names and let Copilot suggest implementations
-def add_new_stock_source():
-    # Copilot will suggest RSS feed integration
-
-# Type filtering logic and get suggestions  
-if 'earnings' in headline.lower():
-    # Copilot suggests categorization logic
-
-# For CSV export enhancements
-df.to_csv(filename, 
-    # Copilot suggests encoding, separators, etc.
-```
 
 ### 📋 **Complete Command Reference**
 
@@ -887,15 +859,16 @@ python stock_news_fetcher.py --general --continuous --interval 60 --export resea
 python stock_news_fetcher.py --general --iterations 20 --interval 30 --export historical.csv
 ```
 
-### 📁 **Generated Files**
 
-- ** `news_cache.json`** - Cached news data and timestamps (always created for performance)
-- **� Custom CSV files** - Only created when using `--export filename.csv`
-- **🚫 No automatic files** - Clean workspace by default
+### 📁 Generated Files
+
+- **`news_cache.json`** — Cached news data and timestamps (always created for performance)
+- **Custom CSV files** — Only created when using `--export filename.csv`
+- **🚫 No automatic files** — Clean workspace by default
 
 ---
 
-## �🔧 Advanced Features
+## 🔧 Advanced Features
 
 ### File Management
 
