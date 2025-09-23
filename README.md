@@ -15,9 +15,10 @@
 9. [Stock Risk Analysis Tool](#-stock-risk-analysis-tool)
 10. [Live Stock Market News Fetcher](#-live-stock-market-news-fetcher)
 11. [Yahoo Finance Stock Data Downloader](#-yahoo-finance-stock-data-downloader)
-12. [Advanced Features](#-advanced-features)
-13. [Troubleshooting](#-troubleshooting)
-14. [Development & Technical](#-development--technical)
+12. [Financial Metrics and Calculations](#-financial-metrics-and-calculations)
+13. [Advanced Features](#-advanced-features)
+14. [Troubleshooting](#-troubleshooting)
+15. [Development & Technical](#-development--technical)
 
 ---
 
@@ -1154,5 +1155,148 @@ data/
 │   ├── 52 Week Gainers (25+ stocks)
 │   └── 52 Week Losers (25+ stocks)
 ```
+
+---
+
+## 📊 Financial Metrics and Calculations
+
+### Overview
+
+The stock analysis system calculates comprehensive financial metrics for each stock using Modern Portfolio Theory and quantitative finance principles. All calculations are based on historical price data and market information retrieved from Yahoo Finance.
+
+### Core Metrics Explained
+
+#### 📈 **Expected Return (%)**
+**Formula:** `Expected Return = Mean Daily Return × 252`
+
+- **Calculation:** Average of daily percentage price changes over the analysis period (default: 1 year)
+- **Annualization:** Multiplied by 252 (average trading days per year)
+- **Interpretation:** Projected annual return based on historical performance
+- **Example:** If daily returns average 0.08%, expected annual return = 0.08% × 252 = 20.16%
+
+#### 📊 **Risk/Volatility (%)**
+**Formula:** `Volatility = Standard Deviation of Daily Returns × √252`
+
+- **Calculation:** Standard deviation of daily percentage price changes
+- **Annualization:** Multiplied by square root of 252 for proper volatility scaling
+- **Interpretation:** Measure of price fluctuation risk - higher values indicate more volatile stocks
+- **Example:** Daily volatility of 2% = Annual volatility of 2% × √252 ≈ 31.75%
+
+#### ⚡ **Sharpe Ratio**
+**Formula:** `Sharpe Ratio = (Expected Return - Risk-Free Rate) / Volatility`
+
+- **Risk-Free Rate:** 2% annually (configurable, represents treasury bond yield)
+- **Calculation:** Excess return per unit of risk
+- **Interpretation:** 
+  - **> 1.0:** Excellent risk-adjusted return
+  - **0.5 - 1.0:** Good risk-adjusted return  
+  - **< 0.5:** Poor risk-adjusted return
+  - **Negative:** Returns below risk-free rate
+- **Example:** (15% return - 2% risk-free) / 20% volatility = 0.65 Sharpe ratio
+
+#### 💰 **Market Cap Proxy**
+**Formula:** `Market Cap Proxy = Current Price × Average Volume (30 days) / 1,000,000`
+
+- **Purpose:** Approximate market capitalization in millions
+- **Calculation:** Uses trading volume as liquidity indicator
+- **Limitations:** Simplified proxy, not actual market cap
+- **Usage:** Bubble size in risk/return visualizations
+
+#### 📍 **52-Week Range Position (%)**
+**Formula:** `Position = (Current Price - 52W Low) / (52W High - 52W Low) × 100`
+
+- **Range:** 0% (at 52-week low) to 100% (at 52-week high)
+- **Interpretation:**
+  - **80-100%:** 🔥 Near 52-week high (momentum/strength)
+  - **20-80%:** ⚡ Mid-range (neutral position)
+  - **0-20%:** ❄️ Near 52-week low (potential value/risk)
+
+### Advanced Metrics
+
+#### 📉 **Maximum Drawdown**
+**Formula:** `Max Drawdown = Max((Peak - Trough) / Peak)`
+
+- **Calculation:** Largest peak-to-trough decline over the analysis period
+- **Purpose:** Measures worst-case historical loss
+- **Usage:** Risk assessment and position sizing
+
+#### 📊 **Daily Returns Calculation**
+**Formula:** `Daily Return = (Price[t] - Price[t-1]) / Price[t-1]`
+
+- **Method:** Percentage change between consecutive trading days
+- **Requirements:** Minimum 30 days of data for statistical validity
+- **Preprocessing:** Outliers and gaps handled automatically
+
+### Data Requirements and Quality
+
+#### **Minimum Data Standards**
+- **Historical Period:** 1 year default (configurable: 1d to 10y)
+- **Minimum Days:** 30 trading days for statistical validity
+- **Data Sources:** Yahoo Finance API with real-time updates
+- **Quality Checks:** Automatic detection of insufficient or corrupted data
+
+#### **Calculation Periods**
+- **Risk/Return Analysis:** 1 year historical data (252 trading days)
+- **Price Trends:** 30 days for visualization (configurable)
+- **Volume Averaging:** 30-day rolling average for market cap proxy
+- **52-Week Range:** Trailing 252 trading days
+
+### Statistical Assumptions
+
+#### **Modern Portfolio Theory Framework**
+- **Normal Distribution:** Daily returns assumed normally distributed
+- **Stationarity:** Historical patterns expected to continue
+- **Liquidity:** All positions can be entered/exited at market prices
+- **No Transaction Costs:** Pure theoretical returns
+
+#### **Risk-Free Rate**
+- **Default:** 2% annually (US Treasury benchmark)
+- **Purpose:** Sharpe ratio calculation baseline
+- **Adjustable:** Can be modified for different economic environments
+
+### Interpretation Guidelines
+
+#### **Portfolio Construction**
+- **High Sharpe Ratio (>1.0):** Priority candidates for portfolio inclusion
+- **Balanced Risk-Return:** Target 8-15% expected return with <25% volatility
+- **Position Sizing:** Use volatility for risk-adjusted position weights
+- **Diversification:** Combine low-correlation assets across sectors
+
+#### **Risk Assessment**
+- **Volatility Buckets:**
+  - Low Risk: <20% volatility
+  - Medium Risk: 20-40% volatility  
+  - High Risk: >40% volatility
+- **52-Week Position:** Near highs suggest momentum, near lows suggest value opportunities
+
+#### **Performance Evaluation**
+- **Benchmark Comparison:** Compare Sharpe ratios to market indices
+- **Risk-Adjusted Returns:** Focus on return per unit of risk
+- **Drawdown Analysis:** Assess maximum potential losses
+
+### Example Calculation
+
+**Stock Example: AAPL**
+```
+Historical Data: 252 days of closing prices
+Daily Returns: [-0.5%, +1.2%, +0.8%, -0.3%, ...] 
+Mean Daily Return: 0.068%
+Daily Volatility: 1.87%
+
+Calculations:
+Expected Return = 0.068% × 252 = 17.1%
+Volatility = 1.87% × √252 = 29.7%
+Sharpe Ratio = (17.1% - 2.0%) / 29.7% = 0.51
+52W Position = (254.43 - 168.80) / (259.18 - 168.80) = 94.7%
+```
+
+### Technical Implementation
+
+The calculations are implemented in the `calculate_risk_return_metrics()` method of the `StockAnalyzer` class, ensuring:
+
+- **Numerical Stability:** Proper handling of division by zero and edge cases
+- **Data Validation:** Automatic screening for insufficient or corrupted data
+- **Performance Optimization:** Vectorized operations using NumPy and Pandas
+- **Error Handling:** Graceful degradation when data is unavailable
 
 **🚀 Ready to optimize your investment portfolio? Start with the Quick Start section above!**
