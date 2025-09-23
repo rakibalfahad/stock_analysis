@@ -14,9 +14,10 @@
 8. [Short Trading Mode](#-short-trading-mode)
 9. [Stock Risk Analysis Tool](#-stock-risk-analysis-tool)
 10. [Live Stock Market News Fetcher](#-live-stock-market-news-fetcher)
-11. [Advanced Features](#-advanced-features)
-12. [Troubleshooting](#-troubleshooting)
-13. [Development & Technical](#-development--technical)
+11. [Yahoo Finance Stock Data Downloader](#-yahoo-finance-stock-data-downloader)
+12. [Advanced Features](#-advanced-features)
+13. [Troubleshooting](#-troubleshooting)
+14. [Development & Technical](#-development--technical)
 
 ---
 
@@ -104,6 +105,7 @@ When you run the optimizer, you'll see:
 - **💰 Investment Configuration Integration** - Complete system integration with your preferences
 - **📊 Real-time Short Trading** - Live P&L monitoring with automatic alerts
 - **🔄 Continuous Monitoring** - Real-time portfolio tracking with customizable intervals
+- **📊 Yahoo Finance Data Downloader** - Download stock categories (Most Active, Gainers, Losers, etc.) to Excel files
 - **🎨 Enhanced Visualization** - Professional dashboards and comparison charts
 - **🏗️ Modular Architecture** - Clean, maintainable codebase following Python best practices
 
@@ -1040,6 +1042,7 @@ python main.py --help
 ### Key Files
 - `portfolio_summary.py` - **Comprehensive portfolio dashboard**
 - `stock_news_fetcher.py` - **Live market news fetcher** (free, unlimited, all sectors)
+- `yahoo_finance_downloader.py` - **Yahoo Finance stock data downloader**
 - `investments.txt` - Portfolio optimization settings
 - `short_trading.txt` - Active trading positions
 - `main.py` - Core system entry point
@@ -1049,6 +1052,107 @@ python main.py --help
 - `stock_comparison_*.png` - Comparison charts
 - `stock_news_*.csv` - Market news exports with timestamps
 - `news_cache.json` - Cached news data and history
+- `yahoo_finance_data_*.xlsx` - Yahoo Finance stock data exports
 - `sample_stocks.xlsx` - Example data
+
+---
+
+## 📊 Yahoo Finance Stock Data Downloader
+
+### Overview
+
+The **Yahoo Finance Stock Data Downloader** is a comprehensive tool that downloads and organizes stock data from Yahoo Finance into Excel files. It provides access to 6 different stock categories, making it easy to analyze market trends and discover investment opportunities.
+
+### Available Stock Categories
+
+1. **📈 Most Active** - Stocks with highest trading volume
+2. **🔥 Trending Now** - Currently trending stocks
+3. **🚀 Top Gainers** - Best performing stocks today
+4. **📉 Top Losers** - Worst performing stocks today
+5. **🏆 52 Week Gainers** - Best performers over the past year
+6. **⬇️ 52 Week Losers** - Worst performers over the past year
+
+### Quick Usage
+
+```bash
+# Download all categories for today
+python yahoo_finance_downloader.py
+
+# Download specific categories
+python yahoo_finance_downloader.py --categories most_active trending gainers
+
+# Download for a specific date
+python yahoo_finance_downloader.py --date 2024-01-15
+
+# Custom output directory
+python yahoo_finance_downloader.py --output-dir /path/to/your/data/folder
+```
+
+### Features
+
+- **📊 Multi-Sheet Excel Files** - Each category gets its own sheet
+- **📅 Date-Specific Naming** - Files named by download date (`yahoo_finance_data_2024-01-15.xlsx`)
+- **🔄 Progress Tracking** - Real-time download progress with stock counts
+- **⚡ Rate Limiting** - Respects Yahoo Finance API limits
+- **🛡️ Error Handling** - Robust error recovery and logging
+- **📈 Rich Data** - Includes price, volume, market cap, and performance metrics
+- **💰 Smart Formatting** - Volume in millions, Market Cap in billions for easy reading
+- **📍 52W Range Position** - Shows current price position in 52-week range as percentage
+- **🎯 Comprehensive Data** - 14+ data fields per stock including sector, industry, P/E ratio
+
+### Data Fields Included
+
+Each stock entry contains:
+- **Symbol** - Stock ticker symbol
+- **Company Name** - Full company name
+- **Current Price** - Current stock price
+- **Change** - Price change from previous close
+- **Change %** - Percentage change from previous close
+- **Volume (M)** - Trading volume in millions
+- **Average Volume (M)** - Average trading volume in millions
+- **Market Cap (B)** - Market capitalization in billions
+- **52 Week High** - Highest price in past 52 weeks
+- **52 Week Low** - Lowest price in past 52 weeks
+- **52W Range Position %** - Current position in 52-week range (0-100%)
+- **P/E Ratio** - Price-to-earnings ratio
+- **Sector** - Industry sector
+- **Industry** - Specific industry
+
+### Integration with Portfolio System
+
+The downloaded data can be used with the main portfolio optimization system:
+
+```bash
+# Use downloaded stocks for analysis
+python main.py --analyze-file data/yahoo_finance_data_2024-01-15.xlsx
+
+# Import trending stocks into your portfolio
+python portfolio_summary.py --import-yahoo-data data/yahoo_finance_data_2024-01-15.xlsx
+```
+
+### Examples
+
+```bash
+# Market research workflow
+python yahoo_finance_downloader.py --categories most_active trending
+python main.py --compare-stocks --source data/yahoo_finance_data_*.xlsx
+
+# Weekly analysis
+python yahoo_finance_downloader.py --categories gainers losers_52w gainers_52w
+python portfolio_summary.py --weekly-analysis --data-source yahoo
+```
+
+### Output Structure
+
+```
+data/
+├── yahoo_finance_data_2024-01-15.xlsx
+│   ├── Most Active (50+ stocks)
+│   ├── Trending Now (25+ stocks)  
+│   ├── Top Gainers (25+ stocks)
+│   ├── Top Losers (25+ stocks)
+│   ├── 52 Week Gainers (25+ stocks)
+│   └── 52 Week Losers (25+ stocks)
+```
 
 **🚀 Ready to optimize your investment portfolio? Start with the Quick Start section above!**
