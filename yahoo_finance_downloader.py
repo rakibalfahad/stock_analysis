@@ -435,19 +435,6 @@ class YahooFinanceDownloader:
         if all_data:
             try:
                 with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
-                    # Create summary sheet
-                    summary_data = []
-                    for sheet_name, df in all_data.items():
-                        summary_data.append({
-                            'Category': sheet_name,
-                            'Number of Stocks': len(df),
-                            'Date': date_str,
-                            'Generated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                        })
-                    
-                    summary_df = pd.DataFrame(summary_data)
-                    summary_df.to_excel(writer, sheet_name='Summary', index=False)
-                    
                     # Add each category as a separate sheet
                     for sheet_name, df in all_data.items():
                         # Limit sheet name length for Excel compatibility
