@@ -168,6 +168,10 @@ class StockAnalyzer:
                 print(f"   🏭 Top sectors: {', '.join([f'{k} ({v})' for k, v in sectors.items()])}")
             
             print(f"   {EMOJIS['check']} Successfully loaded {len(self.stock_symbols)} stock symbols: {', '.join(self.stock_symbols)}")
+            
+            # Store source data for Excel export
+            self.source_data = df
+            
             return True
             
         except Exception as e:
@@ -314,6 +318,23 @@ class StockAnalyzer:
                 print(f"{EMOJIS['warning']} Error calculating metrics for {symbol}: {e}")
         
         print(f"{EMOJIS['check']} Calculated metrics for {len(self.risk_return_data)} stocks")
+        
+        # Create analysis_results DataFrame for Excel export
+        analysis_data = []
+        for symbol, metrics in self.risk_return_data.items():
+            analysis_data.append({
+                'symbol': symbol,
+                'expected_return': metrics['expected_return'],
+                'volatility': metrics['volatility'],
+                'sharpe_ratio': metrics['sharpe_ratio'],
+                'market_cap_proxy': metrics['market_cap_proxy'],
+                'current_price': metrics['current_price'],
+                '52_week_high': metrics['52_week_high'],
+                '52_week_low': metrics['52_week_low'],
+                '52_week_position': metrics['52_week_position']
+            })
+        
+        self.analysis_results = pd.DataFrame(analysis_data)
     
     def _calculate_max_drawdown(self, prices: pd.Series) -> float:
         """
@@ -869,6 +890,116 @@ class StockAnalyzer:
             
             print(f"\n💡 LEGEND: 🔥 = Near High | ⚡ = Mid-Range | ❄️ = Near Low")
     
+    def export_to_excel(self, output_file: str) -> None:
+        """
+        Export analysis results to Excel file with multiple sheets.
+        """
+        try:
+            # Create Excel filename from the output file
+            excel_filename = output_file.replace('.png', '_analysis.xlsx').replace('.html', '_analysis.xlsx')
+            if not excel_filename.endswith('.xlsx'):
+                excel_filename = 'stock_analysis_results.xlsx'
+            
+            print(f"\n{EMOJIS['chart']} Exporting analysis to Excel: {excel_filename}")
+            
+            with pd.ExcelWriter(excel_filename, engine='openpyxl') as writer:
+                # Main analysis results
+                if hasattr(self, 'analysis_results') and not self.analysis_results.empty:
+                    # Prepare comprehensive analysis data
+                    export_data = []
+                    
+                    for _, row in self.analysis_results.iterrows():
+                        symbol = row['symbol']
+                        
+                        # Get additional data if available
+                        current_price = self.stock_data.get(symbol, {}).get('current_price', 'N/A')
+                        week_52_high = self.stock_data.get(symbol, {}).get('52_week_high', 'N/A')
+                        week_52_low = self.stock_data.get(symbol, {}).get('52_week_low', 'N/A')
+                        week_52_position = self.stock_data.get(symbol, {}).get('52_week_position', 'N/A')
+                        
+                        # Format position indicator
+                        if isinstance(week_52_position, (int, float)):
+                            if week_52_position >= 80:
+                                position_indicator = "🔥 Near High"
+                            elif week_52_position <= 20:
+                                position_indicator = "❄️ Near Low"
+                            else:
+                                position_indicator = "⚡ Mid-Range"
+                        else:
+                            position_indicator = "N/A"
+                        
+                        export_data.append({
+                            'Symbol': symbol,
+                            'Current Price': current_price,
+                            '52 Week High': week_52_high,
+                            '52 Week Low': week_52_low,
+                            '52W Position %': week_52_position,
+                            'Position Indicator': position_indicator,
+                            'Expected Return (%)': round(row['expected_return'] * 100, 2) if pd.notna(row['expected_return']) else 'N/A',
+                            'Risk/Volatility (%)': round(row['volatility'] * 100, 2) if pd.notna(row['volatility']) else 'N/A',
+                            'Sharpe Ratio': round(row['sharpe_ratio'], 3) if pd.notna(row['sharpe_ratio']) else 'N/A',
+                            'Market Cap Proxy': round(row['market_cap_proxy'], 2) if pd.notna(row['market_cap_proxy']) else 'N/A',
+                            'Analysis Date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        })
+                    
+                    analysis_df = pd.DataFrame(export_data)
+                    analysis_df.to_excel(writer, sheet_name='Stock Analysis', index=False)
+                    
+                    # Summary statistics sheet
+                    summary_stats = {
+                        'Metric': [
+                            'Total Stocks Analyzed',
+                            'Best Expected Return (%)',
+                            'Best Sharpe Ratio',
+                            'Lowest Risk/Volatility (%)',
+                            'Stocks Near 52W High (>80%)',
+                            'Stocks Near 52W Low (<20%)',
+                            'Analysis Period',
+                            'Price Trend Period',
+                            'Generated Date'
+                        ],
+                        'Value': [
+                            len(self.analysis_results),
+                            f"{self.analysis_results['expected_return'].max() * 100:.1f}%" if not self.analysis_results.empty else 'N/A',
+                            f"{self.analysis_results['sharpe_ratio'].max():.2f}" if not self.analysis_results.empty else 'N/A',
+                            f"{self.analysis_results['volatility'].min() * 100:.1f}%" if not self.analysis_results.empty else 'N/A',
+                            len([s for s in self.stock_data.values() if isinstance(s.get('52_week_position'), (int, float)) and s.get('52_week_position', 0) >= 80]),
+                            len([s for s in self.stock_data.values() if isinstance(s.get('52_week_position'), (int, float)) and s.get('52_week_position', 100) <= 20]),
+                            self.period,
+                            self.price_period,
+                            datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        ]
+                    }
+                    
+                    summary_df = pd.DataFrame(summary_stats)
+                    summary_df.to_excel(writer, sheet_name='Summary Statistics', index=False)
+                    
+                    # Top performers sheet
+                    if not self.analysis_results.empty:
+                        top_return = self.analysis_results.nlargest(10, 'expected_return')[['symbol', 'expected_return', 'sharpe_ratio', 'volatility']].copy()
+                        top_return['expected_return'] = (top_return['expected_return'] * 100).round(2)
+                        top_return['volatility'] = (top_return['volatility'] * 100).round(2)
+                        top_return['sharpe_ratio'] = top_return['sharpe_ratio'].round(3)
+                        top_return.columns = ['Symbol', 'Expected Return (%)', 'Sharpe Ratio', 'Risk/Volatility (%)']
+                        top_return.to_excel(writer, sheet_name='Top Performers', index=False)
+                        
+                        # Low risk stocks sheet
+                        low_risk = self.analysis_results.nsmallest(10, 'volatility')[['symbol', 'expected_return', 'sharpe_ratio', 'volatility']].copy()
+                        low_risk['expected_return'] = (low_risk['expected_return'] * 100).round(2)
+                        low_risk['volatility'] = (low_risk['volatility'] * 100).round(2)
+                        low_risk['sharpe_ratio'] = low_risk['sharpe_ratio'].round(3)
+                        low_risk.columns = ['Symbol', 'Expected Return (%)', 'Sharpe Ratio', 'Risk/Volatility (%)']
+                        low_risk.to_excel(writer, sheet_name='Low Risk Stocks', index=False)
+                
+                # Source data sheet (from the original input)
+                if hasattr(self, 'source_data') and not self.source_data.empty:
+                    self.source_data.to_excel(writer, sheet_name='Source Data', index=False)
+                
+            print(f"{EMOJIS['check']} Excel export complete: {excel_filename}")
+            
+        except Exception as e:
+            print(f"{EMOJIS['warning']} Error exporting to Excel: {e}")
+    
     def analyze(self, output_file: str = 'stock_analysis.png') -> bool:
         """
         Run complete analysis.
@@ -896,6 +1027,9 @@ class StockAnalyzer:
             
             # Print summary
             self.print_summary_statistics()
+            
+            # Export to Excel
+            self.export_to_excel(output_file)
             
             print(f"\n{EMOJIS['check']} Analysis complete! Output saved as {output_file}")
             return True
