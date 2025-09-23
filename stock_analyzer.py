@@ -911,12 +911,11 @@ class StockAnalyzer:
                     for _, row in self.analysis_results.iterrows():
                         symbol = row['symbol']
                         
-                        # Get additional data from risk_return_data which has the calculated metrics
-                        risk_data = self.risk_return_data.get(symbol, {})
-                        current_price = risk_data.get('current_price', row.get('current_price', 'N/A'))
-                        week_52_high = risk_data.get('52_week_high', row.get('52_week_high', 'N/A'))
-                        week_52_low = risk_data.get('52_week_low', row.get('52_week_low', 'N/A'))
-                        week_52_position = risk_data.get('52_week_position', row.get('52_week_position', 'N/A'))
+                        # Get data directly from analysis_results row which already contains all the needed information
+                        current_price = row.get('current_price', 'N/A')
+                        week_52_high = row.get('52_week_high', 'N/A')
+                        week_52_low = row.get('52_week_low', 'N/A')
+                        week_52_position = row.get('52_week_position', 'N/A')
                         
                         # Format position indicator
                         if isinstance(week_52_position, (int, float)):
