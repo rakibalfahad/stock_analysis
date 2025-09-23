@@ -911,11 +911,12 @@ class StockAnalyzer:
                     for _, row in self.analysis_results.iterrows():
                         symbol = row['symbol']
                         
-                        # Get additional data if available
-                        current_price = self.stock_data.get(symbol, {}).get('current_price', 'N/A')
-                        week_52_high = self.stock_data.get(symbol, {}).get('52_week_high', 'N/A')
-                        week_52_low = self.stock_data.get(symbol, {}).get('52_week_low', 'N/A')
-                        week_52_position = self.stock_data.get(symbol, {}).get('52_week_position', 'N/A')
+                        # Get additional data from risk_return_data which has the calculated metrics
+                        risk_data = self.risk_return_data.get(symbol, {})
+                        current_price = risk_data.get('current_price', row.get('current_price', 'N/A'))
+                        week_52_high = risk_data.get('52_week_high', row.get('52_week_high', 'N/A'))
+                        week_52_low = risk_data.get('52_week_low', row.get('52_week_low', 'N/A'))
+                        week_52_position = risk_data.get('52_week_position', row.get('52_week_position', 'N/A'))
                         
                         # Format position indicator
                         if isinstance(week_52_position, (int, float)):
@@ -963,8 +964,8 @@ class StockAnalyzer:
                             f"{self.analysis_results['expected_return'].max() * 100:.1f}%" if not self.analysis_results.empty else 'N/A',
                             f"{self.analysis_results['sharpe_ratio'].max():.2f}" if not self.analysis_results.empty else 'N/A',
                             f"{self.analysis_results['volatility'].min() * 100:.1f}%" if not self.analysis_results.empty else 'N/A',
-                            len([s for s in self.stock_data.values() if isinstance(s.get('52_week_position'), (int, float)) and s.get('52_week_position', 0) >= 80]),
-                            len([s for s in self.stock_data.values() if isinstance(s.get('52_week_position'), (int, float)) and s.get('52_week_position', 100) <= 20]),
+                            len([s for s in self.risk_return_data.values() if isinstance(s.get('52_week_position'), (int, float)) and s.get('52_week_position', 0) >= 80]),
+                            len([s for s in self.risk_return_data.values() if isinstance(s.get('52_week_position'), (int, float)) and s.get('52_week_position', 100) <= 20]),
                             self.period,
                             self.price_period,
                             datetime.now().strftime('%Y-%m-%d %H:%M:%S')
