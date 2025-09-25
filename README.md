@@ -35,7 +35,7 @@ Transform your investment strategy with professional-grade portfolio optimizatio
 4. [Portfolio Summary Dashboard](#-portfolio-summary-dashboard)
 5. [Stock Risk Analysis Tool](#-stock-risk-analysis-tool)
 6. [Yahoo Finance Data Downloader](#-yahoo-finance-stock-data-downloader)
-7. [Live Yahoo Finance Data Analyzer](#-live-yahoo-finance-data-analyzer) ⭐ **NEW ENHANCED**
+7. [Live Yahoo Finance Data Analyzer](#-live-yahoo-finance-data-analyzer) ⭐ **ENHANCED: Flashing Effects + Symbol Cache**
 8. [Financial Metrics & Calculations](#-financial-metrics-and-calculations)
 
 ### ⚙️ **Portfolio Management**
@@ -1229,6 +1229,8 @@ The **Live Yahoo Finance Data Analyzer** (`yahoo_finance_data_analyzer.py`) is a
 - **💵 ROI Calculations**: Risk-adjusted return on investment with volatility adjustments
 - **📅 Earnings Calendar**: Next earnings reporting dates for strategic planning
 - **🎨 Visual Indicators**: Color-coded recommendations with emojis and flashing effects
+- **⚡ Enhanced Flashing System**: ⚡⚡ Lightning bolts for STRONG_BUY, 🔥🔥 Fire for STRONG_AVOID, extreme price changes >5%
+- **💾 Smart Symbol Cache**: JSON persistence tracking first-seen dates for new symbols with dual table display
 - **🧮 Advanced Scoring**: Comprehensive risk analysis with Sharpe ratios and volatility metrics
 - **💾 Data Export**: Optional Excel export with detailed analysis and summary statistics
 - **⚡ Customizable Updates**: Configurable refresh intervals from 30 seconds to hours
@@ -1236,16 +1238,16 @@ The **Live Yahoo Finance Data Analyzer** (`yahoo_finance_data_analyzer.py`) is a
 ### 🚀 **Quick Start**
 
 ```bash
-# Start live analyzer with default 5-minute updates
+# Start live analyzer with default 5-minute updates (includes flashing & cache)
 python yahoo_finance_data_analyzer.py
 
-# Fast updates every 1 minute
+# Fast updates every 1 minute with enhanced flashing effects
 python yahoo_finance_data_analyzer.py --interval 60
 
-# Enable data saving with custom directory
+# Enable data saving with custom directory + symbol tracking
 python yahoo_finance_data_analyzer.py --save --output-dir my_live_analysis
 
-# Day trading mode - 30 second updates with data saving
+# Day trading mode - 30 second updates with data saving and cache
 python yahoo_finance_data_analyzer.py --interval 30 --save
 ```
 
@@ -1265,6 +1267,21 @@ The analyzer displays a continuously updating professional-grade table:
 3    💰   TSLA     Tesla Inc.              $267.89    -1.8%   68.0     25.8%   45.1%   1.42   15.4%  🔴HIG     ❓     850.0B   65.2   18.7%   01-22      Automotive        Model Y production ramp co...    💰BUY    
 4    ⚖️  MSFT     Microsoft Corp          $425.67    +0.8%   28.0     8.2%    18.9%   1.95   92.1%  🟢LOW     ❓     3150.0B  32.1   12.3%   01-24      Technology        Azure cloud revenue up 29%      ⚖️HOLD   
 ```
+
+### ⚡ **Enhanced Flashing & Cache System**
+
+#### **🔥 Visual Flash Indicators**
+- **⚡⚡ Lightning Bolts**: STRONG_BUY recommendations + extreme positive changes >5%
+- **🔥🔥 Fire Symbols**: STRONG_AVOID recommendations + extreme negative changes >5% 
+- **🔄 Flashing Cycles**: Visual indicators appear every 3rd analysis cycle
+- **💫 Cycle Status**: Display shows current flashing status in header
+
+#### **💾 Smart Symbol Cache System**
+- **JSON Persistence**: `symbols_cache.json` tracks first-seen dates for all symbols
+- **New Symbols Detection**: Automatically identifies stocks not seen before
+- **Dual Table Display**: Main recommendations + separate new symbols table with dates
+- **50 Symbol Limit**: New symbols table limited to latest 50 to prevent overflow
+- **Date Tracking**: Each symbol stamped with first appearance date (YYYY-MM-DD format)
 
 ### 📋 **Comprehensive Data Columns**
 
@@ -1488,7 +1505,11 @@ python stock_analyzer.py live_analysis/yahoo_live_analysis_*.xlsx
 ⏰ Update interval: 300 seconds
 💾 Data saving enabled: live_analysis
 
-🔄 Analysis Cycle #1
+� Starting continuous analysis...
+Press Ctrl+C to stop
+⚡ Flashing effects will occur every 3rd cycle
+
+�🔄 Analysis Cycle #3 📊 ⚡ FLASHING ACTIVE
 📡 Fetching live data from Yahoo Finance...
    ✅ Most Active: 52 stocks
    ✅ Trending Now: 31 stocks  
@@ -1500,17 +1521,26 @@ python stock_analyzer.py live_analysis/yahoo_live_analysis_*.xlsx
 🧮 Analyzing stocks with Risk Analysis Tool...
 ✅ Successfully fetched data for 142/156 stocks
 ✅ Calculated metrics for 142 stocks
+🔍 Identified 8 new symbols since last run
 💾 Analysis data saved: live_analysis/yahoo_live_analysis_20250925_143015.xlsx
+💾 Symbol cache updated: symbols_cache.json
 
-[Live updating table displays here]
+[Live updating table with flashing indicators displays here]
+
+📊 NEW SYMBOLS DETECTED TODAY (8 stocks)
+====================================================================================================================================
+Symbol   Company                 💰Price     📈Chg%   📅First Seen    🏢Sector          📊Rec
+COIN     Coinbase Global Inc     $68.45      +3.2%   2025-09-25      Financial         💰BUY
+RIVN     Rivian Automotive       $14.23      -2.1%   2025-09-25      Automotive        ⚖️HOLD
 
 📊 LEGEND:
 🚀 STRONG_BUY | 💰 BUY | ⚖️ HOLD | ⚠️ AVOID | 🛑 STRONG_AVOID
-🟢 LOW RISK | 🟡 MEDIUM RISK | 🔴 HIGH RISK  
+⚡⚡ Lightning = STRONG_BUY + extreme changes | 🔥� Fire = STRONG_AVOID + extreme changes
+�🟢 LOW RISK | 🟡 MEDIUM RISK | 🔴 HIGH RISK  
 🔥 Near 52W High | ⚡ Mid-Range | ❄️ Near 52W Low
 
 📊 Total analyzed: 142 stocks | Showing top 50
-💾 Data auto-saved to: live_analysis
+💾 Data auto-saved to: live_analysis | Cache: 148 symbols tracked
 ⏰ Waiting 298.4s for next update...
 ```
 

@@ -46,6 +46,8 @@ from pathlib import Path
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+import json
+import time
 
 # Import existing modules
 try:
@@ -108,6 +110,7 @@ class YahooFinanceLiveAnalyzer:
         self.update_interval = update_interval
         self.save_data = save_data
         self.output_dir = Path(output_dir)
+        self.cache_file = self.output_dir / "symbols_cache.json" if save_data else Path("symbols_cache.json")
         if save_data:
             self.output_dir.mkdir(exist_ok=True)
         
@@ -562,28 +565,39 @@ class YahooFinanceLiveAnalyzer:
         
         return base_score
 
-    def display_recommendations_table(self, recommendations: List[Dict], flash: bool = False):
+    def display_recommendations_table(self, recommendations: List[Dict], flash: bool = False, cycle_count: int = 0):
         """
         Display recommendations in a formatted terminal table
         
         Args:
             recommendations: List of recommendation dictionaries
             flash: Whether to add flashing effect
+            cycle_count: Current analysis cycle for flashing logic
         """
         if not recommendations:
             print(f"{Colors.RED}❌ No recommendations available{Colors.END}")
             return
         
+        # Identify new symbols
+        current_symbols = [rec['Symbol'] for rec in recommendations]
+        new_symbols, cache = self.identify_new_symbols(current_symbols)
+        
+        # Filter new symbols data for separate table
+        new_symbol_recs = [rec for rec in recommendations if rec['Symbol'] in new_symbols]
+        
         # Clear screen
         os.system('clear' if os.name == 'posix' else 'cls')
         
-        # Header with flashing effect
-        flash_effect = Colors.BLINK if flash else ""
+        # Header with enhanced flashing detection
+        has_flash_rows = any(self.should_flash_row(rec, cycle_count) for rec in recommendations[:50])
+        flash_effect = Colors.BLINK if flash or has_flash_rows else ""
         print(f"{flash_effect}{Colors.BOLD}{Colors.CYAN}")
-        print("=" * 190)
+        print("=" * 170)
         print("🚀 YAHOO FINANCE LIVE STOCK ANALYZER - TOP 50 RECOMMENDATIONS")
         print(f"📅 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | 🔄 Next update in {self.update_interval}s")
-        print("=" * 190)
+        if has_flash_rows:
+            print(f"{Colors.BLINK}{Colors.YELLOW}⚡ FLASHING: STRONG RECOMMENDATIONS & EXTREME CHANGES >5% ⚡{Colors.END}")
+        print("=" * 170)
         print(f"{Colors.END}")
         
         # Clean table header with optimized column widths to prevent wrapping
@@ -596,15 +610,15 @@ class YahooFinanceLiveAnalyzer:
         print("─" * 170)
         print(f"{Colors.END}")
         
-        # Display top 50 recommendations with clean format and news
+        # Display top 50 recommendations with enhanced flashing
         for i, rec in enumerate(recommendations[:50], 1):
             # Color coding based on recommendation
             if rec['Recommendation'] == 'STRONG_BUY':
                 color = Colors.GREEN + Colors.BOLD
-                flash_color = Colors.BLINK + Colors.GREEN + Colors.BOLD if flash and i <= 10 else color
+                flash_color = Colors.GREEN + Colors.BOLD if self.should_flash_row(rec, cycle_count) else color
             elif rec['Recommendation'] == 'BUY':
                 color = Colors.GREEN
-                flash_color = Colors.BLINK + Colors.GREEN if flash and i <= 10 else color
+                flash_color = color  
             elif rec['Recommendation'] == 'HOLD':
                 color = Colors.YELLOW
                 flash_color = color
@@ -612,8 +626,23 @@ class YahooFinanceLiveAnalyzer:
                 color = Colors.MAGENTA
                 flash_color = color
             else:  # STRONG_AVOID
-                color = Colors.RED
-                flash_color = color
+                color = Colors.RED + Colors.BOLD
+                flash_color = Colors.RED + Colors.BOLD if self.should_flash_row(rec, cycle_count) else color
+            
+            # Add visual flash indicators
+            flash_prefix = ""
+            flash_suffix = ""
+            if self.should_flash_row(rec, cycle_count):
+                flash_prefix = "⚡⚡ "
+                flash_suffix = " ⚡⚡"
+                flash_color = Colors.YELLOW + Colors.BOLD  # Bright yellow for attention
+            
+            # Check for extreme price changes flashing
+            change_pct = rec.get('Change_Percent', 0)
+            if abs(change_pct) > 5.0 and cycle_count % 3 == 0:
+                flash_prefix = "🔥🔥 "
+                flash_suffix = " 🔥🔥"
+                flash_color = Colors.CYAN + Colors.BOLD  # Bright cyan for extreme changes
             
             # Get emojis for risk display only
             risk_emoji = RISK_EMOJIS.get(rec['Risk_Level'], '❓')
@@ -648,25 +677,33 @@ class YahooFinanceLiveAnalyzer:
             if len(news_str) > 23:
                 news_str = news_str[:20] + "..."
             
-            # Use flashing color for top 10 recommendations
-            display_color = flash_color if i <= 10 and flash else color
+            # Use flashing color for qualifying rows
+            display_color = flash_color
             
             # Get recommendation text for display
             rec_text = rec['Recommendation'].replace('_', ' ')
             
-            # Print clean row format with recommendation text
-            row = (f"{i:<4} {rec['Symbol']:<7} {company_str:<20} {price_str:<9} {change_str:<7} "
+            # Print clean row format with flash indicators
+            row = (f"{flash_prefix}{i:<4} {rec['Symbol']:<7} {company_str:<20} {price_str:<9} {change_str:<7} "
                   f"{volume_str:<7} {ret_str:<7} {vol_str:<7} {sharpe_str:<6} {pos_str:<6} "
                   f"{risk_str:<7} {mcap_str:<7} {pe_str:<5} {roi_str:<6} "
-                  f"{earn_str:<8} {sector_str:<12} {rec_text:<15} {news_str:<25}")
+                  f"{earn_str:<8} {sector_str:<12} {rec_text:<15} {news_str:<25}{flash_suffix}")
             
             print(f"{display_color}{row}{Colors.END}")
         
         print("─" * 170)
         
+        # Brief visual pause for flashing cycles
+        if cycle_count % 3 == 0:
+            time.sleep(0.3)  # Brief pause to enhance flashing visibility
+        
+        # Display new symbols table if any (but limit to 25 for readability)
+        if new_symbol_recs and len(new_symbol_recs) <= 50:
+            self.display_new_symbols_table(new_symbol_recs, cache)
+        
         # Enhanced compact legend with better descriptions and ranges
         print()
-        legend_color = Colors.BLINK + Colors.BOLD + Colors.CYAN if flash else Colors.BOLD + Colors.CYAN
+        legend_color = Colors.BOLD + Colors.CYAN
         print(f"{legend_color}📊 COMPREHENSIVE QUICK REFERENCE:{Colors.END}")
         
         # Recommendation types with explanations
@@ -686,19 +723,104 @@ class YahooFinanceLiveAnalyzer:
               f"SR(risk-adj) Pos%(52W-range) Risk MCap(B) PE(ratio) "
               f"ROI%(adj-return) Earn(next-date) Sector Recommendation News(recent) {Colors.END}")
         
-        if flash:
-            print(f"{Colors.BLINK}{Colors.BOLD}{Colors.YELLOW}⚡ FLASH MODE - TOP 10 RECOMMENDATIONS HIGHLIGHTED ⚡{Colors.END}")
+        if has_flash_rows:
+            print(f"{Colors.BLINK}{Colors.BOLD}{Colors.YELLOW}⚡ FLASHING: STRONG BUY/AVOID & EXTREME CHANGES >5% ⚡{Colors.END}")
         
-        stats_color = Colors.BOLD + Colors.YELLOW if flash else Colors.YELLOW
+        stats_color = Colors.BOLD + Colors.YELLOW
         print(f"{stats_color}📊 {len(recommendations)} stocks analyzed | Top 50 displayed{Colors.END}", end="")
         if self.save_data:
             print(f" | {Colors.BLUE}💾 Auto-saved to {self.output_dir}{Colors.END}")
         else:
             print()
         
-        # Add extra visual effect for flashing
-        if flash:
-            time.sleep(0.2)  # Brief pause for visual effect
+        if new_symbol_recs:
+            print(f"{Colors.CYAN}🆕 {len(new_symbol_recs)} new symbols detected today{Colors.END}")
+            if len(new_symbol_recs) > 25:
+                print(f"{Colors.YELLOW}⚠️ Showing first 25 new symbols in table above{Colors.END}")
+
+    def display_new_symbols_table(self, new_symbol_recs: List[Dict], cache: Dict[str, str]):
+        """Display table of new symbols detected today"""
+        if not new_symbol_recs:
+            return
+            
+        print(f"\\n{Colors.BOLD}{Colors.CYAN}🆕 NEW SYMBOLS DETECTED TODAY ({len(new_symbol_recs)} symbols){Colors.END}")
+        print("─" * 170)
+        
+        # Compact header for new symbols
+        print(f"{Colors.BOLD}{Colors.WHITE}")
+        header = (f"{'#':<4} {'Symbol':<7} {'Company':<20} {'Price':<9} {'Chg%':<7} "
+                 f"{'Recommendation':<15} {'Risk':<7} {'ROI%':<6} {'First Seen':<12} {'News':<25}")
+        print(header)
+        print("─" * 170)
+        print(f"{Colors.END}")
+        
+        # Display new symbols (limit to 25 for readability)
+        for i, rec in enumerate(new_symbol_recs[:25], 1):
+            # Color coding with flashing for strong recommendations
+            if rec['Recommendation'] == 'STRONG_BUY':
+                color = Colors.BLINK + Colors.GREEN + Colors.BOLD
+            elif rec['Recommendation'] == 'BUY':
+                color = Colors.GREEN
+            elif rec['Recommendation'] == 'STRONG_AVOID':
+                color = Colors.BLINK + Colors.RED + Colors.BOLD
+            elif rec['Recommendation'] == 'AVOID':
+                color = Colors.RED
+            else:
+                color = Colors.YELLOW
+            
+            # Format data
+            price_str = f"${rec['Price']:.2f}"
+            change_pct = rec.get('Change_Percent', 0.0)
+            if abs(change_pct) > 50:
+                change_str = "  N/A%"
+            else:
+                change_str = f"{change_pct:+5.1f}%"[:7]
+            
+            company_str = rec['Company'][:18] + '..' if len(rec['Company']) > 18 else rec['Company']
+            rec_text = rec['Recommendation'].replace('_', ' ')
+            risk_emoji = RISK_EMOJIS.get(rec['Risk_Level'], '❓')
+            risk_str = f"{risk_emoji}{rec['Risk_Level'][:3]}"
+            roi_str = f"{rec.get('ROI', 0):.1f}%" if rec.get('ROI', 0) != 0 else "N/A"
+            first_seen = cache.get(rec['Symbol'], 'Today')
+            
+            news_str = rec.get('News', 'No recent news')
+            if len(news_str) > 23:
+                news_str = news_str[:20] + "..."
+            
+            # Print row
+            row = (f"{i:<4} {rec['Symbol']:<7} {company_str:<20} {price_str:<9} {change_str:<7} "
+                  f"{rec_text:<15} {risk_str:<7} {roi_str:<6} {first_seen:<12} {news_str:<25}")
+            
+            print(f"{color}{row}{Colors.END}")
+        
+        print("─" * 170)
+        print(f"{Colors.CYAN}📅 Symbols cache: {len(cache)} total symbols tracked{Colors.END}")
+        
+        if len(new_symbol_recs) > 25:
+            remaining = len(new_symbol_recs) - 25
+            print(f"{Colors.YELLOW}⚠️ Showing first 25 new symbols ({remaining} more detected){Colors.END}")
+
+    def run_single_analysis(self):
+        """Run a single analysis cycle"""
+        print("\\n📊 Running single analysis cycle...")
+        
+        # Get all recommendations
+        recommendations = self.get_all_recommendations()
+        
+        if recommendations:
+            # Single run - no flashing, cycle count = 1
+            self.display_recommendations_table(recommendations, flash=False, cycle_count=1)
+            
+            # Save data if enabled
+            if self.save_data:
+                self.save_analysis_data(recommendations)
+                
+            print(f"\\n✅ Analysis complete! Analyzed {len(recommendations)} stocks")
+            print(f"📊 Cache file: {self.cache_file}")
+            if self.save_data:
+                print(f"💾 Data saved to: {self.output_dir}")
+        else:
+            print("❌ No data available for analysis")
 
     def calculate_adjusted_roi(self, current_price: float, expected_return: float, volatility: float) -> float:
         """
@@ -770,6 +892,62 @@ class YahooFinanceLiveAnalyzer:
             
         except Exception:
             return 'N/A'
+
+    def load_symbols_cache(self) -> Dict[str, str]:
+        """Load cached symbols with their first seen dates"""
+        if self.cache_file.exists():
+            try:
+                with open(self.cache_file, 'r') as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, FileNotFoundError):
+                pass
+        return {}
+    
+    def save_symbols_cache(self, cache: Dict[str, str]):
+        """Save symbols cache to file"""
+        try:
+            self.cache_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.cache_file, 'w') as f:
+                json.dump(cache, f, indent=2)
+        except Exception as e:
+            print(f"⚠️ Warning: Could not save cache file: {e}")
+    
+    def identify_new_symbols(self, current_symbols: List[str]) -> Tuple[List[str], Dict[str, str]]:
+        """Identify new symbols not seen before today"""
+        cache = self.load_symbols_cache()
+        today = datetime.now().strftime('%Y-%m-%d')
+        new_symbols = []
+        
+        for symbol in current_symbols:
+            if symbol not in cache:
+                cache[symbol] = today
+                new_symbols.append(symbol)
+            # Don't consider symbols as "new" if they were first seen today in previous runs
+            elif cache[symbol] != today:
+                # Symbol exists but from previous days - not new for today
+                pass
+        
+        # Save updated cache
+        self.save_symbols_cache(cache)
+        
+        return new_symbols, cache
+    
+    def should_flash_row(self, rec: dict, cycle_count: int = 0) -> bool:
+        """Determine if a row should flash based on criteria"""
+        # Flash every 3 cycles for visibility
+        if cycle_count % 3 != 0:
+            return False
+            
+        # Flash STRONG_BUY and STRONG_AVOID
+        if rec['Recommendation'] in ['STRONG_BUY', 'STRONG_AVOID']:
+            return True
+        
+        # Flash extreme price changes (>5% up or down)
+        change_pct = rec.get('Change_Percent', 0)
+        if abs(change_pct) > 5.0:
+            return True
+            
+        return False
 
     def get_stock_news_short(self, symbol: str) -> str:
         """
@@ -962,7 +1140,7 @@ class YahooFinanceLiveAnalyzer:
         """
         print(f"{Colors.BOLD}{Colors.GREEN}🚀 Starting continuous analysis...{Colors.END}")
         print(f"{Colors.YELLOW}Press Ctrl+C to stop{Colors.END}")
-        print(f"{Colors.BLUE}⚡ Flashing effects will occur every 2nd cycle{Colors.END}")
+        print(f"{Colors.BLUE}⚡ Flashing effects will occur every 3rd cycle{Colors.END}")
         print()
         
         cycle_count = 0
@@ -994,17 +1172,24 @@ class YahooFinanceLiveAnalyzer:
                             recommendations = self.generate_recommendations(analysis_results)
                             
                             if recommendations:
-                                # Display recommendations with flashing
-                                self.display_recommendations_table(recommendations, use_flash)
+                                # Display recommendations with cycle count for flashing logic
+                                self.display_recommendations_table(recommendations, flash=use_flash, cycle_count=cycle_count)
                                 
                                 # Save data if enabled
                                 self.save_analysis_data(recommendations)
                                 
-                                # Show flash status
-                                if use_flash:
-                                    print(f"\n{Colors.BLINK}{Colors.BOLD}{Colors.YELLOW}⚡ FLASH CYCLE #{cycle_count} COMPLETE ⚡{Colors.END}")
+                                if recommendations:
+                                    # Display recommendations with cycle count for flashing logic
+                                    self.display_recommendations_table(recommendations, flash=use_flash, cycle_count=cycle_count)
+                                
+                                # Save data if enabled
+                                self.save_analysis_data(recommendations)
+                                
+                                # Show cycle status
+                                if cycle_count % 3 == 0:
+                                    print(f"\\n{Colors.BLINK}{Colors.BOLD}{Colors.YELLOW}⚡ FLASH CYCLE #{cycle_count} - STRONG RECOMMENDATIONS & EXTREME CHANGES HIGHLIGHTED ⚡{Colors.END}")
                                 else:
-                                    print(f"\n{Colors.BOLD}{Colors.CYAN}📊 STEADY CYCLE #{cycle_count} COMPLETE{Colors.END}")
+                                    print(f"\\n{Colors.BOLD}{Colors.CYAN}📊 CYCLE #{cycle_count} COMPLETE{Colors.END}")
                                 
                             else:
                                 print(f"{Colors.RED}❌ No valid recommendations generated{Colors.END}")
