@@ -1,14 +1,15 @@
 # Investment Configuration
 # Format: key = value
 
-total_investment = 3000
-target_gain_percentage = 25
+total_investment = 8500
+target_gain_percentage = 30
 maximum_loss_percentage = 5
 
 # Preferred stocks to analyze (comma-separated)
 # You can change these to any stock symbols you prefer
 # Mix of different risk profiles for filtering demonstration
 preferred_stocks = AAPL,MSFT,GOOGL,AMZN,TSLA,NVDA,META,NFLX
+#preferred_stocks = PG,KO,MSFT,AMZN,ORCL,AVGO
 
 # Sold stocks (format: stock_symbol,sale_price,sale_date)
 # Example: AAPL,150.50,2025-09-05

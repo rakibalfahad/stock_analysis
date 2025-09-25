@@ -1068,6 +1068,9 @@ python portfolio_summary.py
 # Portfolio optimization
 python main.py --plot
 
+# Live Yahoo Finance analyzer with real-time recommendations
+python yahoo_finance_data_analyzer.py
+
 # Live market news (general mode - all sectors)
 python stock_news_fetcher.py --general
 
@@ -1080,6 +1083,9 @@ python main.py --quick-monitor --plot
 # Short trading
 python main.py --short-trading
 
+# Download Yahoo Finance data
+python yahoo_finance_downloader.py
+
 # Continuous news monitoring (every 30 minutes)
 python stock_news_fetcher.py --general --continuous --interval 30
 
@@ -1091,6 +1097,7 @@ python main.py --help
 - `portfolio_summary.py` - **Comprehensive portfolio dashboard**
 - `stock_news_fetcher.py` - **Live market news fetcher** (free, unlimited, all sectors)
 - `yahoo_finance_downloader.py` - **Yahoo Finance stock data downloader**
+- `yahoo_finance_data_analyzer.py` - **Live Yahoo Finance analyzer with real-time recommendations**
 - `investments.txt` - Portfolio optimization settings
 - `short_trading.txt` - Active trading positions
 - `main.py` - Core system entry point
@@ -1202,6 +1209,208 @@ data/
 │   ├── 52 Week Gainers (25+ stocks)
 │   └── 52 Week Losers (25+ stocks)
 ```
+
+---
+
+## 🚀 Live Yahoo Finance Data Analyzer
+
+### Overview
+
+The **Live Yahoo Finance Data Analyzer** (`yahoo_finance_data_analyzer.py`) is an advanced real-time analysis system that combines the Yahoo Finance downloader with the Stock Risk Analysis Tool to provide continuous live recommendations directly in your terminal.
+
+### 🎯 **Key Features**
+
+- **🔄 Real-Time Analysis**: Continuous fetching and analysis of Yahoo Finance data
+- **📊 Live Terminal Display**: Animated table showing top 50 stock recommendations
+- **🎨 Visual Indicators**: Color-coded recommendations with emojis and flashing effects
+- **🧮 Advanced Scoring**: Uses existing Stock Risk Analysis Tool for comprehensive metrics
+- **💾 Data Export**: Optional Excel export with detailed analysis and summary statistics
+- **⚡ Customizable Updates**: Configurable refresh intervals from 30 seconds to hours
+
+### 🚀 **Quick Start**
+
+```bash
+# Start live analyzer with default 5-minute updates
+python yahoo_finance_data_analyzer.py
+
+# Fast updates every 1 minute
+python yahoo_finance_data_analyzer.py --interval 60
+
+# Enable data saving with custom directory
+python yahoo_finance_data_analyzer.py --save --output-dir my_live_analysis
+
+# Day trading mode - 30 second updates with data saving
+python yahoo_finance_data_analyzer.py --interval 30 --save
+```
+
+### 📊 **Live Terminal Display**
+
+The analyzer displays a continuously updating table with the top 50 stock recommendations:
+
+```
+================================================================================
+🚀 YAHOO FINANCE LIVE STOCK ANALYZER - TOP 50 RECOMMENDATIONS
+📅 2025-09-25 14:30:15 | 🔄 Next update in 300s
+================================================================================
+#   📊 Symbol Company                    💰Price   🎯Ret% ⚡Vol% 📈SR  🔥Pos% ⚖️Risk 📍52W 🏢Sector       Rec        
+----------------------------------------------------------------------------------------------------------------------------------
+1   🚀 NVDA   NVIDIA Corporation...      $178.43   51.9   49.8  1.00  93.8   🟡MED  🔥   Technology     🚀STRONG_BUY
+2   💰 GOOGL  Alphabet Inc....          $251.66   50.0   32.2  1.49  96.3   🟢LOW  🔥   Technology     💰BUY       
+3   💰 ORCL   Oracle Corporation...     $313.83   81.0   57.6  1.37  86.0   🔴HIGH 🔥   Technology     💰BUY       
+4   ⚖️ AAPL   Apple Inc....             $254.43   17.1   32.6  0.46  94.7   🟢LOW  🔥   Technology     ⚖️HOLD      
+5   ⚠️ SNAP   Snap Inc....              $8.42     -5.5   59.5  -0.13 23.8   🔴HIGH ❄️   Communication  ⚠️AVOID     
+```
+
+### 📋 **Analysis Categories**
+
+The system automatically fetches and analyzes stocks from all 6 Yahoo Finance categories:
+
+1. **📈 Most Active** - Highest trading volume stocks
+2. **🔥 Trending Now** - Currently trending stocks  
+3. **🚀 Top Gainers** - Best daily performers
+4. **📉 Top Losers** - Worst daily performers
+5. **🏆 52 Week Gainers** - Best annual performers
+6. **⬇️ 52 Week Losers** - Worst annual performers
+
+### 🎯 **Recommendation System**
+
+#### **Recommendation Levels**
+- **🚀 STRONG_BUY**: Excellent risk-adjusted returns, high Sharpe ratio (>1.5), strong fundamentals
+- **💰 BUY**: Good investment opportunity with positive expected returns and reasonable risk
+- **⚖️ HOLD**: Neutral position, mixed signals, suitable for existing positions
+- **⚠️ AVOID**: Concerning metrics, high risk relative to expected returns
+- **🛑 STRONG_AVOID**: Poor fundamentals, negative expected returns, excessive risk
+
+#### **Risk Assessment**
+- **🟢 LOW**: Volatility < 25%, stable price movements
+- **🟡 MEDIUM**: Volatility 25-40%, moderate price swings  
+- **🔴 HIGH**: Volatility > 40%, significant price volatility
+
+#### **52-Week Position Indicators**
+- **🔥 Near High**: 80-100% of 52-week range, momentum plays
+- **⚡ Mid-Range**: 20-80% of 52-week range, balanced position
+- **❄️ Near Low**: 0-20% of 52-week range, potential value opportunities
+
+### 🧮 **Analysis Metrics**
+
+Each recommendation includes comprehensive metrics calculated using the existing Stock Risk Analysis Tool:
+
+| Metric | Description | Calculation |
+|--------|-------------|-------------|
+| **🎯 Expected Return %** | Projected annual return | Mean daily return × 252 |
+| **⚡ Volatility %** | Risk measure | Std dev daily returns × √252 |
+| **📈 Sharpe Ratio** | Risk-adjusted return | (Return - Risk-free rate) / Volatility |
+| **🔥 52W Position %** | Position in 52-week range | (Current - Low) / (High - Low) × 100 |
+| **💰 Current Price** | Real-time stock price | Live Yahoo Finance data |
+
+### 💾 **Data Export & Saving**
+
+When `--save` option is enabled, the analyzer automatically exports data to Excel:
+
+#### **Excel Structure**
+1. **Live_Recommendations** - Complete analysis with all metrics and recommendations
+2. **Summary_Stats** - Analysis summary, counts by recommendation type, averages
+
+#### **Export Features**
+- **Timestamped files**: `yahoo_live_analysis_20250925_143015.xlsx`
+- **Automatic saving**: Each analysis cycle creates a new file
+- **Comprehensive data**: All calculated metrics, company info, sectors
+- **Summary statistics**: Recommendation counts, averages, analysis metadata
+
+### ⚙️ **Configuration Options**
+
+```bash
+# Update intervals
+python yahoo_finance_data_analyzer.py --interval 30    # 30 seconds (day trading)
+python yahoo_finance_data_analyzer.py --interval 60    # 1 minute (active monitoring)
+python yahoo_finance_data_analyzer.py --interval 300   # 5 minutes (default)
+python yahoo_finance_data_analyzer.py --interval 900   # 15 minutes (casual monitoring)
+python yahoo_finance_data_analyzer.py --interval 3600  # 1 hour (long-term tracking)
+
+# Data saving options
+python yahoo_finance_data_analyzer.py --save                          # Save to 'live_analysis' folder
+python yahoo_finance_data_analyzer.py --save --output-dir my_data     # Custom save directory
+```
+
+### 🎨 **Visual Features**
+
+- **Color Coding**: Green for buys, yellow for holds, red for avoids
+- **Emoji Indicators**: Quick visual identification of recommendations and risk levels
+- **Flashing Effects**: Periodic flashing every 4th cycle for attention
+- **Clear Screen**: Clean display updates for easy reading
+- **Progress Indicators**: Real-time status of data fetching and analysis
+
+### 🔄 **Integration with Existing Tools**
+
+The Live Analyzer seamlessly integrates with your existing workflow:
+
+```bash
+# Morning routine: Start live analyzer and portfolio overview
+python yahoo_finance_data_analyzer.py --interval 300 --save &
+python portfolio_summary.py
+
+# Active trading setup: Live analyzer + short trading monitoring
+python yahoo_finance_data_analyzer.py --interval 60 --save &
+python main.py --short-trading
+
+# Research workflow: Live analyzer + detailed stock analysis
+python yahoo_finance_data_analyzer.py --save --output-dir research_data
+python stock_analyzer.py live_analysis/yahoo_live_analysis_*.xlsx
+```
+
+### ⚠️ **Usage Guidelines**
+
+#### **Recommended Update Intervals**
+- **30-60 seconds**: Day trading, very active monitoring (watch API limits)
+- **5-15 minutes**: Active investing, regular monitoring (recommended)  
+- **30-60 minutes**: Long-term investing, casual monitoring
+- **2-4 hours**: Portfolio review, trend analysis
+
+#### **API Rate Limiting**
+- Yahoo Finance has rate limits, very frequent updates (< 30s) may trigger throttling
+- The system includes built-in error handling and retry logic
+- Consider longer intervals for continuous use
+
+### 🛑 **Stopping the Analyzer**
+
+- **Keyboard Interrupt**: Press `Ctrl+C` to gracefully stop
+- **Automatic Recovery**: Handles network errors and continues automatically
+- **Data Preservation**: All saved data remains in output directory
+
+### 📊 **Sample Terminal Output**
+
+```
+🚀 Yahoo Finance Live Analyzer Initialized
+⏰ Update interval: 300 seconds
+💾 Data saving enabled: live_analysis
+
+🔄 Analysis Cycle #1
+📡 Fetching live data from Yahoo Finance...
+   ✅ Most Active: 52 stocks
+   ✅ Trending Now: 31 stocks  
+   ✅ Top Gainers: 18 stocks
+   ✅ Top Losers: 35 stocks
+   ✅ 52 Week Gainers: 39 stocks
+   ✅ 52 Week Losers: 38 stocks
+📊 Combined data: 213 total, 156 unique stocks
+🧮 Analyzing stocks with Risk Analysis Tool...
+✅ Successfully fetched data for 142/156 stocks
+✅ Calculated metrics for 142 stocks
+💾 Analysis data saved: live_analysis/yahoo_live_analysis_20250925_143015.xlsx
+
+[Live updating table displays here]
+
+📊 LEGEND:
+🚀 STRONG_BUY | 💰 BUY | ⚖️ HOLD | ⚠️ AVOID | 🛑 STRONG_AVOID
+🟢 LOW RISK | 🟡 MEDIUM RISK | 🔴 HIGH RISK  
+🔥 Near 52W High | ⚡ Mid-Range | ❄️ Near 52W Low
+
+📊 Total analyzed: 142 stocks | Showing top 50
+💾 Data auto-saved to: live_analysis
+⏰ Waiting 298.4s for next update...
+```
+
+This Live Analyzer provides the ultimate real-time stock analysis experience, combining comprehensive data fetching, advanced analytics, and intuitive visual presentation in a single powerful tool!
 
 ---
 

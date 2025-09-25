@@ -1,55 +1,11 @@
 {
   "news": [
     {
-      "headline": "Federal Reserve Policy Decision Pending",
-      "summary": "Financial markets await central bank announcement affecting bonds TLT and equities",
-      "url": "https://www.marketwatch.com",
-      "source": "Market News (General)",
-      "published": "2025-09-17T17:32:33.298816",
-      "affected_stocks": [
-        "TLT"
-      ],
-      "sentiment": "neutral",
-      "category": "general",
-      "alert_level": "urgent",
-      "is_breaking": false
-    },
-    {
-      "headline": "Stock Market Indices Hit Record Highs",
-      "summary": "Major indices SPY, QQQ, and DIA reach new peaks amid investor optimism",
-      "url": "https://www.marketwatch.com",
-      "source": "Market News (General)",
-      "published": "2025-09-17T17:32:33.298754",
-      "affected_stocks": [
-        "QQQ",
-        "SPY",
-        "DIA"
-      ],
-      "sentiment": "neutral",
-      "category": "general",
-      "alert_level": "normal",
-      "is_breaking": false
-    },
-    {
-      "headline": "",
-      "summary": "",
-      "url": "",
-      "source": "YFinance (Yahoo Finance)",
-      "published": "2025-09-17T17:32:33.205875",
-      "affected_stocks": [
-        "SPY"
-      ],
-      "sentiment": "neutral",
-      "category": "general",
-      "alert_level": "normal",
-      "is_breaking": false
-    },
-    {
       "headline": "Cryptocurrency Market Shows Volatility",
       "summary": "Bitcoin BTC-USD and Ethereum ETH-USD experience significant price swings",
       "url": "https://finance.yahoo.com",
       "source": "Market News (General)",
-      "published": "2025-09-17T17:32:32.923627",
+      "published": "2025-09-18T13:49:41.476685",
       "affected_stocks": [
         "BTC-USD",
         "ETH-USD"
@@ -64,10 +20,54 @@
       "summary": "Broad market indices SPY and QQQ lead gains as technology sector surges",
       "url": "https://finance.yahoo.com",
       "source": "Market News (General)",
-      "published": "2025-09-17T17:32:32.923508",
+      "published": "2025-09-18T13:49:41.476539",
       "affected_stocks": [
         "S&P",
         "QQQ",
+        "SPY"
+      ],
+      "sentiment": "neutral",
+      "category": "general",
+      "alert_level": "normal",
+      "is_breaking": false
+    },
+    {
+      "headline": "",
+      "summary": "",
+      "url": "",
+      "source": "YFinance (Yahoo Finance)",
+      "published": "2025-09-18T13:49:40.816700",
+      "affected_stocks": [
+        "SPY"
+      ],
+      "sentiment": "neutral",
+      "category": "general",
+      "alert_level": "normal",
+      "is_breaking": false
+    },
+    {
+      "headline": "Federal Reserve Policy Decision Pending",
+      "summary": "Financial markets await central bank announcement affecting bonds TLT and equities",
+      "url": "https://www.marketwatch.com",
+      "source": "Market News (General)",
+      "published": "2025-09-18T13:49:40.815522",
+      "affected_stocks": [
+        "TLT"
+      ],
+      "sentiment": "neutral",
+      "category": "general",
+      "alert_level": "urgent",
+      "is_breaking": false
+    },
+    {
+      "headline": "Stock Market Indices Hit Record Highs",
+      "summary": "Major indices SPY, QQQ, and DIA reach new peaks amid investor optimism",
+      "url": "https://www.marketwatch.com",
+      "source": "Market News (General)",
+      "published": "2025-09-18T13:49:40.815456",
+      "affected_stocks": [
+        "QQQ",
+        "DIA",
         "SPY"
       ],
       "sentiment": "neutral",
@@ -90,5 +90,5 @@
       "is_breaking": false
     }
   ],
-  "last_updated": "2025-09-17T17:32:35.977752"
+  "last_updated": "2025-09-18T13:49:43.507743"
 }
