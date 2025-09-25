@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 """
-Yahoo Finance Live Data Analyzer & Recommendation Engine
+Yahoo Finance L# Terminal colors and formatting
+class Colors:
+    RED = '\033[91m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    BLUE = '\033[94m'
+    MAGENTA = '\033[95m'
+    CYAN = '\033[96m'
+    WHITE = '\033[97m'
+    BOLD = '\033[1m'
+    BLINK = '\033[5m'
+    DIM = '\033[2m'
+    END = '\033[0m'lyzer & Recommendation Engine
 ========================================================
 
 Real-time stock analysis and recommendation system that:
@@ -405,55 +417,132 @@ class YahooFinanceLiveAnalyzer:
         # Clear screen
         os.system('clear' if os.name == 'posix' else 'cls')
         
-        # Header
+        # Header with flashing effect
         flash_effect = Colors.BLINK if flash else ""
         print(f"{flash_effect}{Colors.BOLD}{Colors.CYAN}")
-        print("=" * 150)
+        print("=" * 160)
         print("🚀 YAHOO FINANCE LIVE STOCK ANALYZER - TOP 50 RECOMMENDATIONS")
         print(f"📅 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | 🔄 Next update in {self.update_interval}s")
-        print("=" * 150)
+        print("=" * 160)
         print(f"{Colors.END}")
         
-        # Table header
+        # Table header with proper spacing
         print(f"{Colors.BOLD}{Colors.WHITE}")
-        print(f"{'#':<3} {'📊':<2} {'Symbol':<6} {'Company':<28} {'💰Price':<10} {'🎯Ret%':<8} {'⚡Vol%':<8} {'📈SR':<6} {'🔥Pos%':<6} {'⚖️Risk':<6} {'📍52W':<4} {'🏢Sector':<15} {'Rec':<12}")
-        print("-" * 150)
+        header = (f"{'#':<3} {'📊':<3} {'Symbol':<7} {'Company':<30} {'💰Price':<12} "
+                 f"{'🎯Ret%':<8} {'⚡Vol%':<8} {'📈SR':<7} {'🔥Pos%':<7} {'⚖️Risk':<8} "
+                 f"{'📍52W':<5} {'🏢Sector':<20} {'Rec':<15}")
+        print(header)
+        print("-" * 160)
         print(f"{Colors.END}")
         
-        # Display top 50 recommendations
+        # Display top 50 recommendations with proper alignment
         for i, rec in enumerate(recommendations[:50], 1):
             # Color coding based on recommendation
             if rec['Recommendation'] == 'STRONG_BUY':
                 color = Colors.GREEN + Colors.BOLD
+                flash_color = Colors.BLINK + Colors.GREEN + Colors.BOLD if flash and i <= 10 else color
             elif rec['Recommendation'] == 'BUY':
                 color = Colors.GREEN
+                flash_color = Colors.BLINK + Colors.GREEN if flash and i <= 10 else color
             elif rec['Recommendation'] == 'HOLD':
                 color = Colors.YELLOW
+                flash_color = color
             elif rec['Recommendation'] == 'AVOID':
                 color = Colors.MAGENTA
+                flash_color = color
             else:  # STRONG_AVOID
                 color = Colors.RED
+                flash_color = color
             
             # Get emojis
             rec_emoji = RECOMMENDATION_EMOJIS.get(rec['Recommendation'], '❓')
             risk_emoji = RISK_EMOJIS.get(rec['Risk_Level'], '❓')
             pos_emoji = POSITION_EMOJIS.get(rec['Position_Indicator'], '❓')
             
-            print(f"{color}{i:<3} {rec_emoji:<2} {rec['Symbol']:<6} {rec['Company']:<28} "
-                  f"${rec['Price']:<9.2f} {rec['Expected_Return']:<7.1f} {rec['Volatility']:<7.1f} "
-                  f"{rec['Sharpe_Ratio']:<5.2f} {rec['Range_Position']:<5.1f} {risk_emoji}{rec['Risk_Level']:<5} "
-                  f"{pos_emoji:<4} {rec['Sector']:<15} {rec_emoji}{rec['Recommendation']:<11}{Colors.END}")
+            # Format data with proper alignment
+            price_str = f"${rec['Price']:.2f}"
+            ret_str = f"{rec['Expected_Return']:.1f}"
+            vol_str = f"{rec['Volatility']:.1f}"
+            sharpe_str = f"{rec['Sharpe_Ratio']:.2f}"
+            pos_str = f"{rec['Range_Position']:.1f}"
+            risk_str = f"{risk_emoji}{rec['Risk_Level']}"
+            sector_str = rec['Sector'][:18] + '..' if len(rec['Sector']) > 18 else rec['Sector']
+            rec_str = f"{rec_emoji}{rec['Recommendation']}"
+            
+            # Use flashing color for top 10 recommendations
+            display_color = flash_color if i <= 10 and flash else color
+            
+            # Print row with proper spacing
+            row = (f"{i:<3} {rec_emoji:<3} {rec['Symbol']:<7} {rec['Company']:<30} {price_str:<12} "
+                  f"{ret_str:<8} {vol_str:<8} {sharpe_str:<7} {pos_str:<7} {risk_str:<8} "
+                  f"{pos_emoji:<5} {sector_str:<20} {rec_str:<15}")
+            
+            print(f"{display_color}{row}{Colors.END}")
         
-        # Footer with legend
+        # Compact footer with essential legend
         print()
-        print(f"{Colors.BOLD}{Colors.CYAN}📊 LEGEND:{Colors.END}")
-        print(f"🚀 STRONG_BUY | 💰 BUY | ⚖️ HOLD | ⚠️ AVOID | 🛑 STRONG_AVOID")
-        print(f"🟢 LOW RISK | 🟡 MEDIUM RISK | 🔴 HIGH RISK")
-        print(f"🔥 Near 52W High | ⚡ Mid-Range | ❄️ Near 52W Low")
-        print()
-        print(f"{Colors.YELLOW}📊 Total analyzed: {len(recommendations)} stocks | Showing top 50{Colors.END}")
+        legend_color = Colors.BLINK + Colors.BOLD + Colors.CYAN if flash else Colors.BOLD + Colors.CYAN
+        print(f"{legend_color}📊 QUICK LEGEND:{Colors.END}")
+        
+        # Compact recommendations and risk in one line
+        print(f"🎯 {Colors.GREEN}🚀STRONG_BUY{Colors.END} {Colors.GREEN}💰BUY{Colors.END} {Colors.YELLOW}⚖️HOLD{Colors.END} {Colors.MAGENTA}⚠️AVOID{Colors.END} {Colors.RED}🛑STRONG_AVOID{Colors.END} | "
+              f"⚖️ {Colors.GREEN}🟢LOW{Colors.END} {Colors.YELLOW}🟡MED{Colors.END} {Colors.RED}🔴HIGH{Colors.END} RISK | "
+              f"📍 {Colors.RED}🔥HIGH{Colors.END} {Colors.YELLOW}⚡MID{Colors.END} {Colors.CYAN}❄️LOW{Colors.END} 52W")
+        
+        # Key columns explanation in compact format
+        print(f"{Colors.CYAN}💰Price 🎯Return% ⚡Volatility% 📈Sharpe 🔥52W-Position% ⚖️Risk 📍Range 🏢Sector{Colors.END}")
+        
+        if flash:
+            print(f"{Colors.BLINK}{Colors.BOLD}{Colors.YELLOW}⚡ FLASH MODE - TOP 10 FLASHING ⚡{Colors.END}")
+        
+        stats_color = Colors.BOLD + Colors.YELLOW if flash else Colors.YELLOW
+        print(f"{stats_color}📊 {len(recommendations)} analyzed | Top 50 shown{Colors.END}", end="")
         if self.save_data:
-            print(f"{Colors.BLUE}💾 Data auto-saved to: {self.output_dir}{Colors.END}")
+            print(f" | {Colors.BLUE}💾 Auto-saved{Colors.END}")
+        else:
+            print()
+        
+        # Add extra visual effect for flashing
+        if flash:
+            time.sleep(0.2)  # Brief pause for visual effect
+
+    def get_live_recommendations(self) -> List[Dict]:
+        """
+        Get live recommendations by running the full analysis pipeline
+        
+        Returns:
+            List of recommendation dictionaries
+        """
+        try:
+            # Fetch live data
+            categories_data = self.fetch_live_data()
+            
+            if not categories_data:
+                return []
+            
+            # Combine and deduplicate
+            combined_data = self.combine_and_deduplicate_data(categories_data)
+            
+            if combined_data.empty:
+                return []
+            
+            # Analyze with risk tool
+            analysis_results = self.analyze_stocks_with_risk_tool(combined_data)
+            
+            if analysis_results.empty:
+                return []
+            
+            # Generate and return recommendations
+            recommendations = self.generate_recommendations(analysis_results)
+            
+            # Store latest recommendations for saving
+            self.latest_recommendations = recommendations
+            
+            return recommendations
+            
+        except Exception as e:
+            print(f"{Colors.RED}❌ Error getting live recommendations: {str(e)}{Colors.END}")
+            return []
 
     def save_analysis_data(self, recommendations: List[Dict]):
         """
@@ -519,6 +608,7 @@ class YahooFinanceLiveAnalyzer:
         """
         print(f"{Colors.BOLD}{Colors.GREEN}🚀 Starting continuous analysis...{Colors.END}")
         print(f"{Colors.YELLOW}Press Ctrl+C to stop{Colors.END}")
+        print(f"{Colors.BLUE}⚡ Flashing effects will occur every 2nd cycle{Colors.END}")
         print()
         
         cycle_count = 0
@@ -528,7 +618,11 @@ class YahooFinanceLiveAnalyzer:
                 cycle_count += 1
                 start_time = time.time()
                 
-                print(f"{Colors.BOLD}{Colors.BLUE}🔄 Analysis Cycle #{cycle_count}{Colors.END}")
+                # Alternate flashing every 2nd cycle for more visibility
+                use_flash = (cycle_count % 2 == 0)
+                
+                flash_indicator = "⚡ FLASH" if use_flash else "📊 STEADY"
+                print(f"{Colors.BOLD}{Colors.BLUE}🔄 Analysis Cycle #{cycle_count} {flash_indicator}{Colors.END}")
                 
                 # Fetch live data
                 categories_data = self.fetch_live_data()
@@ -546,12 +640,18 @@ class YahooFinanceLiveAnalyzer:
                             recommendations = self.generate_recommendations(analysis_results)
                             
                             if recommendations:
-                                # Display recommendations
-                                flash = (cycle_count % 4 == 0)  # Flash every 4th cycle
-                                self.display_recommendations_table(recommendations, flash)
+                                # Display recommendations with flashing
+                                self.display_recommendations_table(recommendations, use_flash)
                                 
                                 # Save data if enabled
                                 self.save_analysis_data(recommendations)
+                                
+                                # Show flash status
+                                if use_flash:
+                                    print(f"\n{Colors.BLINK}{Colors.BOLD}{Colors.YELLOW}⚡ FLASH CYCLE #{cycle_count} COMPLETE ⚡{Colors.END}")
+                                else:
+                                    print(f"\n{Colors.BOLD}{Colors.CYAN}📊 STEADY CYCLE #{cycle_count} COMPLETE{Colors.END}")
+                                
                             else:
                                 print(f"{Colors.RED}❌ No valid recommendations generated{Colors.END}")
                         else:
@@ -561,16 +661,30 @@ class YahooFinanceLiveAnalyzer:
                 else:
                     print(f"{Colors.RED}❌ Failed to fetch data from Yahoo Finance{Colors.END}")
                 
-                # Calculate sleep time
+                # Calculate sleep time and show countdown
                 elapsed_time = time.time() - start_time
                 sleep_time = max(0, self.update_interval - elapsed_time)
                 
                 if sleep_time > 0:
-                    print(f"{Colors.CYAN}⏰ Waiting {sleep_time:.1f}s for next update...{Colors.END}")
-                    time.sleep(sleep_time)
+                    countdown_color = Colors.BLINK + Colors.YELLOW if use_flash else Colors.CYAN
+                    print(f"{countdown_color}⏰ Waiting {sleep_time:.1f}s for next update...{Colors.END}")
+                    
+                    # Simplified countdown for better UX  
+                    if sleep_time > 10:  # Only show countdown for longer waits
+                        for remaining in range(int(sleep_time), 0, -10):  # Show every 10 seconds
+                            if remaining <= sleep_time:
+                                countdown_flash = Colors.BLINK if use_flash else ""
+                                print(f"\r{countdown_flash}{Colors.YELLOW}⏳ Next analysis in: {remaining:4d}s{Colors.END}", 
+                                      end='', flush=True)
+                                time.sleep(min(10, remaining))
+                        print()  # New line after countdown
+                    else:
+                        time.sleep(sleep_time)
                 
         except KeyboardInterrupt:
             print(f"\n{Colors.YELLOW}🛑 Analysis stopped by user{Colors.END}")
+            print(f"{Colors.CYAN}📊 Total cycles completed: {cycle_count}{Colors.END}")
+            print(f"{Colors.GREEN}✨ Thank you for using Yahoo Finance Live Analyzer!{Colors.END}")
         except Exception as e:
             print(f"\n{Colors.RED}❌ Unexpected error: {e}{Colors.END}")
 
