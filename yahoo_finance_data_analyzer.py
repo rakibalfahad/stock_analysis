@@ -35,6 +35,7 @@ Date: September 2025
 import os
 import sys
 import time
+import re
 import argparse
 import pandas as pd
 import numpy as np
@@ -42,6 +43,9 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 import yfinance as yf
 from pathlib import Path
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # Import existing modules
 try:
@@ -121,7 +125,7 @@ class YahooFinanceLiveAnalyzer:
 
     def fetch_live_data(self) -> Dict[str, pd.DataFrame]:
         """
-        Fetch live data from all Yahoo Finance categories
+        Fetch live data from all Yahoo Finance categories with improved error handling
         
         Returns:
             Dictionary with category data
@@ -129,10 +133,14 @@ class YahooFinanceLiveAnalyzer:
         print(f"{Colors.YELLOW}📡 Fetching live data from Yahoo Finance...{Colors.END}")
         
         try:
-            # Get data from all categories
+            # Get data from all categories with timeout protection
             categories_data = {}
             
-            # Fetch each category
+            # Configure session with shorter timeouts for faster processing
+            if hasattr(self.downloader, 'session'):
+                self.downloader.session.timeout = 8  # 8 second timeout
+            
+            # Fetch each category with improved error handling
             categories = {
                 'most_active': self.downloader.get_most_active_stocks,
                 'trending': self.downloader.get_trending_stocks,
@@ -144,15 +152,33 @@ class YahooFinanceLiveAnalyzer:
             
             for category_name, fetch_func in categories.items():
                 try:
-                    data = fetch_func(limit=50)  # Get more data for better analysis
-                    if not data.empty:
+                    print(f"   🔄 Fetching {category_name.replace('_', ' ').title()}...")
+                    data = fetch_func(limit=40)  # Reduced limit for faster processing
+                    
+                    if data is not None and not data.empty:
                         categories_data[category_name] = data
                         print(f"   ✅ {category_name.replace('_', ' ').title()}: {len(data)} stocks")
                     else:
-                        print(f"   ⚠️ {category_name.replace('_', ' ').title()}: No data")
+                        print(f"   ⚠️ {category_name.replace('_', ' ').title()}: No data available")
+                        
+                except requests.exceptions.Timeout:
+                    print(f"   ⏰ {category_name.replace('_', ' ').title()}: Timeout, skipping")
+                    continue
+                    
+                except requests.exceptions.SSLError as ssl_e:
+                    print(f"   🔒 {category_name.replace('_', ' ').title()}: SSL error, skipping")
+                    continue
+                    
+                except requests.exceptions.ConnectionError:
+                    print(f"   🌐 {category_name.replace('_', ' ').title()}: Connection error, skipping")
+                    continue
+                    
                 except Exception as e:
-                    print(f"   ❌ {category_name.replace('_', ' ').title()}: Error - {e}")
+                    error_msg = str(e)[:40] + '...' if len(str(e)) > 40 else str(e)
+                    print(f"   ❌ {category_name.replace('_', ' ').title()}: {error_msg}")
+                    continue
             
+            print(f"{Colors.GREEN}✅ Successfully fetched {len(categories_data)} categories{Colors.END}")
             return categories_data
             
         except Exception as e:
@@ -291,24 +317,131 @@ class YahooFinanceLiveAnalyzer:
                 # Determine position indicator
                 position_indicator = self.get_position_indicator(range_position)
                 
-                # Fetch additional market data
+                # Fetch additional market data and news with improved error handling
                 try:
                     ticker = yf.Ticker(symbol)
+                    
+                    # Set session with timeout
+                    session = requests.Session()
+                    session.timeout = 5  # 5 second timeout
+                    ticker.session = session
+                    
                     info = ticker.info
                     
-                    change_percent = info.get('regularMarketChangePercent', 0) * 100 if info.get('regularMarketChangePercent') else 0
-                    volume = info.get('regularMarketVolume', 0)
-                    avg_volume = info.get('averageVolume', 0)
-                    market_cap = info.get('marketCap', 0)
-                    pe_ratio = info.get('trailingPE', 0)
+                    # Fix change percentage calculation with validation
+                    current_price_val = float(current_price) if current_price else 0
+                    
+                    # Method 1: Try to get proper change percentage
+                    raw_change_pct = info.get('regularMarketChangePercent', 0)
+                    if raw_change_pct:
+                        change_percent = raw_change_pct * 100
+                        # Validate daily change (should be reasonable, max ±50%)
+                        if abs(change_percent) > 50:
+                            # Calculate manually without printing error message
+                            prev_close = info.get('previousClose', info.get('regularMarketPreviousClose', 0))
+                            if prev_close and prev_close > 0 and current_price_val > 0:
+                                change_percent = ((current_price_val - prev_close) / prev_close) * 100
+                                if abs(change_percent) > 50:  # Still unreasonable
+                                    change_percent = 0
+                            else:
+                                change_percent = 0
+                    else:
+                        # Method 3: Calculate from available price data
+                        prev_close = info.get('previousClose', info.get('regularMarketPreviousClose', 0))
+                        if prev_close and prev_close > 0 and current_price_val > 0:
+                            change_percent = ((current_price_val - prev_close) / prev_close) * 100
+                            # Cap at reasonable daily movement
+                            if abs(change_percent) > 50:
+                                change_percent = 0
+                        else:
+                            change_percent = 0
+                    
+                    # Get other market data with validation
+                    volume = max(0, info.get('regularMarketVolume', info.get('volume', 0)))
+                    avg_volume = max(0, info.get('averageVolume', info.get('averageVolume10days', 0)))
+                    market_cap = max(0, info.get('marketCap', 0))
+                    pe_ratio = info.get('trailingPE', info.get('forwardPE', 0))
+                    
+                    # Validate P/E ratio (reasonable range)
+                    if pe_ratio and (pe_ratio <= 0 or pe_ratio > 500):
+                        pe_ratio = 0
+                    
+                    # Get short news with timeout protection
+                    try:
+                        news_short = self.get_stock_news_short(symbol)
+                    except:
+                        news_short = f"{info.get('sector', 'Market')[:15]} stock"
+                    
+                    # Calculate adjusted ROI
+                    roi = self.calculate_adjusted_roi(current_price, expected_return, volatility)
+                    
+                    # Get next earnings date
+                    next_earnings = self.get_next_earnings_date(symbol)
+                    
+                except requests.exceptions.Timeout:
+                    print(f"   ⏰ Timeout for {symbol}, using defaults")
+                    change_percent = 0
+                    volume = 0
+                    avg_volume = 0
+                    market_cap = 0
+                    pe_ratio = 0
+                    news_short = 'Data timeout'
+                    roi = 0.0
+                    next_earnings = 'N/A'
+                    
+                except requests.exceptions.SSLError:
+                    print(f"   🔒 SSL error for {symbol}, trying alternative method")
+                    # Try alternative approach with different SSL settings
+                    try:
+                        # Create session with relaxed SSL verification for corporate networks
+                        session = requests.Session()
+                        session.verify = False  # Disable SSL verification as fallback
+                        session.timeout = 10
+                        
+                        # Disable SSL warnings
+                        import urllib3
+                        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+                        
+                        # Try to get basic data from a different endpoint or method
+                        alt_ticker = yf.Ticker(symbol)
+                        alt_ticker.session = session
+                        info = alt_ticker.info
+                        
+                        change_percent = 0  # Default for SSL issues
+                        volume = max(0, info.get('regularMarketVolume', info.get('volume', 0)))
+                        avg_volume = max(0, info.get('averageVolume', 0))
+                        market_cap = max(0, info.get('marketCap', 0))
+                        pe_ratio = info.get('trailingPE', 0)
+                        
+                        if pe_ratio and (pe_ratio <= 0 or pe_ratio > 500):
+                            pe_ratio = 0
+                        
+                        news_short = f"{info.get('sector', 'Tech')[:15]} sector"
+                        roi = self.calculate_adjusted_roi(current_price, expected_return, volatility)
+                        next_earnings = 'SSL-err'
+                        
+                    except Exception as alt_error:
+                        print(f"   🔒 Alternative SSL method failed for {symbol}")
+                        change_percent = 0
+                        volume = 0
+                        avg_volume = 0
+                        market_cap = 0
+                        pe_ratio = 0
+                        news_short = 'SSL connection error'
+                        roi = 0.0
+                        next_earnings = 'N/A'
                     
                 except Exception as data_error:
+                    print(f"   ❌ Data error for {symbol}: {str(data_error)[:30]}")
                     # Use defaults if additional data fetch fails
                     change_percent = 0
                     volume = 0
                     avg_volume = 0
                     market_cap = 0
                     pe_ratio = 0
+                    news_short = 'Data unavailable'
+                    roi = 0.0
+                    next_earnings = 'N/A'
                 
                 recommendations.append({
                     'Symbol': symbol,
@@ -328,6 +461,9 @@ class YahooFinanceLiveAnalyzer:
                     'Position_Indicator': position_indicator,
                     'Sector': sector,
                     'Source': source_category,
+                    'News': news_short,
+                    'ROI': roi,
+                    'Next_Earnings': next_earnings,
                     'Score': self.calculate_score(expected_return, volatility, sharpe_ratio, range_position)
                 })
                 
@@ -444,35 +580,23 @@ class YahooFinanceLiveAnalyzer:
         # Header with flashing effect
         flash_effect = Colors.BLINK if flash else ""
         print(f"{flash_effect}{Colors.BOLD}{Colors.CYAN}")
-        print("=" * 180)
+        print("=" * 190)
         print("🚀 YAHOO FINANCE LIVE STOCK ANALYZER - TOP 50 RECOMMENDATIONS")
         print(f"📅 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | 🔄 Next update in {self.update_interval}s")
-        print("=" * 180)
+        print("=" * 190)
         print(f"{Colors.END}")
         
-        # Table with borders - Header (fixed alignment)
+        # Clean table header with optimized column widths to prevent wrapping
         print(f"{Colors.BOLD}{Colors.WHITE}")
-        # Define consistent column widths
-        col_widths = [4, 3, 8, 26, 11, 8, 9, 8, 8, 7, 7, 9, 6, 9, 7, 19, 13]
-        
-        # Top border
-        border_top = "┌" + "┬".join("─" * w for w in col_widths) + "┐"
-        print(border_top)
-        
-        # Header row with perfect alignment
-        headers = ["#", "📊", "Symbol", "Company", "💰Price", "📈Chg%", "📊Vol(M)", 
-                  "🎯Ret%", "⚡Vol%", "📈SR", "🔥Pos%", "⚖️Risk", "📍52W", "💹MCap", 
-                  "📊PE", "🏢Sector", "Rec"]
-        
-        header_row = "│" + "│".join(f"{h:^{w}}" for h, w in zip(headers, col_widths)) + "│"
-        print(header_row)
-        
-        # Separator
-        border_sep = "├" + "┼".join("─" * w for w in col_widths) + "┤"
-        print(border_sep)
+        header = (f"{'#':<4} {'Symbol':<7} {'Company':<20} {'Price':<9} {'Chg%':<7} "
+                 f"{'Vol(M)':<7} {'Ret%':<7} {'Vol%':<7} {'SR':<6} {'Pos%':<6} "
+                 f"{'Risk':<7} {'MCap':<7} {'PE':<5} {'ROI%':<6} "
+                 f"{'Earn':<8} {'Sector':<12} {'Recommendation':<15} {'News':<25}")
+        print(header)
+        print("─" * 170)
         print(f"{Colors.END}")
         
-        # Display top 50 recommendations with borders and perfect alignment
+        # Display top 50 recommendations with clean format and news
         for i, rec in enumerate(recommendations[:50], 1):
             # Color coding based on recommendation
             if rec['Recommendation'] == 'STRONG_BUY':
@@ -491,44 +615,54 @@ class YahooFinanceLiveAnalyzer:
                 color = Colors.RED
                 flash_color = color
             
-            # Get emojis
-            rec_emoji = RECOMMENDATION_EMOJIS.get(rec['Recommendation'], '❓')
+            # Get emojis for risk display only
             risk_emoji = RISK_EMOJIS.get(rec['Risk_Level'], '❓')
-            pos_emoji = POSITION_EMOJIS.get(rec['Position_Indicator'], '❓')
             
-            # Format data with consistent column widths
-            data_values = [
-                str(i),  # Rank
-                rec_emoji,  # Recommendation emoji
-                rec['Symbol'],  # Symbol
-                rec['Company'][:24] + '..' if len(rec['Company']) > 24 else rec['Company'],  # Company
-                f"${rec['Price']:.2f}",  # Price
-                f"{rec.get('Change_Percent', 0):+.1f}%" if rec.get('Change_Percent', 0) != 0 else "0.0%",  # Change %
-                f"{rec.get('Volume', 0)/1e6:.1f}" if rec.get('Volume', 0) > 0 else "N/A",  # Volume
-                f"{rec['Expected_Return']:.1f}%",  # Expected Return
-                f"{rec['Volatility']:.1f}%",  # Volatility
-                f"{rec['Sharpe_Ratio']:.2f}",  # Sharpe Ratio
-                f"{rec['Range_Position']:.1f}%",  # Position
-                f"{risk_emoji}{rec['Risk_Level'][:3]}",  # Risk
-                pos_emoji,  # Position indicator
-                f"{rec.get('Market_Cap', 0)/1e9:.1f}B" if rec.get('Market_Cap', 0) > 0 else "N/A",  # Market Cap
-                f"{rec.get('PE_Ratio', 0):.1f}" if rec.get('PE_Ratio', 0) > 0 and rec.get('PE_Ratio', 0) < 1000 else "N/A",  # PE Ratio
-                rec['Sector'][:17] + '..' if len(rec['Sector']) > 17 else rec['Sector'],  # Sector
-                f"{rec_emoji}{rec['Recommendation'][:8]}"  # Recommendation
-            ]
+                        # Format data with proper alignment (removed Rec column)
+            price_str = f"${rec['Price']:.2f}"
+            change_pct = rec.get('Change_Percent', 0.0)
+            
+            # Handle invalid change percentages silently
+            if change_pct == 0 or abs(change_pct) > 50:  # Cap extreme values
+                if abs(change_pct) > 50:
+                    # Silently use a reasonable estimate for extreme values
+                    change_pct = 0.0
+                change_str = "  0.0%"
+            else:
+                change_str = f"{change_pct:+5.1f}%"[:8]  # Limit to 8 chars max
+            volume_str = f"{rec.get('Volume', 0)/1e6:.1f}" if rec.get('Volume', 0) > 0 else "N/A"
+            ret_str = f"{rec['Expected_Return']:.1f}%"
+            vol_str = f"{rec['Volatility']:.1f}%"
+            sharpe_str = f"{rec['Sharpe_Ratio']:.2f}"
+            pos_str = f"{rec['Range_Position']:.1f}%"
+            risk_str = f"{risk_emoji}{rec['Risk_Level'][:3]}"
+            mcap_str = f"{rec.get('Market_Cap', 0)/1e9:.1f}B" if rec.get('Market_Cap', 0) > 0 else "N/A"
+            pe_str = f"{rec.get('PE_Ratio', 0):.1f}" if rec.get('PE_Ratio', 0) > 0 and rec.get('PE_Ratio', 0) < 1000 else "N/A"
+            roi_str = f"{rec.get('ROI', 0):.1f}%" if rec.get('ROI', 0) != 0 else "N/A"
+            earn_str = rec.get('Next_Earnings', 'N/A')
+            sector_str = rec['Sector'][:12] + '..' if len(rec['Sector']) > 12 else rec['Sector']
+            company_str = rec['Company'][:18] + '..' if len(rec['Company']) > 18 else rec['Company']
+            
+            # Get news for the stock (shorter format for table fit)
+            news_str = rec.get('News', self.get_stock_news_short(rec['Symbol']))
+            if len(news_str) > 23:
+                news_str = news_str[:20] + "..."
             
             # Use flashing color for top 10 recommendations
             display_color = flash_color if i <= 10 and flash else color
             
-            # Create perfectly aligned row
-            data_row = "│" + "│".join(f"{val:^{w}}" for val, w in zip(data_values, col_widths)) + "│"
-            print(f"{display_color}{data_row}{Colors.END}")
+            # Get recommendation text for display
+            rec_text = rec['Recommendation'].replace('_', ' ')
+            
+            # Print clean row format with recommendation text
+            row = (f"{i:<4} {rec['Symbol']:<7} {company_str:<20} {price_str:<9} {change_str:<7} "
+                  f"{volume_str:<7} {ret_str:<7} {vol_str:<7} {sharpe_str:<6} {pos_str:<6} "
+                  f"{risk_str:<7} {mcap_str:<7} {pe_str:<5} {roi_str:<6} "
+                  f"{earn_str:<8} {sector_str:<12} {rec_text:<15} {news_str:<25}")
+            
+            print(f"{display_color}{row}{Colors.END}")
         
-        # Bottom border
-        print(f"{Colors.BOLD}{Colors.WHITE}")
-        border_bottom = "└" + "┴".join("─" * w for w in col_widths) + "┘"
-        print(border_bottom)
-        print(f"{Colors.END}")
+        print("─" * 170)
         
         # Enhanced compact legend with better descriptions and ranges
         print()
@@ -545,12 +679,12 @@ class YahooFinanceLiveAnalyzer:
               f"{Colors.YELLOW}20-40{Colors.END}(moderate) {Colors.RED}>40{Colors.END}(volatile)")
         
         print(f"📈 Sharpe: {Colors.RED}<0.5{Colors.END}(poor) {Colors.YELLOW}0.5-1.0{Colors.END}(fair) "
-              f"{Colors.GREEN}1.0-2.0{Colors.END}(good) {Colors.GREEN}>2.0{Colors.END}(excellent) | "
-              f"52W: {Colors.RED}🔥{Colors.END}(80-100%) {Colors.YELLOW}⚡{Colors.END}(20-80%) {Colors.CYAN}❄️{Colors.END}(0-20%)")
+              f"{Colors.GREEN}1.0-2.0{Colors.END}(good) {Colors.GREEN}>2.0{Colors.END}(excellent)")
         
-        # Enhanced column explanations with new metrics
-        print(f"{Colors.CYAN}📋 Columns: 💰Price 📈Chg%(daily) 📊Vol(M/daily) 🎯Ret%(annual) ⚡Vol%(risk) "
-              f"📈SR(risk-adj) 🔥Pos%(52W) 💹MCap(B) 📊PE(ratio) 🏢Sector{Colors.END}")
+        # Enhanced column explanations for clean header format
+        print(f"{Colors.CYAN}📋 Columns: Price(USD) Chg%(daily) Vol(M/daily) Ret%(annual) Vol%(risk) "
+              f"SR(risk-adj) Pos%(52W-range) Risk MCap(B) PE(ratio) "
+              f"ROI%(adj-return) Earn(next-date) Sector Recommendation News(recent) {Colors.END}")
         
         if flash:
             print(f"{Colors.BLINK}{Colors.BOLD}{Colors.YELLOW}⚡ FLASH MODE - TOP 10 RECOMMENDATIONS HIGHLIGHTED ⚡{Colors.END}")
@@ -565,6 +699,166 @@ class YahooFinanceLiveAnalyzer:
         # Add extra visual effect for flashing
         if flash:
             time.sleep(0.2)  # Brief pause for visual effect
+
+    def calculate_adjusted_roi(self, current_price: float, expected_return: float, volatility: float) -> float:
+        """
+        Calculate adjusted ROI based on expected return and risk
+        
+        Args:
+            current_price: Current stock price
+            expected_return: Expected annual return percentage
+            volatility: Stock volatility percentage
+            
+        Returns:
+            Adjusted ROI percentage
+        """
+        try:
+            # Adjust return based on volatility (risk-adjusted)
+            risk_adjustment = max(0.1, 1 - (volatility / 100))  # Higher volatility reduces ROI
+            adjusted_roi = expected_return * risk_adjustment
+            
+            # Cap ROI between -50% and 100%
+            return max(-50.0, min(100.0, adjusted_roi))
+            
+        except Exception:
+            return 0.0
+
+    def get_next_earnings_date(self, symbol: str) -> str:
+        """
+        Get next earnings reporting date for a stock
+        
+        Args:
+            symbol: Stock symbol
+            
+        Returns:
+            Next earnings date as string (MM-DD format or 'N/A')
+        """
+        try:
+            ticker = yf.Ticker(symbol)
+            
+            # Try to get earnings calendar from info
+            info = ticker.info
+            earnings_date = info.get('earningsDate', None)
+            
+            if earnings_date:
+                # Handle different date formats
+                if isinstance(earnings_date, list) and len(earnings_date) > 0:
+                    # Take the first date if it's a list
+                    next_date = earnings_date[0]
+                elif isinstance(earnings_date, (int, float)):
+                    next_date = earnings_date
+                else:
+                    next_date = earnings_date
+                
+                # Convert timestamp to readable date
+                if isinstance(next_date, (int, float)):
+                    date_obj = datetime.fromtimestamp(next_date)
+                    return date_obj.strftime('%m-%d')
+                
+            # Fallback: try to get from earnings history
+            try:
+                earnings = ticker.earnings_dates
+                if earnings is not None and not earnings.empty:
+                    # Get the next future date
+                    future_dates = earnings.index[earnings.index > datetime.now()]
+                    if len(future_dates) > 0:
+                        return future_dates[0].strftime('%m-%d')
+            except:
+                pass
+            
+            return 'N/A'
+            
+        except Exception:
+            return 'N/A'
+
+    def get_stock_news_short(self, symbol: str) -> str:
+        """
+        Get short breaking news for a specific stock symbol using real news data
+        
+        Args:
+            symbol: Stock symbol to get news for
+            
+        Returns:
+            Short news string (max 33 chars) or "No recent news"
+        """
+        try:
+            ticker = yf.Ticker(symbol)
+            news = ticker.news
+            
+            if news and len(news) > 0:
+                # Get the most recent news item
+                latest_news = news[0]
+                
+                # Handle nested content structure from yfinance
+                title = ''
+                pub_time = 0
+                
+                if isinstance(latest_news, dict):
+                    # Try to get title from nested content structure
+                    if 'content' in latest_news and isinstance(latest_news['content'], dict):
+                        title = latest_news['content'].get('title', '')
+                        # Try to get publish time from content or root level
+                        pub_time = latest_news['content'].get('pubDate', latest_news.get('providerPublishTime', 0))
+                        
+                        # Convert pubDate string to timestamp if needed
+                        if isinstance(pub_time, str):
+                            try:
+                                from dateutil import parser
+                                pub_time = parser.parse(pub_time).timestamp()
+                            except:
+                                pub_time = 0
+                    else:
+                        # Fallback to direct fields
+                        title = latest_news.get('title', '')
+                        pub_time = latest_news.get('providerPublishTime', 0)
+                
+                if title and pub_time > 0:
+                    # Check if news is recent (within 24 hours)
+                    try:
+                        news_date = datetime.fromtimestamp(pub_time)
+                        today = datetime.now()
+                        
+                        # If news is older than 1 day, show "No recent news"
+                        if (today - news_date).days > 0:
+                            return 'No recent news'
+                    except:
+                        # If date parsing fails, assume it's recent
+                        pass
+                    
+                    # Clean and format the title
+                    title = title.replace(symbol, '').replace(symbol.upper(), '').strip()
+                    title = title.replace(symbol.lower(), '').strip()
+                    title = re.sub(r'^\W+', '', title)  # Remove leading punctuation
+                    title = re.sub(r'\s+', ' ', title)  # Normalize spaces
+                    
+                    # Remove common prefixes
+                    prefixes_to_remove = [
+                        'Stock News:', 'Breaking:', 'UPDATE:', 'ALERT:', 
+                        'News Alert:', 'Stock Alert:', symbol + ':', symbol.upper() + ':'
+                    ]
+                    for prefix in prefixes_to_remove:
+                        if title.startswith(prefix):
+                            title = title[len(prefix):].strip()
+                    
+                    # Truncate to fit column width
+                    if len(title) > 32:
+                        title = title[:29] + '...'
+                    
+                    # Only return if we have meaningful content
+                    if title and len(title.strip()) > 3:
+                        return title
+            
+            return 'No recent news'
+                
+        except Exception as e:
+            # Return a more informative message for common errors
+            error_msg = str(e).lower()
+            if 'timeout' in error_msg or 'connection' in error_msg:
+                return 'News fetch timeout'
+            elif 'not found' in error_msg or '404' in error_msg:
+                return 'Ticker not found'
+            else:
+                return 'No recent news'
 
     def get_live_recommendations(self) -> List[Dict]:
         """

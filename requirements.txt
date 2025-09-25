@@ -20,3 +20,4 @@ tqdm>=4.65.0           # Progress bars for data processing
 schedule>=1.2.0        # Job scheduling for automated analysis
 websockets>=11.0       # Real-time data streaming capabilities
 aiohttp>=3.8.0         # Async HTTP requests for better performance
+urllib3>=1.26.0        # SSL handling and certificate verification fallbacks

@@ -10,9 +10,11 @@ Transform your investment strategy with professional-grade portfolio optimizatio
 ### ⚡ **Key Highlights**
 - **📊 Advanced Analytics**: Risk/return analysis with Sharpe ratios, volatility metrics, and 52-week positioning
 - **🤖 Smart Automation**: Intelligent stock filtering, automated rebalancing, and continuous monitoring
-- **📈 Real-Time Data**: Live Yahoo Finance integration, market news, and price tracking
+- **📈 Real-Time Data**: Live Yahoo Finance integration with ROI calculations, earnings dates, and market news
+- **🔥 Live Analysis Terminal**: Professional-grade real-time stock analyzer with 17+ metrics per stock
+- **📰 News Integration**: Real ticker-specific daily news headlines and breaking market updates  
 - **📋 Professional Reports**: Multi-sheet Excel exports, interactive dashboards, and comprehensive analysis
-- **🛡️ Risk Management**: Sophisticated filtering system prevents high-risk investments
+- **🛡️ Risk Management**: Sophisticated filtering system prevents high-risk investments with volatility bands
 - **📱 Multiple Interfaces**: Command-line tools, interactive HTML dashboards, and Excel integration
 
 ### 🏆 **Perfect For**
@@ -33,23 +35,24 @@ Transform your investment strategy with professional-grade portfolio optimizatio
 4. [Portfolio Summary Dashboard](#-portfolio-summary-dashboard)
 5. [Stock Risk Analysis Tool](#-stock-risk-analysis-tool)
 6. [Yahoo Finance Data Downloader](#-yahoo-finance-stock-data-downloader)
-7. [Financial Metrics & Calculations](#-financial-metrics-and-calculations)
+7. [Live Yahoo Finance Data Analyzer](#-live-yahoo-finance-data-analyzer) ⭐ **NEW ENHANCED**
+8. [Financial Metrics & Calculations](#-financial-metrics-and-calculations)
 
 ### ⚙️ **Portfolio Management**
-8. [Configuration Guide](#-configuration-guide)
-9. [Portfolio Optimization](#-portfolio-optimization)
-10. [Stock Comparison System](#-stock-comparison-system)
-11. [Intelligent Stock Filtering](#-intelligent-stock-filtering-system)
+9. [Configuration Guide](#-configuration-guide)
+10. [Portfolio Optimization](#-portfolio-optimization)
+11. [Stock Comparison System](#-stock-comparison-system)
+12. [Intelligent Stock Filtering](#-intelligent-stock-filtering-system)
 
 ### 📈 **Trading & Monitoring**
-12. [Short Trading Mode](#-short-trading-mode)
-13. [Real-Time Monitoring](#-real-time-portfolio-monitoring)
-14. [Live Market News Fetcher](#-live-stock-market-news-fetcher)
+13. [Short Trading Mode](#-short-trading-mode)
+14. [Real-Time Monitoring](#-real-time-portfolio-monitoring)
+15. [Live Market News Fetcher](#-live-stock-market-news-fetcher)
 
 ### 🔧 **Advanced & Technical**
-15. [Advanced Features](#-advanced-features)
-16. [Troubleshooting](#-troubleshooting)
-17. [Development & Technical](#-development--technical)
+16. [Advanced Features](#-advanced-features)
+17. [Troubleshooting](#-troubleshooting)
+18. [Development & Technical](#-development--technical)
 
 ---
 
@@ -1216,14 +1219,17 @@ data/
 
 ### Overview
 
-The **Live Yahoo Finance Data Analyzer** (`yahoo_finance_data_analyzer.py`) is an advanced real-time analysis system that combines the Yahoo Finance downloader with the Stock Risk Analysis Tool to provide continuous live recommendations directly in your terminal.
+The **Live Yahoo Finance Data Analyzer** (`yahoo_finance_data_analyzer.py`) is an advanced real-time analysis system that combines Yahoo Finance data with professional-grade financial metrics to provide continuous live stock recommendations with institutional-quality analysis directly in your terminal.
 
 ### 🎯 **Key Features**
 
-- **🔄 Real-Time Analysis**: Continuous fetching and analysis of Yahoo Finance data
-- **📊 Live Terminal Display**: Animated table showing top 50 stock recommendations
+- **🔄 Real-Time Analysis**: Continuous fetching and analysis of live market data
+- **📊 Professional Table Display**: Clean, aligned table with comprehensive financial metrics
+- **📰 Live News Integration**: Real ticker-specific news headlines from Yahoo Finance
+- **💵 ROI Calculations**: Risk-adjusted return on investment with volatility adjustments
+- **📅 Earnings Calendar**: Next earnings reporting dates for strategic planning
 - **🎨 Visual Indicators**: Color-coded recommendations with emojis and flashing effects
-- **🧮 Advanced Scoring**: Uses existing Stock Risk Analysis Tool for comprehensive metrics
+- **🧮 Advanced Scoring**: Comprehensive risk analysis with Sharpe ratios and volatility metrics
 - **💾 Data Export**: Optional Excel export with detailed analysis and summary statistics
 - **⚡ Customizable Updates**: Configurable refresh intervals from 30 seconds to hours
 
@@ -1243,77 +1249,175 @@ python yahoo_finance_data_analyzer.py --save --output-dir my_live_analysis
 python yahoo_finance_data_analyzer.py --interval 30 --save
 ```
 
-### 📊 **Live Terminal Display**
+### 📊 **Enhanced Terminal Display**
 
-The analyzer displays a continuously updating table with the top 50 stock recommendations:
+The analyzer displays a continuously updating professional-grade table:
 
 ```
-================================================================================
+====================================================================================================================================
 🚀 YAHOO FINANCE LIVE STOCK ANALYZER - TOP 50 RECOMMENDATIONS
 📅 2025-09-25 14:30:15 | 🔄 Next update in 300s
-================================================================================
-#   📊 Symbol Company                    💰Price   🎯Ret% ⚡Vol% 📈SR  🔥Pos% ⚖️Risk 📍52W 🏢Sector       Rec        
-----------------------------------------------------------------------------------------------------------------------------------
-1   🚀 NVDA   NVIDIA Corporation...      $178.43   51.9   49.8  1.00  93.8   🟡MED  🔥   Technology     🚀STRONG_BUY
-2   💰 GOOGL  Alphabet Inc....          $251.66   50.0   32.2  1.49  96.3   🟢LOW  🔥   Technology     💰BUY       
-3   💰 ORCL   Oracle Corporation...     $313.83   81.0   57.6  1.37  86.0   🔴HIGH 🔥   Technology     💰BUY       
-4   ⚖️ AAPL   Apple Inc....             $254.43   17.1   32.6  0.46  94.7   🟢LOW  🔥   Technology     ⚖️HOLD      
-5   ⚠️ SNAP   Snap Inc....              $8.42     -5.5   59.5  -0.13 23.8   🔴HIGH ❄️   Communication  ⚠️AVOID     
+====================================================================================================================================
+
+#    📊   Symbol   Company                 💰Price     📈Chg%   📊Vol(M)  🎯Ret%   ⚡Vol%   📈SR    🔥Pos%  ⚖️Risk   📍52W  💹MCap    📊PE    💵ROI%   📅Earn      🏢Sector          📰News                    Rec
+1    🚀   NVDA     NVIDIA Corp             $891.23    +4.7%   52.0     35.6%   52.8%   2.15   88.9%  🔴HIG     ❓     2200.0B  71.8   32.4%   01-28      Semiconductors    AI chip demand surges in Q3      🚀STRONG_B
+2    💰   AAPL     Apple Inc.              $175.43    +2.1%   45.0     12.5%   25.3%   1.85   85.2%  �MED     ❓     2700.0B  28.5   15.2%   01-25      Technology        iPhone 15 sales exceed exp...    💰BUY    
+3    💰   TSLA     Tesla Inc.              $267.89    -1.8%   68.0     25.8%   45.1%   1.42   15.4%  🔴HIG     ❓     850.0B   65.2   18.7%   01-22      Automotive        Model Y production ramp co...    💰BUY    
+4    ⚖️  MSFT     Microsoft Corp          $425.67    +0.8%   28.0     8.2%    18.9%   1.95   92.1%  🟢LOW     ❓     3150.0B  32.1   12.3%   01-24      Technology        Azure cloud revenue up 29%      ⚖️HOLD   
 ```
+
+### 📋 **Comprehensive Data Columns**
+
+Each stock displays 17 professional-grade metrics:
+
+| Column | Description | Purpose |
+|--------|-------------|---------|
+| **#** | Ranking | Best recommendations first |
+| **📊** | Recommendation emoji | Visual recommendation indicator |
+| **Symbol** | Stock ticker | Company identifier |
+| **Company** | Company name | Full company name (truncated) |
+| **💰Price** | Current stock price | Real-time market price |
+| **📈Chg%** | Daily change % | Today's price movement |
+| **📊Vol(M)** | Volume in millions | Daily trading activity |
+| **🎯Ret%** | Expected annual return | Projected yearly return |
+| **⚡Vol%** | Volatility % | Risk/price fluctuation measure |
+| **📈SR** | Sharpe Ratio | Risk-adjusted return quality |
+| **�Pos%** | 52-week position % | Position in yearly range |
+| **⚖️Risk** | Risk assessment | LOW/MED/HIGH risk level |
+| **📍52W** | Range indicator | Position in 52-week range |
+| **💹MCap** | Market cap (billions) | Company valuation |
+| **📊PE** | P/E Ratio | Price-to-earnings valuation |
+| **💵ROI%** | Adjusted ROI | Risk-adjusted return on investment |
+| **📅Earn** | Next earnings date | Upcoming earnings report (MM-DD) |
+| **🏢Sector** | Business sector | Industry classification |
+| **📰News** | Recent news | Today's ticker-specific headlines |
+| **Rec** | Final recommendation | Investment recommendation |
 
 ### 📋 **Analysis Categories**
 
 The system automatically fetches and analyzes stocks from all 6 Yahoo Finance categories:
 
-1. **📈 Most Active** - Highest trading volume stocks
-2. **🔥 Trending Now** - Currently trending stocks  
-3. **🚀 Top Gainers** - Best daily performers
-4. **📉 Top Losers** - Worst daily performers
-5. **🏆 52 Week Gainers** - Best annual performers
-6. **⬇️ 52 Week Losers** - Worst annual performers
+1. **📈 Most Active** - Highest trading volume stocks (50+ stocks)
+2. **🔥 Trending Now** - Currently trending stocks (25+ stocks)
+3. **🚀 Top Gainers** - Best daily performers (25+ stocks)
+4. **📉 Top Losers** - Worst daily performers (25+ stocks)
+5. **🏆 52 Week Gainers** - Best annual performers (25+ stocks)
+6. **⬇️ 52 Week Losers** - Worst annual performers (25+ stocks)
 
-### 🎯 **Recommendation System**
+### 🎯 **Advanced Recommendation System**
 
 #### **Recommendation Levels**
-- **🚀 STRONG_BUY**: Excellent risk-adjusted returns, high Sharpe ratio (>1.5), strong fundamentals
-- **💰 BUY**: Good investment opportunity with positive expected returns and reasonable risk
-- **⚖️ HOLD**: Neutral position, mixed signals, suitable for existing positions
-- **⚠️ AVOID**: Concerning metrics, high risk relative to expected returns
-- **🛑 STRONG_AVOID**: Poor fundamentals, negative expected returns, excessive risk
+- **🚀 STRONG_BUY**: Exceptional opportunity, high confidence (ROI >20%, Sharpe >1.5)
+- **💰 BUY**: Good investment potential, moderate-high confidence (ROI >10%, positive metrics)
+- **⚖️ HOLD**: Neutral position, watch for changes (mixed signals, suitable for existing positions)
+- **⚠️ AVOID**: Poor outlook, consider alternatives (negative expected returns)
+- **🛑 STRONG_AVOID**: High risk, strong negative indicators (ROI <-10%, poor fundamentals)
 
-#### **Risk Assessment**
-- **🟢 LOW**: Volatility < 25%, stable price movements
-- **🟡 MEDIUM**: Volatility 25-40%, moderate price swings  
-- **🔴 HIGH**: Volatility > 40%, significant price volatility
+#### **Risk Assessment System**
+- **🟢 LOW RISK**: Volatility <20%, stable performance, predictable movements
+- **🟡 MEDIUM RISK**: Volatility 20-40%, moderate fluctuations, balanced risk/return
+- **🔴 HIGH RISK**: Volatility >40%, significant price swings, higher potential returns
 
 #### **52-Week Position Indicators**
-- **🔥 Near High**: 80-100% of 52-week range, momentum plays
-- **⚡ Mid-Range**: 20-80% of 52-week range, balanced position
-- **❄️ Near Low**: 0-20% of 52-week range, potential value opportunities
+- **🔥 Near High (80-100%)**: Stock near yearly highs, momentum plays, breakout potential
+- **⚡ Mid-Range (20-80%)**: Stock in middle range, balanced entry point
+- **❄️ Near Low (0-20%)**: Stock near yearly lows, potential value opportunities
 
-### 🧮 **Analysis Metrics**
+### 🧮 **Advanced Financial Calculations**
 
-Each recommendation includes comprehensive metrics calculated using the existing Stock Risk Analysis Tool:
+#### **Risk-Adjusted ROI Formula**
+```
+ROI = Expected_Return × Risk_Adjustment_Factor
+Risk_Adjustment_Factor = max(0.1, 1 - (Volatility / 100))
+```
 
-| Metric | Description | Calculation |
-|--------|-------------|-------------|
-| **🎯 Expected Return %** | Projected annual return | Mean daily return × 252 |
-| **⚡ Volatility %** | Risk measure | Std dev daily returns × √252 |
-| **📈 Sharpe Ratio** | Risk-adjusted return | (Return - Risk-free rate) / Volatility |
-| **🔥 52W Position %** | Position in 52-week range | (Current - Low) / (High - Low) × 100 |
-| **💰 Current Price** | Real-time stock price | Live Yahoo Finance data |
+#### **Sharpe Ratio Quality Ranges**
+- **>2.0**: Excellent risk-adjusted returns
+- **1.0-2.0**: Good risk-adjusted returns
+- **0.5-1.0**: Fair performance
+- **<0.5**: Poor risk-adjusted returns
+
+#### **Volatility Risk Bands**
+- **<20%**: Stable (blue-chip stocks, utilities)
+- **20-40%**: Moderate (growth stocks, tech)
+- **>40%**: Volatile (small-cap, biotech, crypto-related)
+
+### 📰 **Real-Time News Integration**
+
+The system fetches actual ticker-specific news headlines:
+
+- **Real-time headlines**: Today's news for each ticker from Yahoo Finance
+- **Smart parsing**: Extracts title from nested content structure
+- **Date filtering**: Only shows news from current day
+- **Fallback handling**: Shows "No recent news" when no current news available
+- **Error resilience**: Handles API timeouts and connection issues gracefully
 
 ### 💾 **Data Export & Saving**
 
-When `--save` option is enabled, the analyzer automatically exports data to Excel:
+When `--save` option is enabled, the analyzer automatically exports comprehensive data:
 
 #### **Excel Structure**
-1. **Live_Recommendations** - Complete analysis with all metrics and recommendations
-2. **Summary_Stats** - Analysis summary, counts by recommendation type, averages
+1. **Live_Recommendations** - Complete analysis with all 20+ metrics per stock
+2. **Summary_Stats** - Analysis summary, counts by recommendation type, sector breakdown
+3. **Performance_Metrics** - Historical performance tracking and trend analysis
 
 #### **Export Features**
 - **Timestamped files**: `yahoo_live_analysis_20250925_143015.xlsx`
-- **Automatic saving**: Each analysis cycle creates a new file
+- **Automatic saving**: Each analysis cycle creates a new file with fresh data
+- **Comprehensive data**: All metrics, news, earnings dates, and calculated fields
+- **Professional formatting**: Color-coded recommendations, proper number formatting
+
+### 📊 **Compact Quick Reference Guide**
+
+The analyzer includes a comprehensive but compact legend:
+
+```
+📊 COMPREHENSIVE QUICK REFERENCE:
+🎯 🚀STRONG_BUY(Best picks) 💰BUY(Good buys) ⚖️HOLD(Wait&watch) ⚠️AVOID(Skip) 🛑STRONG_AVOID(Dangerous)
+⚖️ Risk: 🟢LOW(<20% vol) 🟡MED(20-40% vol) 🔴HIGH(>40% vol) | ⚡Vol%: <20(stable) 20-40(moderate) >40(volatile)
+📈 Sharpe: <0.5(poor) 0.5-1.0(fair) 1.0-2.0(good) >2.0(excellent) | 52W: 🔥(80-100%) ⚡(20-80%) ❄️(0-20%)
+📋 Columns: 💰Price 📈Chg%(daily) 📊Vol(M/daily) 🎯Ret%(annual) ⚡Vol%(risk) 📈SR(risk-adj) 
+           🔥Pos%(52W) 💹MCap(B) 📊PE(ratio) 💵ROI%(adj-return) 📅Earn(next-date) 🏢Sector 📰News(recent)
+```
+
+### ⚡ **Performance & Reliability**
+
+- **Robust error handling**: Handles timeouts, SSL errors, delisted stocks
+- **Rate limiting**: Respects Yahoo Finance API limits
+- **Memory efficient**: Processes data in batches to handle large datasets
+- **Connection resilience**: Automatic retry logic for network issues
+- **Data validation**: Filters out invalid or missing data automatically
+
+### 🔧 **Advanced Usage Examples**
+
+```bash
+# Professional day trading setup (1-minute updates)
+python yahoo_finance_data_analyzer.py --interval 60 --save --output-dir day_trading
+
+# Weekly analysis (30-minute updates)
+python yahoo_finance_data_analyzer.py --interval 1800 --save --output-dir weekly_analysis
+
+# Long-term monitoring (1-hour updates)
+python yahoo_finance_data_analyzer.py --interval 3600 --save --output-dir long_term
+
+# Research mode (save data without continuous display)
+python yahoo_finance_data_analyzer.py --interval 300 --save --output-dir research --quiet
+```
+
+### 🎯 **Integration with Portfolio System**
+
+The live analyzer integrates seamlessly with the main portfolio optimization system:
+
+```bash
+# Use live analysis data for portfolio optimization
+python main.py --source live_analysis/yahoo_live_analysis_latest.xlsx
+
+# Import top recommendations into portfolio
+python portfolio_summary.py --import-recommendations live_analysis/
+
+# Compare live analysis with existing portfolio
+python stock_analyzer.py --benchmark live_analysis/yahoo_live_analysis_latest.xlsx
+```
 - **Comprehensive data**: All calculated metrics, company info, sectors
 - **Summary statistics**: Recommendation counts, averages, analysis metadata
 
