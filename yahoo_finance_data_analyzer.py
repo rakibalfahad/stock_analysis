@@ -291,10 +291,34 @@ class YahooFinanceLiveAnalyzer:
                 # Determine position indicator
                 position_indicator = self.get_position_indicator(range_position)
                 
+                # Fetch additional market data
+                try:
+                    ticker = yf.Ticker(symbol)
+                    info = ticker.info
+                    
+                    change_percent = info.get('regularMarketChangePercent', 0) * 100 if info.get('regularMarketChangePercent') else 0
+                    volume = info.get('regularMarketVolume', 0)
+                    avg_volume = info.get('averageVolume', 0)
+                    market_cap = info.get('marketCap', 0)
+                    pe_ratio = info.get('trailingPE', 0)
+                    
+                except Exception as data_error:
+                    # Use defaults if additional data fetch fails
+                    change_percent = 0
+                    volume = 0
+                    avg_volume = 0
+                    market_cap = 0
+                    pe_ratio = 0
+                
                 recommendations.append({
                     'Symbol': symbol,
                     'Company': company_name[:25] + '...' if len(company_name) > 25 else company_name,
                     'Price': current_price,
+                    'Change_Percent': change_percent,
+                    'Volume': volume,
+                    'Average_Volume': avg_volume,
+                    'Market_Cap': market_cap,
+                    'PE_Ratio': pe_ratio,
                     'Expected_Return': expected_return,
                     'Volatility': volatility,
                     'Sharpe_Ratio': sharpe_ratio,
@@ -426,13 +450,13 @@ class YahooFinanceLiveAnalyzer:
         print("=" * 160)
         print(f"{Colors.END}")
         
-        # Table header with proper spacing
+        # Table header with proper spacing (enhanced with more columns)
         print(f"{Colors.BOLD}{Colors.WHITE}")
-        header = (f"{'#':<4} {'📊':<3} {'Symbol':<8} {'Company':<32} {'💰Price':<11} "
-                 f"{'🎯Ret%':<8} {'⚡Vol%':<8} {'📈SR':<7} {'🔥Pos%':<7} {'⚖️Risk':<9} "
-                 f"{'📍52W':<5} {'🏢Sector':<22} {'Rec':<13}")
+        header = (f"{'#':<4} {'📊':<3} {'Symbol':<7} {'Company':<25} {'💰Price':<10} {'📈Chg%':<7} "
+                 f"{'📊Vol(M)':<8} {'🎯Ret%':<7} {'⚡Vol%':<7} {'📈SR':<6} {'🔥Pos%':<6} "
+                 f"{'⚖️Risk':<8} {'📍52W':<5} {'💹MCap':<8} {'📊PE':<6} {'🏢Sector':<18} {'Rec':<12}")
         print(header)
-        print("-" * 165)
+        print("-" * 175)
         print(f"{Colors.END}")
         
         # Display top 50 recommendations with proper alignment
@@ -459,44 +483,53 @@ class YahooFinanceLiveAnalyzer:
             risk_emoji = RISK_EMOJIS.get(rec['Risk_Level'], '❓')
             pos_emoji = POSITION_EMOJIS.get(rec['Position_Indicator'], '❓')
             
-            # Format data with proper alignment
+            # Format data with proper alignment (enhanced with more metrics)
             price_str = f"${rec['Price']:.2f}"
+            change_pct = rec.get('Change_Percent', 0.0)
+            change_str = f"{change_pct:+.1f}%" if change_pct != 0 else "0.0%"
+            volume_str = f"{rec.get('Volume', 0)/1e6:.1f}" if rec.get('Volume', 0) > 0 else "N/A"
             ret_str = f"{rec['Expected_Return']:.1f}"
             vol_str = f"{rec['Volatility']:.1f}"
             sharpe_str = f"{rec['Sharpe_Ratio']:.2f}"
             pos_str = f"{rec['Range_Position']:.1f}"
-            risk_str = f"{risk_emoji}{rec['Risk_Level']}"
-            sector_str = rec['Sector'][:20] + '..' if len(rec['Sector']) > 20 else rec['Sector']
-            company_str = rec['Company'][:30] + '..' if len(rec['Company']) > 30 else rec['Company']
-            rec_str = f"{rec_emoji}{rec['Recommendation']}"
+            risk_str = f"{risk_emoji}{rec['Risk_Level'][:3]}"  # Abbreviated for space
+            mcap_str = f"{rec.get('Market_Cap', 0)/1e9:.1f}B" if rec.get('Market_Cap', 0) > 0 else "N/A"
+            pe_str = f"{rec.get('PE_Ratio', 0):.1f}" if rec.get('PE_Ratio', 0) > 0 else "N/A"
+            sector_str = rec['Sector'][:16] + '..' if len(rec['Sector']) > 16 else rec['Sector']
+            company_str = rec['Company'][:23] + '..' if len(rec['Company']) > 23 else rec['Company']
+            rec_str = f"{rec_emoji}{rec['Recommendation'][:8]}"  # Abbreviated recommendation
             
             # Use flashing color for top 10 recommendations
             display_color = flash_color if i <= 10 and flash else color
             
-            # Print row with proper spacing
-            row = (f"{i:<4} {rec_emoji:<3} {rec['Symbol']:<8} {company_str:<32} {price_str:<11} "
-                  f"{ret_str:<8} {vol_str:<8} {sharpe_str:<7} {pos_str:<7} {risk_str:<9} "
-                  f"{pos_emoji:<5} {sector_str:<22} {rec_str:<13}")
+            # Print row with proper spacing (enhanced layout)
+            row = (f"{i:<4} {rec_emoji:<3} {rec['Symbol']:<7} {company_str:<25} {price_str:<10} {change_str:<7} "
+                  f"{volume_str:<8} {ret_str:<7} {vol_str:<7} {sharpe_str:<6} {pos_str:<6} "
+                  f"{risk_str:<8} {pos_emoji:<5} {mcap_str:<8} {pe_str:<6} {sector_str:<18} {rec_str:<12}")
             
             print(f"{display_color}{row}{Colors.END}")
         
-        # Enhanced compact legend with better descriptions
+        # Enhanced compact legend with better descriptions and ranges
         print()
         legend_color = Colors.BLINK + Colors.BOLD + Colors.CYAN if flash else Colors.BOLD + Colors.CYAN
-        print(f"{legend_color}📊 QUICK REFERENCE GUIDE:{Colors.END}")
+        print(f"{legend_color}📊 COMPREHENSIVE QUICK REFERENCE:{Colors.END}")
         
         # Recommendation types with explanations
         print(f"🎯 {Colors.GREEN}🚀STRONG_BUY{Colors.END}(Best picks) {Colors.GREEN}💰BUY{Colors.END}(Good buys) "
               f"{Colors.YELLOW}⚖️HOLD{Colors.END}(Wait&watch) {Colors.MAGENTA}⚠️AVOID{Colors.END}(Skip) {Colors.RED}🛑STRONG_AVOID{Colors.END}(Dangerous)")
         
-        # Risk levels with ranges
-        print(f"⚖️ Risk: {Colors.GREEN}🟢LOW{Colors.END}(<20% vol) {Colors.YELLOW}🟡MEDIUM{Colors.END}(20-40% vol) "
-              f"{Colors.RED}🔴HIGH{Colors.END}(>40% vol) | 52W: {Colors.RED}🔥HIGH{Colors.END}(80-100%) "
-              f"{Colors.YELLOW}⚡MID{Colors.END}(20-80%) {Colors.CYAN}❄️LOW{Colors.END}(0-20%)")
+        # Risk levels and metrics with ranges
+        print(f"⚖️ Risk: {Colors.GREEN}🟢LOW{Colors.END}(<20% vol) {Colors.YELLOW}🟡MED{Colors.END}(20-40% vol) "
+              f"{Colors.RED}🔴HIGH{Colors.END}(>40% vol) | ⚡Vol%: {Colors.GREEN}<20{Colors.END}(stable) "
+              f"{Colors.YELLOW}20-40{Colors.END}(moderate) {Colors.RED}>40{Colors.END}(volatile)")
         
-        # Column explanations
-        print(f"{Colors.CYAN}📋 Columns: 💰Price(USD) 🎯Return%(annual) ⚡Volatility%(risk) 📈Sharpe(risk-adj returns) "
-              f"🔥Position%(in 52W range) 🏢Sector{Colors.END}")
+        print(f"📈 Sharpe: {Colors.RED}<0.5{Colors.END}(poor) {Colors.YELLOW}0.5-1.0{Colors.END}(fair) "
+              f"{Colors.GREEN}1.0-2.0{Colors.END}(good) {Colors.GREEN}>2.0{Colors.END}(excellent) | "
+              f"52W: {Colors.RED}🔥{Colors.END}(80-100%) {Colors.YELLOW}⚡{Colors.END}(20-80%) {Colors.CYAN}❄️{Colors.END}(0-20%)")
+        
+        # Enhanced column explanations with new metrics
+        print(f"{Colors.CYAN}📋 Columns: 💰Price 📈Chg%(daily) 📊Vol(M/daily) 🎯Ret%(annual) ⚡Vol%(risk) "
+              f"📈SR(risk-adj) 🔥Pos%(52W) 💹MCap(B) 📊PE(ratio) 🏢Sector{Colors.END}")
         
         if flash:
             print(f"{Colors.BLINK}{Colors.BOLD}{Colors.YELLOW}⚡ FLASH MODE - TOP 10 RECOMMENDATIONS HIGHLIGHTED ⚡{Colors.END}")
