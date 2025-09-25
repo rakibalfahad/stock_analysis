@@ -444,22 +444,35 @@ class YahooFinanceLiveAnalyzer:
         # Header with flashing effect
         flash_effect = Colors.BLINK if flash else ""
         print(f"{flash_effect}{Colors.BOLD}{Colors.CYAN}")
-        print("=" * 160)
+        print("=" * 180)
         print("🚀 YAHOO FINANCE LIVE STOCK ANALYZER - TOP 50 RECOMMENDATIONS")
         print(f"📅 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | 🔄 Next update in {self.update_interval}s")
-        print("=" * 160)
+        print("=" * 180)
         print(f"{Colors.END}")
         
-        # Table header with proper spacing (enhanced with more columns)
+        # Table with borders - Header (fixed alignment)
         print(f"{Colors.BOLD}{Colors.WHITE}")
-        header = (f"{'#':<4} {'📊':<3} {'Symbol':<7} {'Company':<25} {'💰Price':<10} {'📈Chg%':<7} "
-                 f"{'📊Vol(M)':<8} {'🎯Ret%':<7} {'⚡Vol%':<7} {'📈SR':<6} {'🔥Pos%':<6} "
-                 f"{'⚖️Risk':<8} {'📍52W':<5} {'💹MCap':<8} {'📊PE':<6} {'🏢Sector':<18} {'Rec':<12}")
-        print(header)
-        print("-" * 175)
+        # Define consistent column widths
+        col_widths = [4, 3, 8, 26, 11, 8, 9, 8, 8, 7, 7, 9, 6, 9, 7, 19, 13]
+        
+        # Top border
+        border_top = "┌" + "┬".join("─" * w for w in col_widths) + "┐"
+        print(border_top)
+        
+        # Header row with perfect alignment
+        headers = ["#", "📊", "Symbol", "Company", "💰Price", "📈Chg%", "📊Vol(M)", 
+                  "🎯Ret%", "⚡Vol%", "📈SR", "🔥Pos%", "⚖️Risk", "📍52W", "💹MCap", 
+                  "📊PE", "🏢Sector", "Rec"]
+        
+        header_row = "│" + "│".join(f"{h:^{w}}" for h, w in zip(headers, col_widths)) + "│"
+        print(header_row)
+        
+        # Separator
+        border_sep = "├" + "┼".join("─" * w for w in col_widths) + "┤"
+        print(border_sep)
         print(f"{Colors.END}")
         
-        # Display top 50 recommendations with proper alignment
+        # Display top 50 recommendations with borders and perfect alignment
         for i, rec in enumerate(recommendations[:50], 1):
             # Color coding based on recommendation
             if rec['Recommendation'] == 'STRONG_BUY':
@@ -483,31 +496,39 @@ class YahooFinanceLiveAnalyzer:
             risk_emoji = RISK_EMOJIS.get(rec['Risk_Level'], '❓')
             pos_emoji = POSITION_EMOJIS.get(rec['Position_Indicator'], '❓')
             
-            # Format data with proper alignment (enhanced with more metrics)
-            price_str = f"${rec['Price']:.2f}"
-            change_pct = rec.get('Change_Percent', 0.0)
-            change_str = f"{change_pct:+.1f}%" if change_pct != 0 else "0.0%"
-            volume_str = f"{rec.get('Volume', 0)/1e6:.1f}" if rec.get('Volume', 0) > 0 else "N/A"
-            ret_str = f"{rec['Expected_Return']:.1f}"
-            vol_str = f"{rec['Volatility']:.1f}"
-            sharpe_str = f"{rec['Sharpe_Ratio']:.2f}"
-            pos_str = f"{rec['Range_Position']:.1f}"
-            risk_str = f"{risk_emoji}{rec['Risk_Level'][:3]}"  # Abbreviated for space
-            mcap_str = f"{rec.get('Market_Cap', 0)/1e9:.1f}B" if rec.get('Market_Cap', 0) > 0 else "N/A"
-            pe_str = f"{rec.get('PE_Ratio', 0):.1f}" if rec.get('PE_Ratio', 0) > 0 else "N/A"
-            sector_str = rec['Sector'][:16] + '..' if len(rec['Sector']) > 16 else rec['Sector']
-            company_str = rec['Company'][:23] + '..' if len(rec['Company']) > 23 else rec['Company']
-            rec_str = f"{rec_emoji}{rec['Recommendation'][:8]}"  # Abbreviated recommendation
+            # Format data with consistent column widths
+            data_values = [
+                str(i),  # Rank
+                rec_emoji,  # Recommendation emoji
+                rec['Symbol'],  # Symbol
+                rec['Company'][:24] + '..' if len(rec['Company']) > 24 else rec['Company'],  # Company
+                f"${rec['Price']:.2f}",  # Price
+                f"{rec.get('Change_Percent', 0):+.1f}%" if rec.get('Change_Percent', 0) != 0 else "0.0%",  # Change %
+                f"{rec.get('Volume', 0)/1e6:.1f}" if rec.get('Volume', 0) > 0 else "N/A",  # Volume
+                f"{rec['Expected_Return']:.1f}%",  # Expected Return
+                f"{rec['Volatility']:.1f}%",  # Volatility
+                f"{rec['Sharpe_Ratio']:.2f}",  # Sharpe Ratio
+                f"{rec['Range_Position']:.1f}%",  # Position
+                f"{risk_emoji}{rec['Risk_Level'][:3]}",  # Risk
+                pos_emoji,  # Position indicator
+                f"{rec.get('Market_Cap', 0)/1e9:.1f}B" if rec.get('Market_Cap', 0) > 0 else "N/A",  # Market Cap
+                f"{rec.get('PE_Ratio', 0):.1f}" if rec.get('PE_Ratio', 0) > 0 and rec.get('PE_Ratio', 0) < 1000 else "N/A",  # PE Ratio
+                rec['Sector'][:17] + '..' if len(rec['Sector']) > 17 else rec['Sector'],  # Sector
+                f"{rec_emoji}{rec['Recommendation'][:8]}"  # Recommendation
+            ]
             
             # Use flashing color for top 10 recommendations
             display_color = flash_color if i <= 10 and flash else color
             
-            # Print row with proper spacing (enhanced layout)
-            row = (f"{i:<4} {rec_emoji:<3} {rec['Symbol']:<7} {company_str:<25} {price_str:<10} {change_str:<7} "
-                  f"{volume_str:<8} {ret_str:<7} {vol_str:<7} {sharpe_str:<6} {pos_str:<6} "
-                  f"{risk_str:<8} {pos_emoji:<5} {mcap_str:<8} {pe_str:<6} {sector_str:<18} {rec_str:<12}")
-            
-            print(f"{display_color}{row}{Colors.END}")
+            # Create perfectly aligned row
+            data_row = "│" + "│".join(f"{val:^{w}}" for val, w in zip(data_values, col_widths)) + "│"
+            print(f"{display_color}{data_row}{Colors.END}")
+        
+        # Bottom border
+        print(f"{Colors.BOLD}{Colors.WHITE}")
+        border_bottom = "└" + "┴".join("─" * w for w in col_widths) + "┘"
+        print(border_bottom)
+        print(f"{Colors.END}")
         
         # Enhanced compact legend with better descriptions and ranges
         print()
