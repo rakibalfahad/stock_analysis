@@ -428,11 +428,11 @@ class YahooFinanceLiveAnalyzer:
         
         # Table header with proper spacing
         print(f"{Colors.BOLD}{Colors.WHITE}")
-        header = (f"{'#':<3} {'📊':<3} {'Symbol':<7} {'Company':<30} {'💰Price':<12} "
-                 f"{'🎯Ret%':<8} {'⚡Vol%':<8} {'📈SR':<7} {'🔥Pos%':<7} {'⚖️Risk':<8} "
-                 f"{'📍52W':<5} {'🏢Sector':<20} {'Rec':<15}")
+        header = (f"{'#':<4} {'📊':<3} {'Symbol':<8} {'Company':<32} {'💰Price':<11} "
+                 f"{'🎯Ret%':<8} {'⚡Vol%':<8} {'📈SR':<7} {'🔥Pos%':<7} {'⚖️Risk':<9} "
+                 f"{'📍52W':<5} {'🏢Sector':<22} {'Rec':<13}")
         print(header)
-        print("-" * 160)
+        print("-" * 165)
         print(f"{Colors.END}")
         
         # Display top 50 recommendations with proper alignment
@@ -466,39 +466,45 @@ class YahooFinanceLiveAnalyzer:
             sharpe_str = f"{rec['Sharpe_Ratio']:.2f}"
             pos_str = f"{rec['Range_Position']:.1f}"
             risk_str = f"{risk_emoji}{rec['Risk_Level']}"
-            sector_str = rec['Sector'][:18] + '..' if len(rec['Sector']) > 18 else rec['Sector']
+            sector_str = rec['Sector'][:20] + '..' if len(rec['Sector']) > 20 else rec['Sector']
+            company_str = rec['Company'][:30] + '..' if len(rec['Company']) > 30 else rec['Company']
             rec_str = f"{rec_emoji}{rec['Recommendation']}"
             
             # Use flashing color for top 10 recommendations
             display_color = flash_color if i <= 10 and flash else color
             
             # Print row with proper spacing
-            row = (f"{i:<3} {rec_emoji:<3} {rec['Symbol']:<7} {rec['Company']:<30} {price_str:<12} "
-                  f"{ret_str:<8} {vol_str:<8} {sharpe_str:<7} {pos_str:<7} {risk_str:<8} "
-                  f"{pos_emoji:<5} {sector_str:<20} {rec_str:<15}")
+            row = (f"{i:<4} {rec_emoji:<3} {rec['Symbol']:<8} {company_str:<32} {price_str:<11} "
+                  f"{ret_str:<8} {vol_str:<8} {sharpe_str:<7} {pos_str:<7} {risk_str:<9} "
+                  f"{pos_emoji:<5} {sector_str:<22} {rec_str:<13}")
             
             print(f"{display_color}{row}{Colors.END}")
         
-        # Compact footer with essential legend
+        # Enhanced compact legend with better descriptions
         print()
         legend_color = Colors.BLINK + Colors.BOLD + Colors.CYAN if flash else Colors.BOLD + Colors.CYAN
-        print(f"{legend_color}📊 QUICK LEGEND:{Colors.END}")
+        print(f"{legend_color}📊 QUICK REFERENCE GUIDE:{Colors.END}")
         
-        # Compact recommendations and risk in one line
-        print(f"🎯 {Colors.GREEN}🚀STRONG_BUY{Colors.END} {Colors.GREEN}💰BUY{Colors.END} {Colors.YELLOW}⚖️HOLD{Colors.END} {Colors.MAGENTA}⚠️AVOID{Colors.END} {Colors.RED}🛑STRONG_AVOID{Colors.END} | "
-              f"⚖️ {Colors.GREEN}🟢LOW{Colors.END} {Colors.YELLOW}🟡MED{Colors.END} {Colors.RED}🔴HIGH{Colors.END} RISK | "
-              f"📍 {Colors.RED}🔥HIGH{Colors.END} {Colors.YELLOW}⚡MID{Colors.END} {Colors.CYAN}❄️LOW{Colors.END} 52W")
+        # Recommendation types with explanations
+        print(f"🎯 {Colors.GREEN}🚀STRONG_BUY{Colors.END}(Best picks) {Colors.GREEN}💰BUY{Colors.END}(Good buys) "
+              f"{Colors.YELLOW}⚖️HOLD{Colors.END}(Wait&watch) {Colors.MAGENTA}⚠️AVOID{Colors.END}(Skip) {Colors.RED}🛑STRONG_AVOID{Colors.END}(Dangerous)")
         
-        # Key columns explanation in compact format
-        print(f"{Colors.CYAN}💰Price 🎯Return% ⚡Volatility% 📈Sharpe 🔥52W-Position% ⚖️Risk 📍Range 🏢Sector{Colors.END}")
+        # Risk levels with ranges
+        print(f"⚖️ Risk: {Colors.GREEN}🟢LOW{Colors.END}(<20% vol) {Colors.YELLOW}🟡MEDIUM{Colors.END}(20-40% vol) "
+              f"{Colors.RED}🔴HIGH{Colors.END}(>40% vol) | 52W: {Colors.RED}🔥HIGH{Colors.END}(80-100%) "
+              f"{Colors.YELLOW}⚡MID{Colors.END}(20-80%) {Colors.CYAN}❄️LOW{Colors.END}(0-20%)")
+        
+        # Column explanations
+        print(f"{Colors.CYAN}📋 Columns: 💰Price(USD) 🎯Return%(annual) ⚡Volatility%(risk) 📈Sharpe(risk-adj returns) "
+              f"🔥Position%(in 52W range) 🏢Sector{Colors.END}")
         
         if flash:
-            print(f"{Colors.BLINK}{Colors.BOLD}{Colors.YELLOW}⚡ FLASH MODE - TOP 10 FLASHING ⚡{Colors.END}")
+            print(f"{Colors.BLINK}{Colors.BOLD}{Colors.YELLOW}⚡ FLASH MODE - TOP 10 RECOMMENDATIONS HIGHLIGHTED ⚡{Colors.END}")
         
         stats_color = Colors.BOLD + Colors.YELLOW if flash else Colors.YELLOW
-        print(f"{stats_color}📊 {len(recommendations)} analyzed | Top 50 shown{Colors.END}", end="")
+        print(f"{stats_color}📊 {len(recommendations)} stocks analyzed | Top 50 displayed{Colors.END}", end="")
         if self.save_data:
-            print(f" | {Colors.BLUE}💾 Auto-saved{Colors.END}")
+            print(f" | {Colors.BLUE}💾 Auto-saved to {self.output_dir}{Colors.END}")
         else:
             print()
         
