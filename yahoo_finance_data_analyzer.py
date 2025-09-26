@@ -602,10 +602,10 @@ class YahooFinanceLiveAnalyzer:
         
         # Clean table header with optimized column widths to prevent wrapping
         print(f"{Colors.BOLD}{Colors.WHITE}")
-        header = (f"{'#':<4} {'Symbol':<7} {'Company':<20} {'Price':<9} {'Chg%':<7} "
-                 f"{'Vol(M)':<7} {'Ret%':<7} {'Vol%':<7} {'SR':<6} {'Pos%':<6} "
+        header = (f"{'#':<4} {'📊':<2} {'Symbol':<7} {'Company':<20} {'Price':<9} {'Chg%':<7} "
+                 f"{'Vol(M)':<7} {'Ret%':<7} {'Vol%':<7} {'SRI':<6} {'Pos%':<6} "
                  f"{'Risk':<7} {'MCap':<7} {'PE':<5} {'ROI%':<6} "
-                 f"{'Earn':<8} {'Sector':<12} {'Recommendation':<15} {'News':<25}")
+                 f"{'Earn':<8} {'Sector':<12} {'News':<25} {'Rec':<8}")
         print(header)
         print("─" * 170)
         print(f"{Colors.END}")
@@ -629,20 +629,40 @@ class YahooFinanceLiveAnalyzer:
                 color = Colors.RED + Colors.BOLD
                 flash_color = Colors.RED + Colors.BOLD if self.should_flash_row(rec, cycle_count) else color
             
-            # Add visual flash indicators
+            # Add visual flash indicators with different symbols for different conditions
             flash_prefix = ""
             flash_suffix = ""
             if self.should_flash_row(rec, cycle_count):
-                flash_prefix = "⚡⚡ "
-                flash_suffix = " ⚡⚡"
-                flash_color = Colors.YELLOW + Colors.BOLD  # Bright yellow for attention
-            
-            # Check for extreme price changes flashing
-            change_pct = rec.get('Change_Percent', 0)
-            if abs(change_pct) > 5.0 and cycle_count % 3 == 0:
-                flash_prefix = "🔥🔥 "
-                flash_suffix = " 🔥🔥"
-                flash_color = Colors.CYAN + Colors.BOLD  # Bright cyan for extreme changes
+                # Different flash indicators based on condition
+                change_pct = rec.get('Change_Percent', 0)
+                range_pos = rec.get('Range_Position', 50)
+                recommendation = rec['Recommendation']
+                
+                if recommendation == 'STRONG_BUY':
+                    flash_prefix = ""
+                    flash_suffix = ""
+                    flash_color = Colors.GREEN + Colors.BOLD  # Bright green for STRONG_BUY
+                elif recommendation == 'STRONG_AVOID':
+                    flash_prefix = ""
+                    flash_suffix = ""
+                    flash_color = Colors.RED + Colors.BOLD  # Bright red for STRONG_AVOID
+                elif abs(change_pct) > 5.0:
+                    if change_pct > 0:
+                        flash_prefix = ""
+                        flash_suffix = ""
+                        flash_color = Colors.GREEN + Colors.BOLD  # Green for high positive changes
+                    else:
+                        flash_prefix = ""
+                        flash_suffix = ""
+                        flash_color = Colors.RED + Colors.BOLD  # Red for high negative changes
+                elif range_pos < 50:
+                    flash_prefix = ""
+                    flash_suffix = ""
+                    flash_color = Colors.CYAN + Colors.BOLD  # Cyan for potential value (near lows)
+                else:
+                    flash_prefix = ""
+                    flash_suffix = ""
+                    flash_color = Colors.YELLOW + Colors.BOLD  # Default yellow flashing
             
             # Get emojis for risk display only
             risk_emoji = RISK_EMOJIS.get(rec['Risk_Level'], '❓')
@@ -680,14 +700,15 @@ class YahooFinanceLiveAnalyzer:
             # Use flashing color for qualifying rows
             display_color = flash_color
             
-            # Get recommendation text for display
-            rec_text = rec['Recommendation'].replace('_', ' ')
+            # Get recommendation emoji and text for display
+            rec_emoji = RECOMMENDATION_EMOJIS.get(rec['Recommendation'], '❓')
+            rec_text = rec['Recommendation'].replace('_', '_').replace('STRONG_', '')  # Show STRONG_BUY as STRONG_B to fit
             
-            # Print clean row format with flash indicators
-            row = (f"{flash_prefix}{i:<4} {rec['Symbol']:<7} {company_str:<20} {price_str:<9} {change_str:<7} "
+            # Print clean row format with flash indicators properly positioned
+            row = (f"{i+1:<4} {flash_prefix}{rec_emoji} {rec['Symbol']:<7} {company_str:<20} {price_str:<9} {change_str:<7} "
                   f"{volume_str:<7} {ret_str:<7} {vol_str:<7} {sharpe_str:<6} {pos_str:<6} "
                   f"{risk_str:<7} {mcap_str:<7} {pe_str:<5} {roi_str:<6} "
-                  f"{earn_str:<8} {sector_str:<12} {rec_text:<15} {news_str:<25}{flash_suffix}")
+                  f"{earn_str:<8} {sector_str:<12} {news_str:<25} {flash_prefix}{rec_text}{flash_suffix}")
             
             print(f"{display_color}{row}{Colors.END}")
         
@@ -715,12 +736,19 @@ class YahooFinanceLiveAnalyzer:
               f"{Colors.RED}🔴HIGH{Colors.END}(>40% vol) | ⚡Vol%: {Colors.GREEN}<20{Colors.END}(stable) "
               f"{Colors.YELLOW}20-40{Colors.END}(moderate) {Colors.RED}>40{Colors.END}(volatile)")
         
-        print(f"📈 Sharpe: {Colors.RED}<0.5{Colors.END}(poor) {Colors.YELLOW}0.5-1.0{Colors.END}(fair) "
-              f"{Colors.GREEN}1.0-2.0{Colors.END}(good) {Colors.GREEN}>2.0{Colors.END}(excellent)")
+        print(f"📈 SRI (Sharpe Ratio Index: Risk-Adjusted, Poor < 1, Good 1–2, Excellent > 2) | "
+              f"52W: {Colors.RED}🔥{Colors.END}(80-100%) {Colors.YELLOW}⚡{Colors.END}(20-80%) {Colors.CYAN}❄️{Colors.END}(0-20%)")
+        
+        print(f"📊 PE (Price-to-Earnings Ratio: Valuation, Poor > 25, Good 15–25, Excellent < 15) | "
+              f"💵 ROI% (Adjusted Return: Profitability, Poor < 5%, Good 5–10%, Excellent > 10%)")
+        
+        # Flashing indicators explanation
+        print(f"Flash: {Colors.GREEN}STRONG_BUY{Colors.END} {Colors.RED}STRONG_AVOID{Colors.END} "
+              f"{Colors.GREEN}High+Chg%{Colors.END} {Colors.RED}High-Chg%{Colors.END} {Colors.CYAN}Near-Low{Colors.END}")
         
         # Enhanced column explanations for clean header format
         print(f"{Colors.CYAN}📋 Columns: Price(USD) Chg%(daily) Vol(M/daily) Ret%(annual) Vol%(risk) "
-              f"SR(risk-adj) Pos%(52W-range) Risk MCap(B) PE(ratio) "
+              f"SRI(risk-adj) Pos%(52W-range) Risk MCap(B) PE(ratio) "
               f"ROI%(adj-return) Earn(next-date) Sector Recommendation News(recent) {Colors.END}")
         
         if has_flash_rows:
@@ -946,6 +974,11 @@ class YahooFinanceLiveAnalyzer:
         change_pct = rec.get('Change_Percent', 0)
         if abs(change_pct) > 5.0:
             return True
+        
+        # Flash stocks near 52-week lows (Position < 50%)
+        range_pos = rec.get('Range_Position', 50)
+        if range_pos < 50:
+            return True
             
         return False
 
@@ -1153,8 +1186,8 @@ class YahooFinanceLiveAnalyzer:
                 # Alternate flashing every 2nd cycle for more visibility
                 use_flash = (cycle_count % 2 == 0)
                 
-                flash_indicator = "⚡ FLASH" if use_flash else "📊 STEADY"
-                print(f"{Colors.BOLD}{Colors.BLUE}🔄 Analysis Cycle #{cycle_count} {flash_indicator}{Colors.END}")
+                flash_indicator = "FLASH" if use_flash else "STEADY"
+                print(f"{Colors.BOLD}{Colors.BLUE}Analysis Cycle #{cycle_count} {flash_indicator}{Colors.END}")
                 
                 # Fetch live data
                 categories_data = self.fetch_live_data()
