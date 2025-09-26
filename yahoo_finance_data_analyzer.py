@@ -605,9 +605,9 @@ class YahooFinanceLiveAnalyzer:
         header = (f"{'#':<4} {'📊':<2} {'Symbol':<7} {'Company':<20} {'Price':<9} {'Chg%':<7} "
                  f"{'Vol(M)':<7} {'Ret%':<7} {'Vol%':<7} {'SRI':<6} {'Pos%':<6} "
                  f"{'Risk':<7} {'MCap':<7} {'PE':<5} {'ROI%':<6} "
-                 f"{'Earn':<8} {'Sector':<12} {'News':<25} {'Rec':<8}")
+                 f"{'Earn':<8} {'Sector':<12} {'News':<25} {'Rec':<12}")
         print(header)
-        print("─" * 170)
+        print("─" * 175)
         print(f"{Colors.END}")
         
         # Display top 50 recommendations with enhanced flashing
@@ -702,17 +702,17 @@ class YahooFinanceLiveAnalyzer:
             
             # Get recommendation emoji and text for display
             rec_emoji = RECOMMENDATION_EMOJIS.get(rec['Recommendation'], '❓')
-            rec_text = rec['Recommendation'].replace('_', '_').replace('STRONG_', '')  # Show STRONG_BUY as STRONG_B to fit
+            rec_text = rec['Recommendation']  # Show full recommendation text
             
             # Print clean row format with flash indicators properly positioned
             row = (f"{i+1:<4} {flash_prefix}{rec_emoji} {rec['Symbol']:<7} {company_str:<20} {price_str:<9} {change_str:<7} "
                   f"{volume_str:<7} {ret_str:<7} {vol_str:<7} {sharpe_str:<6} {pos_str:<6} "
                   f"{risk_str:<7} {mcap_str:<7} {pe_str:<5} {roi_str:<6} "
-                  f"{earn_str:<8} {sector_str:<12} {news_str:<25} {flash_prefix}{rec_text}{flash_suffix}")
+                  f"{earn_str:<8} {sector_str:<12} {news_str:<25} {flash_prefix}{rec_text:<12}{flash_suffix}")
             
             print(f"{display_color}{row}{Colors.END}")
         
-        print("─" * 170)
+        print("─" * 175)
         
         # Brief visual pause for flashing cycles
         if cycle_count % 3 == 0:
@@ -772,14 +772,14 @@ class YahooFinanceLiveAnalyzer:
             return
             
         print(f"\\n{Colors.BOLD}{Colors.CYAN}🆕 NEW SYMBOLS DETECTED TODAY ({len(new_symbol_recs)} symbols){Colors.END}")
-        print("─" * 170)
+        print("─" * 175)
         
         # Compact header for new symbols
         print(f"{Colors.BOLD}{Colors.WHITE}")
         header = (f"{'#':<4} {'Symbol':<7} {'Company':<20} {'Price':<9} {'Chg%':<7} "
                  f"{'Recommendation':<15} {'Risk':<7} {'ROI%':<6} {'First Seen':<12} {'News':<25}")
         print(header)
-        print("─" * 170)
+        print("─" * 175)
         print(f"{Colors.END}")
         
         # Display new symbols (limit to 25 for readability)
@@ -821,7 +821,7 @@ class YahooFinanceLiveAnalyzer:
             
             print(f"{color}{row}{Colors.END}")
         
-        print("─" * 170)
+        print("─" * 175)
         print(f"{Colors.CYAN}📅 Symbols cache: {len(cache)} total symbols tracked{Colors.END}")
         
         if len(new_symbol_recs) > 25:

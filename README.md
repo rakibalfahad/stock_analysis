@@ -1229,7 +1229,7 @@ The **Live Yahoo Finance Data Analyzer** (`yahoo_finance_data_analyzer.py`) is a
 - **💵 ROI Calculations**: Risk-adjusted return on investment with volatility adjustments
 - **📅 Earnings Calendar**: Next earnings reporting dates for strategic planning
 - **🎨 Visual Indicators**: Color-coded recommendations with emojis and flashing effects
-- **⚡ Enhanced Flashing System**: ⚡⚡ Lightning bolts for STRONG_BUY, 🔥🔥 Fire for STRONG_AVOID, extreme price changes >5%
+- **⚡ Enhanced Flashing System**: Color-based flashing for STRONG_BUY/STRONG_AVOID and extreme price changes >5%
 - **💾 Smart Symbol Cache**: JSON persistence tracking first-seen dates for new symbols with dual table display
 - **🧮 Advanced Scoring**: Comprehensive risk analysis with Sharpe ratios and volatility metrics
 - **💾 Data Export**: Optional Excel export with detailed analysis and summary statistics
@@ -1261,7 +1261,7 @@ The analyzer displays a continuously updating professional-grade table:
 📅 2025-09-25 14:30:15 | 🔄 Next update in 300s
 ====================================================================================================================================
 
-#    📊   Symbol   Company                 💰Price     📈Chg%   📊Vol(M)  🎯Ret%   ⚡Vol%   📈SR    🔥Pos%  ⚖️Risk   📍52W  💹MCap    📊PE    💵ROI%   📅Earn      🏢Sector          📰News                    Rec
+#    📊   Symbol   Company                 💰Price     📈Chg%   📊Vol(M)  🎯Ret%   ⚡Vol%   📈SRI   🔥Pos%  ⚖️Risk   📍52W  💹MCap    📊PE    💵ROI%   📅Earn      🏢Sector          📰News                    Rec
 1    🚀   NVDA     NVIDIA Corp             $891.23    +4.7%   52.0     35.6%   52.8%   2.15   88.9%  🔴HIG     ❓     2200.0B  71.8   32.4%   01-28      Semiconductors    AI chip demand surges in Q3      🚀STRONG_B
 2    💰   AAPL     Apple Inc.              $175.43    +2.1%   45.0     12.5%   25.3%   1.85   85.2%  �MED     ❓     2700.0B  28.5   15.2%   01-25      Technology        iPhone 15 sales exceed exp...    💰BUY    
 3    💰   TSLA     Tesla Inc.              $267.89    -1.8%   68.0     25.8%   45.1%   1.42   15.4%  🔴HIG     ❓     850.0B   65.2   18.7%   01-22      Automotive        Model Y production ramp co...    💰BUY    
@@ -1271,8 +1271,11 @@ The analyzer displays a continuously updating professional-grade table:
 ### ⚡ **Enhanced Flashing & Cache System**
 
 #### **🔥 Visual Flash Indicators**
-- **⚡⚡ Lightning Bolts**: STRONG_BUY recommendations + extreme positive changes >5%
-- **🔥🔥 Fire Symbols**: STRONG_AVOID recommendations + extreme negative changes >5% 
+- **Color-Based Flashing**: Professional color-only flashing without emoji clutter
+- **STRONG_BUY**: Green/Bold coloring for exceptional opportunities
+- **STRONG_AVOID**: Red/Bold coloring for high-risk stocks
+- **Extreme Changes >5%**: Green/Bold for gains, Red/Bold for losses
+- **Near 52W Lows <50%**: Cyan/Bold for potential value opportunities
 - **🔄 Flashing Cycles**: Visual indicators appear every 3rd analysis cycle
 - **💫 Cycle Status**: Display shows current flashing status in header
 
@@ -1298,7 +1301,7 @@ Each stock displays 17 professional-grade metrics:
 | **📊Vol(M)** | Volume in millions | Daily trading activity |
 | **🎯Ret%** | Expected annual return | Projected yearly return |
 | **⚡Vol%** | Volatility % | Risk/price fluctuation measure |
-| **📈SR** | Sharpe Ratio | Risk-adjusted return quality |
+| **📈SRI** | Sharpe Ratio Index | Risk-adjusted return quality |
 | **�Pos%** | 52-week position % | Position in yearly range |
 | **⚖️Risk** | Risk assessment | LOW/MED/HIGH risk level |
 | **📍52W** | Range indicator | Position in 52-week range |
@@ -1348,7 +1351,7 @@ ROI = Expected_Return × Risk_Adjustment_Factor
 Risk_Adjustment_Factor = max(0.1, 1 - (Volatility / 100))
 ```
 
-#### **Sharpe Ratio Quality Ranges**
+#### **Sharpe Ratio Index (SRI) Quality Ranges**
 - **>2.0**: Excellent risk-adjusted returns
 - **1.0-2.0**: Good risk-adjusted returns
 - **0.5-1.0**: Fair performance
@@ -1392,8 +1395,9 @@ The analyzer includes a comprehensive but compact legend:
 📊 COMPREHENSIVE QUICK REFERENCE:
 🎯 🚀STRONG_BUY(Best picks) 💰BUY(Good buys) ⚖️HOLD(Wait&watch) ⚠️AVOID(Skip) 🛑STRONG_AVOID(Dangerous)
 ⚖️ Risk: 🟢LOW(<20% vol) 🟡MED(20-40% vol) 🔴HIGH(>40% vol) | ⚡Vol%: <20(stable) 20-40(moderate) >40(volatile)
-📈 Sharpe: <0.5(poor) 0.5-1.0(fair) 1.0-2.0(good) >2.0(excellent) | 52W: 🔥(80-100%) ⚡(20-80%) ❄️(0-20%)
-📋 Columns: 💰Price 📈Chg%(daily) 📊Vol(M/daily) 🎯Ret%(annual) ⚡Vol%(risk) 📈SR(risk-adj) 
+📈 SRI (Sharpe Ratio Index: Risk-Adjusted, Poor < 1, Good 1–2, Excellent > 2) | 52W: 🔥(80-100%) ⚡(20-80%) ❄️(0-20%)
+📊 PE (Price-to-Earnings Ratio: Valuation, Poor > 25, Good 15–25, Excellent < 15) | 💵 ROI% (Adjusted Return: Profitability, Poor < 5%, Good 5–10%, Excellent > 10%)
+📋 Columns: 💰Price 📈Chg%(daily) 📊Vol(M/daily) 🎯Ret%(annual) ⚡Vol%(risk) 📈SRI(risk-adj) 
            🔥Pos%(52W) 💹MCap(B) 📊PE(ratio) 💵ROI%(adj-return) 📅Earn(next-date) 🏢Sector 📰News(recent)
 ```
 
@@ -1487,10 +1491,18 @@ python stock_analyzer.py live_analysis/yahoo_live_analysis_*.xlsx
 - **30-60 minutes**: Long-term investing, casual monitoring
 - **2-4 hours**: Portfolio review, trend analysis
 
-#### **API Rate Limiting**
+#### **API Rate Limiting & Network Issues**
 - Yahoo Finance has rate limits, very frequent updates (< 30s) may trigger throttling
+- **SSL Certificate errors**: Common with some network configurations - stocks automatically skipped
+- **Timeout errors**: Expected during high API load - system continues with available data
 - The system includes built-in error handling and retry logic
-- Consider longer intervals for continuous use
+- Consider longer intervals for continuous use or unstable connections
+
+#### **Handling Network Problems**
+- **4-6 failed stocks per 76 is normal** (5-8% failure rate expected)
+- System continues analysis with successfully retrieved data
+- Problematic stocks are automatically excluded from analysis
+- No manual intervention required - system is self-healing
 
 ### 🛑 **Stopping the Analyzer**
 
