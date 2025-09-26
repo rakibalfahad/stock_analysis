@@ -61,6 +61,11 @@ short_ticker*.xlsx
 analysis_*.xlsx
 detailed_*.xlsx
 
+# Runtime cache files
+symbols_cache.json
+news_cache.json
+live_analysis/
+
 # Temporary analysis files (Images)
 *_analysis.png
 comprehensive_*.png
