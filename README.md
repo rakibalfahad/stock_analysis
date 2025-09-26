@@ -110,6 +110,9 @@ python portfolio_summary.py
 # Optimize current portfolio with risk filtering
 python main.py --plot
 
+# Analyze stocks by trading horizons with dashboard
+python main.py --horizons --plot
+
 # Monitor portfolio in real-time
 python main.py --quick-monitor --plot
 ```
@@ -512,6 +515,177 @@ python main.py --compare BRK.B JPM --strategy value --plot
       • Better financial health (D/E: 32.7% vs 154.5%)
       • Higher dividend yield (0.66% vs 0.45%)
 ```
+
+---
+
+## 🎯 Trading Horizons Analysis
+
+### Overview
+
+The **Trading Horizons Analysis** is an advanced portfolio categorization system that analyzes stocks across three distinct trading strategies, each optimized for different time horizons and investment approaches. This feature helps investors identify which stocks are best suited for their specific trading style and timeline.
+
+### 📊 **Three Trading Horizons**
+
+#### **1. 🏛️ Long-Term (Value Investing)**
+- **Theory**: Value Investing
+- **Focus**: Intrinsic value, growth potential
+- **Time Horizon**: 1+ years
+- **Key Metrics**:
+  - **Sharpe Ratio**: Risk-adjusted returns (Poor < 1, Good 1–2, Excellent > 2)
+  - **P/E Ratio**: Valuation metric (Poor > 25, Good 15–25, Excellent < 15)
+  - **ROE**: Return on Equity (Poor < 10%, Good 10–20%, Excellent > 20%)
+  - **Debt-to-Equity**: Financial health (Poor > 2, Good 0.5–2, Excellent < 0.5)
+  - **Dividend Yield**: Income generation (Poor < 1%, Good 1–3%, Excellent > 3%)
+
+#### **2. ⚡ Short-Term (Momentum Trading)**
+- **Theory**: Momentum Trading
+- **Focus**: Trend persistence, technical momentum
+- **Time Horizon**: Days to months
+- **Key Metrics**:
+  - **Sharpe Ratio**: Adjusted for shorter periods (Poor < 0.8, Good 0.8–1.5, Excellent > 1.5)
+  - **RSI**: Relative Strength Index (Poor > 70 or < 30, Good 30–70, Excellent 40–60)
+  - **ATR**: Average True Range volatility (Poor < 1%, Good 1–3%, Excellent > 3%)
+  - **Volume**: Average daily liquidity (Poor < 100K, Good 100K–1M, Excellent > 1M)
+  - **Beta**: Market sensitivity (Poor > 1.5 or < 0.5, Good 0.5–1.5, Excellent 0.8–1.2)
+
+#### **3. 📈 Day Trading (Technical Analysis)**
+- **Theory**: Technical Analysis (Dow/Elliott Wave)
+- **Focus**: Intraday volatility, scalping opportunities
+- **Time Horizon**: Minutes to hours
+- **Key Metrics**:
+  - **Sharpe Ratio**: Intraday focused (Poor < 0.5, Good 0.5–1, Excellent > 1)
+  - **RSI**: Tighter ranges (Poor > 80 or < 20, Good 20–80, Excellent 30–70)
+  - **High Relative Volume**: Activity spikes (Poor < 1.5x, Good 1.5–3x, Excellent > 3x)
+  - **VWAP Deviation**: Price vs volume-weighted average (Poor > ±2%, Good ±0.5–2%, Excellent < ±0.5%)
+  - **Bid-Ask Spread**: Trading costs (Poor > 0.5%, Good 0.1–0.5%, Excellent < 0.1%)
+
+### 🚀 **Quick Start**
+
+```bash
+# Basic trading horizons analysis
+python main.py --horizons
+
+# Analysis with comprehensive dashboard
+python main.py --horizons --plot
+
+# Analysis with timestamped results
+python main.py --horizons --plot --keep-timestamp
+```
+
+### 📊 **Sample Output**
+
+```
+================================================================================
+🎯 PORTFOLIO TRADING HORIZON ANALYSIS
+================================================================================
+📅 Analysis Date: 2025-09-26 13:11:16
+📊 Total Stocks Analyzed: 8
+
+📈 HORIZON DISTRIBUTION:
+--------------------------------------------------
+• Long-Term    (Value Investing     ):  2 stocks
+• Short-Term   (Momentum Trading    ):  6 stocks
+• Day Trading  (Technical Analysis ):  0 stocks
+
+🚀 TOP RECOMMENDATIONS BY HORIZON:
+================================================================================
+
+📊 LONG-TERM - Value Investing
+   Strategy Focus: Intrinsic value, growth
+   Suitable Stocks: 2
+   Top Picks:
+   1. GOOGL  Alphabet Inc.             Score:  73.3% [███████░░░]
+   2. MSFT   Microsoft Corporation     Score:  60.0% [██████░░░░]
+
+📊 SHORT-TERM - Momentum Trading
+   Strategy Focus: Trend persistence
+   Suitable Stocks: 6
+   Top Picks:
+   1. META   Meta Platforms, Inc.      Score:  73.3% [███████░░░]
+   2. AMZN   Amazon.com, Inc.          Score:  66.7% [██████░░░░]
+   3. NVDA   NVIDIA Corporation        Score:  66.7% [██████░░░░]
+
+📋 DETAILED METRICS FOR TOP PERFORMERS:
+================================================================================
+
+🥇 GOOGL - Best for Long-Term (Value Investing)
+------------------------------------------------------------
+   sharpe_ratio        :     1.39 (Good)
+   pe_ratio            :    26.26 (Poor)
+   roe                 :    34.83 (Excellent)
+   debt_to_equity      :     0.11 (Excellent)
+   dividend_yield      :    34.00 (Excellent)
+```
+
+### 📊 **Dashboard Features**
+
+The trading horizons dashboard (`trading_horizons_analysis.png`) includes:
+
+1. **🥧 Horizon Distribution**: Pie chart showing stock allocation across trading strategies
+2. **📊 Top Performers**: Bar chart of highest-scoring stocks per horizon
+3. **💹 Risk vs Return Scatter**: Visual positioning by trading style with risk/return proxies
+4. **🔥 Metrics Heatmap**: Color-coded performance matrix for top stocks
+5. **📈 Strategy Comparison**: Horizontal bar chart comparing strategy distribution
+6. **📋 Summary Statistics**: Comprehensive analysis summary with key insights
+
+### 🎯 **Use Cases**
+
+#### **📈 For Portfolio Managers**
+```bash
+# Analyze entire portfolio for optimal strategy allocation
+python main.py --horizons --plot
+
+# Focus on specific horizons based on market conditions
+python main.py --horizons  # Review text output for detailed metrics
+```
+
+#### **💼 For Individual Investors**
+```bash
+# Determine best trading approach for each holding
+python main.py --horizons
+
+# Create visual report for investment decisions
+python main.py --horizons --plot --keep-timestamp
+```
+
+#### **🔍 For Research & Analysis**
+```bash
+# Compare different stock universes
+python main.py --horizons --plot  # Analyze configured stocks
+```
+
+### ⚙️ **Integration with Other Tools**
+
+The Trading Horizons Analysis integrates seamlessly with other portfolio tools:
+
+```bash
+# Complete workflow: horizons → optimization → monitoring
+python main.py --horizons --plot           # Identify best horizons
+python main.py --plot                      # Optimize allocation
+python main.py --quick-monitor --plot      # Monitor performance
+
+# Compare specific stocks after horizon analysis
+python main.py --compare GOOGL MSFT --strategy value  # Compare value stocks
+python main.py --compare META NVDA --strategy growth  # Compare momentum stocks
+```
+
+### 📈 **Understanding Suitability Scores**
+
+Each stock receives a suitability score (0-100%) for each trading horizon:
+
+- **75-100%**: **Highly Suitable** - Excellent fit for this trading style
+- **60-74%**: **Suitable** - Good candidate with strong metrics
+- **40-59%**: **Moderately Suitable** - Mixed signals, use caution
+- **25-39%**: **Limited Suitability** - Some positive factors, mostly unsuitable
+- **0-24%**: **Not Suitable** - Poor fit for this trading horizon
+
+### 🎯 **Best Practices**
+
+1. **Match Your Style**: Use the horizon that aligns with your investment timeline and risk tolerance
+2. **Diversify Across Horizons**: Consider stocks from multiple horizons for balanced risk
+3. **Monitor Metrics**: Track how stocks perform against their assigned horizon metrics
+4. **Seasonal Adjustment**: Re-run analysis quarterly to account for changing market conditions
+5. **Combine with Other Analysis**: Use alongside portfolio optimization and stock comparison tools
 
 ---
 
@@ -1070,6 +1244,9 @@ python portfolio_summary.py
 
 # Portfolio optimization
 python main.py --plot
+
+# Trading horizons analysis (Long-Term/Short-Term/Day Trading)
+python main.py --horizons --plot
 
 # Live Yahoo Finance analyzer with real-time recommendations
 python yahoo_finance_data_analyzer.py

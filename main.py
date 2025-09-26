@@ -29,6 +29,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 from src.portfolio.optimizer import InvestmentOptimizer
 from src.portfolio.short_trading import ShortTradingManager
 from src.portfolio.stock_comparator import StockComparator
+from src.portfolio.trading_horizons import TradingHorizonAnalyzer
 from src.visualization.dashboard import PortfolioVisualizer
 from src.utils.constants import (
     DEFAULT_TARGET_RETURN, DEFAULT_RISK_PER_TRADE, 
@@ -52,6 +53,8 @@ Examples:
   python main.py --compare AAPL MSFT       # Compare two stocks with balanced strategy
   python main.py --compare TSLA NVDA --strategy growth  # Compare with growth-focused weighting
   python main.py --compare JNJ PG --strategy income     # Compare dividend stocks
+  python main.py --horizons --plot         # Analyze stocks by trading horizons with dashboard
+  python main.py --horizons                # Trading horizons analysis (Long/Short/Day trading)
   python main.py --short-trading           # Short trading mode with P&L alerts (uses short_trading.txt)
   python main.py --short-trading --interval 30      # Short trading with 30-sec updates
   python main.py --cleanup 5               # Keep 5 latest dashboard files
@@ -69,6 +72,13 @@ Stock Comparison:
   provide a clear recommendation. Choose from investment strategies: growth (focuses on
   growth metrics), value (emphasizes valuation), income (prioritizes dividends), stability
   (emphasizes financial health), or balanced (equal weighting).
+
+Trading Horizons Analysis:
+  Categorize stocks by optimal trading horizon based on comprehensive metrics analysis:
+  • Long-Term (Value Investing): Focus on intrinsic value, growth, PE ratios, ROE, debt levels
+  • Short-Term (Momentum Trading): Emphasize trend persistence, RSI, ATR, volume, beta
+  • Day Trading (Technical Analysis): Target intraday volatility, RSI, volume spikes, VWAP
+  Each horizon uses specialized metrics and thresholds optimized for that trading style.
         """
     )
     
@@ -89,6 +99,8 @@ Stock Comparison:
                        help='Compare two stocks and get recommendation (e.g., --compare AAPL MSFT)')
     parser.add_argument('--strategy', choices=['growth', 'value', 'income', 'stability', 'balanced'],
                        default='balanced', help='Investment strategy for comparison weighting (default: balanced)')
+    parser.add_argument('--horizons', action='store_true',
+                       help='Analyze stocks by trading horizons: Long-Term (Value), Short-Term (Momentum), Day Trading (Technical)')
     
     # Visualization options
     parser.add_argument('--plot', action='store_true',
@@ -318,7 +330,57 @@ sold_positions =
                 logging.error(f"Short trading error: {e}")
                 print(f"{EMOJIS['warning']} Short trading error: {e}")
                 return 1
-            
+        
+        elif args.horizons:
+            # Trading Horizons Analysis mode
+            try:
+                print(f"{EMOJIS['chart']} Trading Horizons Analysis Mode")
+                print("Analyzing stocks for optimal trading strategies:")
+                print("• Long-Term: Value Investing (intrinsic value, growth)")
+                print("• Short-Term: Momentum Trading (trend persistence)")  
+                print("• Day Trading: Technical Analysis (intraday volatility)")
+                print()
+                
+                # Get stock symbols from optimizer configuration
+                symbols = optimizer.all_tickers
+                if not symbols:
+                    print(f"{EMOJIS['warning']} No stocks configured for analysis")
+                    return 1
+                
+                print(f"📊 Analyzing {len(symbols)} stocks: {', '.join(symbols)}")
+                print()
+                
+                # Initialize trading horizon analyzer
+                horizon_analyzer = TradingHorizonAnalyzer()
+                
+                # Perform comprehensive analysis
+                analysis_results = horizon_analyzer.analyze_portfolio_horizons(symbols)
+                
+                if "error" in analysis_results:
+                    print(f"{EMOJIS['warning']} Analysis error: {analysis_results['error']}")
+                    return 1
+                
+                # Print comprehensive results
+                horizon_analyzer.print_horizon_analysis(analysis_results)
+                
+                # Create visualization if plotting enabled
+                if args.plot:
+                    print(f"\n{EMOJIS['chart']} Creating trading horizons dashboard...")
+                    dashboard_file = visualizer.create_horizons_dashboard(
+                        analysis_results, 
+                        save_file=not args.no_save,
+                        keep_timestamp=args.keep_timestamp
+                    )
+                    if dashboard_file:
+                        print(f"{EMOJIS['check']} Trading horizons dashboard saved as {dashboard_file}")
+                
+                return 0
+                
+            except Exception as e:
+                logging.error(f"Trading horizons analysis error: {e}")
+                print(f"{EMOJIS['warning']} Trading horizons analysis error: {e}")
+                return 1
+        
         else:
             # Single run mode
             print(f"{EMOJIS['rocket']} Running single optimization...")

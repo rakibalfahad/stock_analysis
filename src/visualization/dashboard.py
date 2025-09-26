@@ -1066,3 +1066,275 @@ Expected Gain:
         except Exception as e:
             logging.warning(f"Error creating Bokeh comparison: {e}")
             raise
+    
+    def create_horizons_dashboard(self, analysis_results: Dict[str, Any], 
+                                 save_file: bool = True, 
+                                 keep_timestamp: bool = False) -> Optional[str]:
+        """
+        Create a comprehensive trading horizons analysis dashboard
+        
+        Args:
+            analysis_results: Trading horizons analysis results
+            save_file: Whether to save the dashboard to file
+            keep_timestamp: Whether to keep timestamp in filename
+            
+        Returns:
+            Filename if saved, None otherwise
+        """
+        if not self.enable_plotting:
+            return None
+            
+        try:
+            # Create comprehensive figure with subplots
+            fig, axes = plt.subplots(2, 3, figsize=(20, 12))
+            fig.suptitle('🎯 TRADING HORIZONS ANALYSIS DASHBOARD', fontsize=16, fontweight='bold')
+            
+            # Extract data for visualization
+            stocks = analysis_results.get("stocks", {})
+            horizon_summary = analysis_results.get("horizon_summary", {})
+            recommendations = analysis_results.get("recommendations", [])
+            
+            # 1. Horizon Distribution (Pie Chart)
+            ax1 = axes[0, 0]
+            horizon_counts = [len(stocks) for stocks in horizon_summary.values()]
+            horizon_labels = list(horizon_summary.keys())
+            
+            if sum(horizon_counts) > 0:
+                colors = ['#2E8B57', '#FF6347', '#4682B4']  # Green, Red, Blue
+                wedges, texts, autotexts = ax1.pie(horizon_counts, labels=horizon_labels, 
+                                                  autopct='%1.1f%%', startangle=90, colors=colors)
+                ax1.set_title('Stock Distribution by Trading Horizon', fontweight='bold')
+            else:
+                ax1.text(0.5, 0.5, 'No Data Available', ha='center', va='center', transform=ax1.transAxes)
+                ax1.set_title('Stock Distribution by Trading Horizon', fontweight='bold')
+            
+            # 2. Top Performers by Horizon (Bar Chart)
+            ax2 = axes[0, 1]
+            top_symbols = []
+            top_scores = []
+            top_colors = []
+            
+            color_map = {'Long-Term': '#2E8B57', 'Short-Term': '#FF6347', 'Day Trading': '#4682B4'}
+            
+            for rec in recommendations:
+                for stock in rec.get("top_picks", [])[:3]:  # Top 3 per horizon
+                    top_symbols.append(f"{stock['symbol']}\n({rec['horizon'][:5]})")
+                    top_scores.append(stock['score'])
+                    top_colors.append(color_map.get(rec['horizon'], '#666666'))
+            
+            if top_symbols:
+                bars = ax2.bar(range(len(top_symbols)), top_scores, color=top_colors, alpha=0.7)
+                ax2.set_xticks(range(len(top_symbols)))
+                ax2.set_xticklabels(top_symbols, rotation=45, ha='right')
+                ax2.set_ylabel('Suitability Score (%)')
+                ax2.set_title('Top Performers by Horizon', fontweight='bold')
+                ax2.set_ylim(0, 100)
+                
+                # Add score labels on bars
+                for bar, score in zip(bars, top_scores):
+                    height = bar.get_height()
+                    ax2.text(bar.get_x() + bar.get_width()/2., height + 1,
+                            f'{score:.1f}%', ha='center', va='bottom', fontsize=8)
+            else:
+                ax2.text(0.5, 0.5, 'No Top Performers', ha='center', va='center', transform=ax2.transAxes)
+                ax2.set_title('Top Performers by Horizon', fontweight='bold')
+            
+            # 3. Risk vs Return Scatter by Horizon
+            ax3 = axes[0, 2]
+            
+            for horizon, color in color_map.items():
+                horizon_stocks = horizon_summary.get(horizon, [])
+                if horizon_stocks:
+                    returns = []
+                    risks = []
+                    symbols = []
+                    
+                    for stock_info in horizon_stocks:
+                        symbol = stock_info['symbol']
+                        stock_data = stocks.get(symbol, {})
+                        if 'horizons' in stock_data:
+                            horizon_analysis = stock_data['horizons'].get(horizon, {})
+                            metrics = horizon_analysis.get('metrics', {})
+                            
+                            # Extract risk and return proxies
+                            sharpe = metrics.get('sharpe_ratio', {}).get('value', 0)
+                            volatility = 30  # Default volatility proxy
+                            
+                            if horizon == 'Long-Term':
+                                ret_proxy = metrics.get('roe', {}).get('value', 0)
+                                risk_proxy = metrics.get('debt_to_equity', {}).get('value', 1)
+                            elif horizon == 'Short-Term':
+                                ret_proxy = sharpe * 10 if sharpe else 0
+                                risk_proxy = metrics.get('beta', {}).get('value', 1) * 20
+                            else:  # Day Trading
+                                ret_proxy = metrics.get('high_relative_volume', {}).get('value', 1) * 10
+                                risk_proxy = metrics.get('bid_ask_spread', {}).get('value', 0.5) * 20
+                            
+                            returns.append(max(0, ret_proxy))
+                            risks.append(max(0, risk_proxy))
+                            symbols.append(symbol)
+                    
+                    if returns and risks:
+                        scatter = ax3.scatter(risks, returns, c=color, alpha=0.6, s=60, label=horizon)
+                        
+                        # Add labels for top performers
+                        for i, (risk, ret, sym) in enumerate(zip(risks, returns, symbols)):
+                            if i < 2:  # Label top 2 per horizon
+                                ax3.annotate(sym, (risk, ret), xytext=(5, 5), 
+                                           textcoords='offset points', fontsize=8)
+            
+            ax3.set_xlabel('Risk Proxy')
+            ax3.set_ylabel('Return Proxy')
+            ax3.set_title('Risk vs Return by Horizon', fontweight='bold')
+            ax3.legend()
+            ax3.grid(True, alpha=0.3)
+            
+            # 4. Metrics Heatmap for Top Stock in Each Horizon
+            ax4 = axes[1, 0]
+            
+            heatmap_data = []
+            heatmap_labels = []
+            metric_names = []
+            
+            for rec in recommendations:
+                if rec.get("top_picks"):
+                    top_stock = rec["top_picks"][0]
+                    symbol = top_stock['symbol']
+                    stock_data = stocks.get(symbol, {})
+                    
+                    if 'horizons' in stock_data:
+                        horizon_analysis = stock_data['horizons'].get(rec['horizon'], {})
+                        metrics = horizon_analysis.get('metrics', {})
+                        
+                        scores = []
+                        if not metric_names:  # First iteration, set metric names
+                            metric_names = list(metrics.keys())
+                        
+                        for metric in metric_names:
+                            score = metrics.get(metric, {}).get('score', 0)
+                            scores.append(score)
+                        
+                        heatmap_data.append(scores)
+                        heatmap_labels.append(f"{symbol}\n({rec['horizon'][:5]})")
+            
+            if heatmap_data:
+                heatmap_df = pd.DataFrame(heatmap_data, 
+                                        index=heatmap_labels, 
+                                        columns=[m.replace('_', ' ').title() for m in metric_names])
+                
+                im = ax4.imshow(heatmap_df.values, cmap='RdYlGn', aspect='auto', vmin=0, vmax=3)
+                ax4.set_xticks(range(len(heatmap_df.columns)))
+                ax4.set_xticklabels(heatmap_df.columns, rotation=45, ha='right')
+                ax4.set_yticks(range(len(heatmap_df.index)))
+                ax4.set_yticklabels(heatmap_df.index)
+                ax4.set_title('Top Stock Metrics Heatmap', fontweight='bold')
+                
+                # Add colorbar
+                cbar = plt.colorbar(im, ax=ax4, shrink=0.6)
+                cbar.set_label('Score (0=Poor, 3=Excellent)')
+                
+                # Add text annotations
+                for i in range(len(heatmap_df.index)):
+                    for j in range(len(heatmap_df.columns)):
+                        text = ax4.text(j, i, f'{heatmap_df.iloc[i, j]:.0f}',
+                                       ha="center", va="center", color="black", fontsize=8)
+            else:
+                ax4.text(0.5, 0.5, 'No Metrics Data', ha='center', va='center', transform=ax4.transAxes)
+                ax4.set_title('Top Stock Metrics Heatmap', fontweight='bold')
+            
+            # 5. Horizon Strategy Comparison (Radar Chart Style)
+            ax5 = axes[1, 1]
+            
+            strategies = []
+            focus_areas = []
+            
+            for horizon in ['Long-Term', 'Short-Term', 'Day Trading']:
+                config = None
+                if horizon == 'Long-Term':
+                    strategies.append('Value Investing')
+                    focus_areas.append('Intrinsic Value')
+                elif horizon == 'Short-Term':
+                    strategies.append('Momentum Trading')
+                    focus_areas.append('Trend Persistence')
+                else:
+                    strategies.append('Technical Analysis')
+                    focus_areas.append('Intraday Volatility')
+            
+            y_pos = np.arange(len(strategies))
+            stock_counts = [len(horizon_summary.get(h, [])) for h in ['Long-Term', 'Short-Term', 'Day Trading']]
+            
+            bars = ax5.barh(y_pos, stock_counts, color=['#2E8B57', '#FF6347', '#4682B4'], alpha=0.7)
+            ax5.set_yticks(y_pos)
+            ax5.set_yticklabels([f"{s}\n({f})" for s, f in zip(strategies, focus_areas)])
+            ax5.set_xlabel('Number of Suitable Stocks')
+            ax5.set_title('Strategy Distribution', fontweight='bold')
+            
+            # Add count labels
+            for bar, count in zip(bars, stock_counts):
+                width = bar.get_width()
+                ax5.text(width + 0.1, bar.get_y() + bar.get_height()/2.,
+                        f'{count}', ha='left', va='center', fontweight='bold')
+            
+            # 6. Timeline/Summary Stats
+            ax6 = axes[1, 2]
+            ax6.axis('off')  # Remove axes for text display
+            
+            # Create summary text
+            total_stocks = analysis_results.get("total_stocks", 0)
+            analysis_date = analysis_results.get("analysis_date", "Unknown")
+            
+            summary_text = f"""
+TRADING HORIZONS SUMMARY
+{'='*25}
+
+📅 Analysis Date: {analysis_date}
+📊 Total Stocks: {total_stocks}
+
+HORIZON BREAKDOWN:
+• Long-Term (Value): {len(horizon_summary.get('Long-Term', []))} stocks
+• Short-Term (Momentum): {len(horizon_summary.get('Short-Term', []))} stocks  
+• Day Trading (Technical): {len(horizon_summary.get('Day Trading', []))} stocks
+
+TOP RECOMMENDATIONS:
+"""
+            
+            for rec in recommendations[:3]:  # Top 3 horizons
+                if rec.get("top_picks"):
+                    top_stock = rec["top_picks"][0]
+                    summary_text += f"\n🥇 {rec['horizon']}: {top_stock['symbol']} ({top_stock['score']:.1f}%)"
+            
+            summary_text += f"""
+
+STRATEGY FOCUS:
+• Value Investing: Intrinsic value, growth
+• Momentum Trading: Trend persistence  
+• Technical Analysis: Intraday volatility
+
+Generated by Portfolio Optimizer v2.0
+"""
+            
+            ax6.text(0.05, 0.95, summary_text, transform=ax6.transAxes, fontsize=10,
+                    verticalalignment='top', fontfamily='monospace',
+                    bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray", alpha=0.8))
+            
+            plt.tight_layout()
+            
+            # Save the plot
+            if save_file:
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S') if keep_timestamp else ''
+                base_name = f"trading_horizons_analysis{('_' + timestamp) if timestamp else ''}"
+                filename = f"{base_name}.png"
+                
+                plt.savefig(filename, dpi=300, bbox_inches='tight', facecolor='white')
+                plt.close()
+                
+                return filename
+            else:
+                plt.show()
+                return None
+                
+        except Exception as e:
+            logging.error(f"Error creating horizons dashboard: {e}")
+            if save_file:
+                plt.close()
+            raise
