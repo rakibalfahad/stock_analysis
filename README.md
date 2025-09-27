@@ -1,177 +1,187 @@
-# 🚀 Investment Portfolio Optimizer - Complete User Guide
+# 🚀 Investment Portfolio Optimizer
 
-> A sophisticated, modular investment portfolio optimization system using Modern Portfolio Theory, featuring intelligent stock analysis, real-time monitoring, and comprehensive trading tools.
+> **Professional-grade portfolio optimization system** using Modern Portfolio Theory with intelligent stock analysis, real-time monitoring, and comprehensive trading tools.
 
-## 🌟 System Overview
-
-### 🎯 **What This System Does**
-Transform your investment strategy with professional-grade portfolio optimization tools that automatically analyze stocks, optimize allocations, and provide real-time insights for smarter investment decisions.
-
-### ⚡ **Key Highlights**
-- **📊 Advanced Analytics**: Risk/return analysis with Sharpe ratios, volatility metrics, and 52-week positioning
-- **🤖 Smart Automation**: Intelligent stock filtering, automated rebalancing, and continuous monitoring
-- **📈 Real-Time Data**: Live Yahoo Finance integration with ROI calculations, earnings dates, and market news
-- **🔥 Live Analysis Terminal**: Professional-grade real-time stock analyzer with 17+ metrics per stock
-- **📰 News Integration**: Real ticker-specific daily news headlines and breaking market updates  
-- **📋 Professional Reports**: Multi-sheet Excel exports, interactive dashboards, and comprehensive analysis
-- **🛡️ Risk Management**: Sophisticated filtering system prevents high-risk investments with volatility bands
-- **📱 Multiple Interfaces**: Command-line tools, interactive HTML dashboards, and Excel integration
-
-### 🏆 **Perfect For**
-- **Individual Investors** seeking data-driven portfolio optimization
-- **Financial Advisors** requiring client portfolio analysis tools  
-- **Quantitative Analysts** needing Modern Portfolio Theory implementation
-- **Traders** wanting risk-adjusted position sizing and monitoring
-- **Students/Researchers** learning quantitative finance concepts
-
-## 📋 Table of Contents
-
-### 🚀 **Getting Started**
-1. [Quick Start & Installation](#-getting-started)
-2. [Basic Usage & Commands](#-basic-usage)
-3. [Core Features Overview](#-core-features)
-
-### 📊 **Core Analysis Tools**
-4. [Portfolio Summary Dashboard](#-portfolio-summary-dashboard)
-5. [Stock Risk Analysis Tool](#-stock-risk-analysis-tool)
-6. [Yahoo Finance Data Downloader](#-yahoo-finance-stock-data-downloader)
-7. [Live Yahoo Finance Data Analyzer](#-live-yahoo-finance-data-analyzer) ⭐ **ENHANCED: Flashing Effects + Symbol Cache**
-8. [Financial Metrics & Calculations](#-financial-metrics-and-calculations)
-
-### ⚙️ **Portfolio Management**
-9. [Configuration Guide](#-configuration-guide)
-10. [Portfolio Optimization](#-portfolio-optimization)
-11. [Stock Comparison System](#-stock-comparison-system)
-12. [Intelligent Stock Filtering](#-intelligent-stock-filtering-system)
-
-### 📈 **Trading & Monitoring**
-13. [Short Trading Mode](#-short-trading-mode)
-14. [Real-Time Monitoring](#-real-time-portfolio-monitoring)
-15. [Live Market News Fetcher](#-live-stock-market-news-fetcher)
-
-### 🔧 **Advanced & Technical**
-16. [Advanced Features](#-advanced-features)
-17. [Troubleshooting](#-troubleshooting)
-18. [Development & Technical](#-development--technical)
-
----
-
-## 🚀 Getting Started
-
-### ⚡ **Quick Start** (5 minutes)
+## ⚡ Quick Start (5 minutes)
 
 ```bash
 # 1. Setup environment
 python -m venv stock_env && source stock_env/bin/activate  # Linux/macOS
 pip install -r requirements.txt
 
-# 2. Instant portfolio overview
+# 2. Portfolio overview dashboard (START HERE)
 python portfolio_summary.py
 
-# 3. Analyze any stocks from Excel/CSV
-python stock_analyzer.py your_stocks.xlsx
+# 3. Portfolio optimization with visualization
+python main.py --plot
 
-# 4. Download latest market data
-python yahoo_finance_downloader.py
+# 4. Trading horizons analysis
+python main.py --horizons --plot
+
+# 5. Live Yahoo Finance analyzer
+python yahoo_finance_data_analyzer.py
 ```
 
-### 🛠️ **System Requirements**
+## 🌟 What This System Does
+
+Transform your investment strategy with **professional-grade portfolio optimization** that automatically:
+- ✅ **Analyzes stocks** using Modern Portfolio Theory with 17+ financial metrics
+- ✅ **Optimizes allocations** based on risk/return profiles within your budget  
+- ✅ **Generates recommendations** with buy/sell signals and position sizing
+- ✅ **Monitors real-time** with live Yahoo Finance data and market news
+- ✅ **Categorizes by trading horizons** (Long-term/Short-term/Day trading)
+- ✅ **Creates professional dashboards** with interactive charts and Excel reports
+
+### 🏆 Perfect For
+- **📈 Individual Investors**: Data-driven portfolio optimization and risk management
+- **💼 Financial Advisors**: Professional client portfolio analysis and reporting tools
+- **🧮 Quantitative Analysts**: Modern Portfolio Theory implementation with customizable parameters
+- **📊 Active Traders**: Risk-adjusted position sizing and real-time monitoring systems
+- **🎓 Students/Researchers**: Learning quantitative finance with practical applications
+
+## 📋 Navigation
+
+| **🚀 Core Tools** | **📊 Analysis** | **⚙️ Configuration** | **📈 Advanced** |
+|-------------------|-----------------|----------------------|-----------------|
+| [Portfolio Overview](#-portfolio-overview) | [Trading Horizons](#-trading-horizons-analysis) | [Setup Guide](#-system-setup) | [Live Data Analyzer](#-live-yahoo-finance-analyzer) |
+| [Optimization](#-portfolio-optimization) | [Stock Comparison](#-stock-comparison) | [Configuration](#-configuration) | [Market News](#-market-news-fetcher) |
+| [Risk Analysis](#-risk-analysis-tool) | [Filtering System](#-intelligent-filtering) | [Troubleshooting](#-troubleshooting) | [Technical Details](#-technical-reference) |
+
+---
+
+## 🏠 System Setup
+
+### 🛠️ Requirements
 - **Python 3.9+** | **Cross-platform** (Linux, macOS, Windows)
 - **Internet connection** for real-time market data
 - **Dependencies**: All handled by `requirements.txt`
 
-### 🎯 **First Time? Try This:**
-
-```bash
-# Get comprehensive portfolio dashboard
-python portfolio_summary.py
-
-# Download trending stocks and analyze them
-python yahoo_finance_downloader.py --categories most_active,top_gainers
-python stock_analyzer.py data/yahoo_finance_data_*.xlsx
-
-# Compare specific stocks
-python main.py --compare AAPL MSFT GOOGL --plot
+### 📁 Project Structure
+```
+📦 stock_analysis/
+├── 🐍 main.py                          # Main entry point
+├── 📊 portfolio_summary.py             # Portfolio dashboard
+├── 📊 yahoo_finance_data_analyzer.py   # Live market analyzer
+├── 📊 stock_analyzer.py                # Risk analysis tool
+├── 📰 stock_news_fetcher.py            # Market news fetcher
+├── 📁 src/                             # Source modules
+├── ⚙️ investments.txt                  # Portfolio configuration
+├── 💰 short_trading.txt                # Trading configuration
+└── 📦 requirements.txt                 # Dependencies
 ```
 
-**You'll get:** Excel reports, interactive charts, and actionable investment insights!
-
----
-
-## 📖 Basic Usage
-
-### 🎯 **Common Workflows**
-
-#### 📊 **Portfolio Analysis & Overview**
+### 🎯 First-Time Setup
 ```bash
-# Get comprehensive dashboard (RECOMMENDED FIRST)
+# Complete setup in 3 steps
+git clone https://github.com/rakibalfahad/stock_analysis.git
+cd stock_analysis
+python -m venv stock_env && source stock_env/bin/activate  # Linux/macOS
+pip install -r requirements.txt
+
+# Test installation
+python portfolio_summary.py
+```
+
+## � Portfolio Overview
+
+The **Portfolio Summary Dashboard** is your command center - providing a comprehensive view of your entire investment portfolio with real-time tracking and professional analysis.
+
+### � Quick Start
+```bash
+# Complete portfolio dashboard (START HERE)
 python portfolio_summary.py
 
-# Optimize current portfolio with risk filtering
+# Portfolio optimization with visualization
 python main.py --plot
 
-# Analyze stocks by trading horizons with dashboard
+# Trading horizons analysis (Long/Short/Day trading)
 python main.py --horizons --plot
 
-# Monitor portfolio in real-time
+# Real-time monitoring
 python main.py --quick-monitor --plot
 ```
 
-#### 📈 **Stock Research & Analysis**
-```bash
-# Download latest market data
-python yahoo_finance_downloader.py
+### � What You Get
+- **� Investment Configuration**: Budget, targets, and risk profile
+- **📈 Holdings Analysis**: Live P&L tracking with current market prices
+- **💸 Trading History**: Complete record of sold positions and performance
+- **⚖️ Portfolio Allocation**: Investment vs available cash with visual charts
+- **🛡️ Risk Analysis**: Concentration risk and diversification warnings
+- **🎯 Smart Recommendations**: Actionable insights based on portfolio state
 
-# Analyze downloaded stocks
-python stock_analyzer.py data/yahoo_finance_data_*.xlsx
-
-# Compare specific stocks
-python main.py --compare AAPL MSFT --plot
+### 📋 Sample Output
 ```
+💰 Total Investment Budget: $3,000
+📊 Current Allocation: $2,964.64 (98.8%)
+💵 Available Cash: $35.36 (1.2%)
 
-#### 💰 **Trading & Monitoring**
-```bash
-# Short trading with live monitoring
-python main.py --short-trading
-
-# Continuous portfolio monitoring
-python main.py --monitor --plot --interval 300
+Symbol   Investment   Current Value  P&L $        P&L %      Status
+VERI     $1,541.98    $1,764.29      +$222.31     +14.4%     ✅ PROFIT
+BW       $715.86      $808.98        +$93.12      +13.0%     ✅ PROFIT
+RAPP     $706.80      $736.56        +$29.76      +4.2%      ✅ PROFIT
 ```
-
-### 📋 **What You Get**
-- **📊 Excel Reports**: Multi-sheet analysis with all metrics
-- **� Interactive Charts**: Risk/return plots, price trends, allocations  
-- **� Actionable Insights**: Buy/sell recommendations with position sizes
-- **�️ Risk Analysis**: Sharpe ratios, volatility, 52-week positioning
-- **📱 Professional Dashboards**: HTML dashboards with zoom/pan features
 
 ---
 
-## ✨ Core Features
+## 🎯 Portfolio Optimization
 
-### 🎯 **Investment Analysis Suite**
-| Feature | Benefit | Output |
-|---------|---------|---------|
-| **📊 Portfolio Dashboard** | Complete holdings overview | Interactive HTML + Excel |
-| **🧮 Risk/Return Analysis** | Sharpe ratios, volatility metrics | Professional charts |
-| **📈 Stock Comparison** | Side-by-side analysis | Scoring & recommendations |
-| **🛡️ Intelligent Filtering** | Automated risk management | Conservative/Aggressive modes |
+Modern Portfolio Theory implementation with intelligent stock filtering and automated rebalancing recommendations.
 
-### � **Data & Research Tools**
-| Feature | Benefit | Output |
-|---------|---------|---------|
-| **� Yahoo Finance Downloader** | Latest market data | 6 categories, Excel format |
-| **� Live News Fetcher** | Market sentiment analysis | Real-time alerts & exports |
-| **📋 Excel Integration** | Professional reporting | Multi-sheet comprehensive analysis |
-| **⚡ Real-Time Monitoring** | Live portfolio tracking | Continuous updates |
+### 🚀 Basic Usage
+```bash
+# Single optimization with dashboard
+python main.py --plot
 
-### � **Advanced Capabilities**
-- **🧮 Modern Portfolio Theory**: Mathematical optimization with efficient frontier
-- **🤖 Machine Learning**: Intelligent stock scoring and risk assessment  
-- **📈 Multiple Asset Classes**: Stocks, ETFs, indices, and custom portfolios
-- **🌐 Cross-Platform**: Windows, macOS, Linux compatibility
-- **⚡ Real-Time Data**: Live Yahoo Finance integration with API rate limiting
-- **🔄 Automated Rebalancing**: Smart buy/sell recommendations with position sizing
+# Conservative risk filtering
+python main.py --plot --filtering-mode conservative
+
+# Aggressive growth filtering
+python main.py --plot --filtering-mode aggressive
+
+# Custom target return
+python main.py --plot --target-return 0.30
+```
+
+### 🧠 Intelligent Filtering
+Automatically filters stocks based on financial criteria to prevent high-risk investments:
+
+| Mode | P/E Ratio | Volatility | Market Cap | Best For |
+|------|-----------|------------|------------|----------|
+| **Conservative** | < 25 | < 20% | > $10B | Retirement, Risk-averse |
+| **Moderate** | < 35 | < 35% | > $1B | Balanced investors |
+| **Aggressive** | < 45 | < 50% | > $500M | Growth-focused, Young investors |
+
+### 📊 What You Get
+- **🛍️ Buy/Sell Recommendations**: Specific position sizes within your budget
+- **� Expected Returns**: Projected annual returns with risk assessments
+- **⚖️ Risk Analysis**: Sharpe ratios, volatility, and correlation metrics
+- **📊 Visual Dashboards**: Interactive PNG and HTML charts
+- **💰 Position Sizing**: Optimal allocation based on risk tolerance
+
+---
+
+## 📈 Risk Analysis Tool
+
+Comprehensive stock analysis with dual output: professional visualization charts and detailed Excel reports.
+
+### 🚀 Quick Start
+```bash
+# Visual analysis (PNG charts)
+python stock_analyzer.py your_stocks.xlsx
+
+# Excel reports (detailed data)
+python stock_analyzer_excel.py your_stocks.xlsx
+
+# Create sample data
+python stock_analyzer.py --create-sample
+```
+
+### 📊 Analysis Features
+- **📈 Risk vs Return Scatter Plots**: Visual positioning with Sharpe ratios
+- **🔥 52-Week Positioning**: Near High (🔥), Mid-Range (⚡), Near Low (❄️)
+- **📋 Multi-Sheet Excel Reports**: 7 comprehensive analysis sheets
+- **🏢 Sector Analysis**: Industry breakdown and diversification metrics
+- **� Performance Rankings**: Top performers, high risk, value opportunities
 
 ---
 
@@ -520,185 +530,108 @@ python main.py --compare BRK.B JPM --strategy value --plot
 
 ## 🎯 Trading Horizons Analysis
 
-### Overview
+**Advanced portfolio categorization** that analyzes stocks across three distinct trading strategies, helping you identify which stocks are best suited for your specific trading style and timeline.
 
-The **Trading Horizons Analysis** is an advanced portfolio categorization system that analyzes stocks across three distinct trading strategies, each optimized for different time horizons and investment approaches. This feature helps investors identify which stocks are best suited for their specific trading style and timeline.
-
-### 📊 **Three Trading Horizons**
-
-#### **1. 🏛️ Long-Term (Value Investing)**
-- **Theory**: Value Investing
-- **Focus**: Intrinsic value, growth potential
-- **Time Horizon**: 1+ years
-- **Key Metrics**:
-  - **Sharpe Ratio**: Risk-adjusted returns (Poor < 1, Good 1–2, Excellent > 2)
-  - **P/E Ratio**: Valuation metric (Poor > 25, Good 15–25, Excellent < 15)
-  - **ROE**: Return on Equity (Poor < 10%, Good 10–20%, Excellent > 20%)
-  - **Debt-to-Equity**: Financial health (Poor > 2, Good 0.5–2, Excellent < 0.5)
-  - **Dividend Yield**: Income generation (Poor < 1%, Good 1–3%, Excellent > 3%)
-
-#### **2. ⚡ Short-Term (Momentum Trading)**
-- **Theory**: Momentum Trading
-- **Focus**: Trend persistence, technical momentum
-- **Time Horizon**: Days to months
-- **Key Metrics**:
-  - **Sharpe Ratio**: Adjusted for shorter periods (Poor < 0.8, Good 0.8–1.5, Excellent > 1.5)
-  - **RSI**: Relative Strength Index (Poor > 70 or < 30, Good 30–70, Excellent 40–60)
-  - **ATR**: Average True Range volatility (Poor < 1%, Good 1–3%, Excellent > 3%)
-  - **Volume**: Average daily liquidity (Poor < 100K, Good 100K–1M, Excellent > 1M)
-  - **Beta**: Market sensitivity (Poor > 1.5 or < 0.5, Good 0.5–1.5, Excellent 0.8–1.2)
-
-#### **3. 📈 Day Trading (Technical Analysis)**
-- **Theory**: Technical Analysis (Dow/Elliott Wave)
-- **Focus**: Intraday volatility, scalping opportunities
-- **Time Horizon**: Minutes to hours
-- **Key Metrics**:
-  - **Sharpe Ratio**: Intraday focused (Poor < 0.5, Good 0.5–1, Excellent > 1)
-  - **RSI**: Tighter ranges (Poor > 80 or < 20, Good 20–80, Excellent 30–70)
-  - **High Relative Volume**: Activity spikes (Poor < 1.5x, Good 1.5–3x, Excellent > 3x)
-  - **VWAP Deviation**: Price vs volume-weighted average (Poor > ±2%, Good ±0.5–2%, Excellent < ±0.5%)
-  - **Bid-Ask Spread**: Trading costs (Poor > 0.5%, Good 0.1–0.5%, Excellent < 0.1%)
-
-### 🚀 **Quick Start**
-
+### � Quick Start
 ```bash
-# Basic trading horizons analysis
+# Trading horizons analysis
 python main.py --horizons
 
-# Analysis with comprehensive dashboard
+# With comprehensive dashboard
 python main.py --horizons --plot
 
-# Analysis with timestamped results
+# With timestamped results
 python main.py --horizons --plot --keep-timestamp
 ```
 
-### 📊 **Sample Output**
+### 📊 Three Trading Strategies
 
-```
-================================================================================
-🎯 PORTFOLIO TRADING HORIZON ANALYSIS
-================================================================================
-📅 Analysis Date: 2025-09-26 13:11:16
-📊 Total Stocks Analyzed: 8
+| **🏛️ Long-Term (Value)** | **⚡ Short-Term (Momentum)** | **📈 Day Trading (Technical)** |
+|---------------------------|------------------------------|--------------------------------|
+| **Focus**: Intrinsic value, growth | **Focus**: Trend persistence | **Focus**: Intraday volatility |
+| **Timeline**: 1+ years | **Timeline**: Days to months | **Timeline**: Minutes to hours |
+| **Metrics**: PE, ROE, Debt/Equity, Dividend, SRI | **Metrics**: RSI, ATR, Volume, Beta, SRI | **Metrics**: RSI, HRV, VWAP, Spread, SRI |
 
-📈 HORIZON DISTRIBUTION:
---------------------------------------------------
-• Long-Term    (Value Investing     ):  2 stocks
-• Short-Term   (Momentum Trading    ):  6 stocks
-• Day Trading  (Technical Analysis ):  0 stocks
-
-🚀 TOP RECOMMENDATIONS BY HORIZON:
-================================================================================
-
-📊 LONG-TERM - Value Investing
-   Strategy Focus: Intrinsic value, growth
-   Suitable Stocks: 2
-   Top Picks:
-   1. GOOGL  Alphabet Inc.             Score:  73.3% [███████░░░]
-   2. MSFT   Microsoft Corporation     Score:  60.0% [██████░░░░]
-
-📊 SHORT-TERM - Momentum Trading
-   Strategy Focus: Trend persistence
-   Suitable Stocks: 6
-   Top Picks:
-   1. META   Meta Platforms, Inc.      Score:  73.3% [███████░░░]
-   2. AMZN   Amazon.com, Inc.          Score:  66.7% [██████░░░░]
-   3. NVDA   NVIDIA Corporation        Score:  66.7% [██████░░░░]
-
-📋 DETAILED METRICS FOR TOP PERFORMERS:
-================================================================================
-
-🥇 GOOGL - Best for Long-Term (Value Investing)
-------------------------------------------------------------
-   sharpe_ratio        :     1.39 (Good)
-   pe_ratio            :    26.26 (Poor)
-   roe                 :    34.83 (Excellent)
-   debt_to_equity      :     0.11 (Excellent)
-   dividend_yield      :    34.00 (Excellent)
-```
-
-### 📊 **Dashboard Features**
-
-The trading horizons dashboard (`trading_horizons_analysis.png`) includes:
-
-1. **🥧 Horizon Distribution**: Pie chart showing stock allocation across trading strategies
-2. **📊 Top Performers**: Bar chart of highest-scoring stocks per horizon
-3. **💹 Risk vs Return Scatter**: Visual positioning by trading style with risk/return proxies
-4. **🔥 Metrics Heatmap**: Color-coded performance matrix for top stocks
-5. **📈 Strategy Comparison**: Horizontal bar chart comparing strategy distribution
-6. **📋 Summary Statistics**: Comprehensive analysis summary with key insights
-
-### 🎯 **Use Cases**
-
-#### **📈 For Portfolio Managers**
-```bash
-# Analyze entire portfolio for optimal strategy allocation
-python main.py --horizons --plot
-
-# Focus on specific horizons based on market conditions
-python main.py --horizons  # Review text output for detailed metrics
-```
-
-#### **💼 For Individual Investors**
-```bash
-# Determine best trading approach for each holding
-python main.py --horizons
-
-# Create visual report for investment decisions
-python main.py --horizons --plot --keep-timestamp
-```
-
-#### **🔍 For Research & Analysis**
-```bash
-# Compare different stock universes
-python main.py --horizons --plot  # Analyze configured stocks
-```
-
-### ⚙️ **Integration with Other Tools**
-
-The Trading Horizons Analysis integrates seamlessly with other portfolio tools:
-
-```bash
-# Complete workflow: horizons → optimization → monitoring
-python main.py --horizons --plot           # Identify best horizons
-python main.py --plot                      # Optimize allocation
-python main.py --quick-monitor --plot      # Monitor performance
-
-# Compare specific stocks after horizon analysis
-python main.py --compare GOOGL MSFT --strategy value  # Compare value stocks
-python main.py --compare META NVDA --strategy growth  # Compare momentum stocks
-```
-
-### 📈 **Understanding Suitability Scores**
-
-Each stock receives a suitability score (0-100%) for each trading horizon:
-
+### 🎯 Suitability Scoring
+Each stock receives a score (0-100%) for each trading horizon:
 - **75-100%**: **Highly Suitable** - Excellent fit for this trading style
-- **60-74%**: **Suitable** - Good candidate with strong metrics
+- **60-74%**: **Suitable** - Good candidate with strong metrics  
 - **40-59%**: **Moderately Suitable** - Mixed signals, use caution
-- **25-39%**: **Limited Suitability** - Some positive factors, mostly unsuitable
+- **25-39%**: **Limited Suitability** - Some positive factors
 - **0-24%**: **Not Suitable** - Poor fit for this trading horizon
 
-### 🎯 **Best Practices**
-
-1. **Match Your Style**: Use the horizon that aligns with your investment timeline and risk tolerance
-2. **Diversify Across Horizons**: Consider stocks from multiple horizons for balanced risk
-3. **Monitor Metrics**: Track how stocks perform against their assigned horizon metrics
-4. **Seasonal Adjustment**: Re-run analysis quarterly to account for changing market conditions
-5. **Combine with Other Analysis**: Use alongside portfolio optimization and stock comparison tools
+### 📊 Dashboard Features
+The horizons dashboard includes 6 comprehensive panels:
+1. **🥧 Horizon Distribution**: Stock allocation across strategies
+2. **📊 Top Performers**: Highest-scoring stocks per horizon
+3. **💹 Risk vs Return Scatter**: Visual positioning by trading style
+4. **🔥 Metrics Heatmap**: Color-coded performance matrix
+5. **📈 Strategy Comparison**: Distribution analysis
+6. **📋 Summary Statistics**: Key insights and recommendations
 
 ---
 
-## 💰 Short Trading Mode
+## 📊 Stock Comparison
 
-### Overview
+Compare any two stocks with intelligent, strategy-based analysis using your investment configuration for personalized recommendations.
 
-Real-time profit/loss monitoring for active trading positions with automatic alerts and professional display.
-
-### Quick Start
-
+### 🚀 Quick Start
 ```bash
-# Start monitoring with default 1-minute updates
+# Basic comparison
+python main.py --compare AAPL MSFT
+
+# Growth-focused comparison with charts
+python main.py --compare AAPL GOOGL --strategy growth --plot
+
+# Value investing comparison
+python main.py --compare BRK.B JPM --strategy value --plot
+```
+
+### 📈 Available Strategies
+| Strategy | Focus | Best For |
+|----------|-------|----------|
+| `balanced` | Equal weighting across metrics | General investing |
+| `growth` | Growth metrics and momentum | Growth investors |
+| `value` | Valuation and financial health | Value investors |
+| `income` | Dividends and stability | Income seekers |
+
+---
+
+## 🧠 Intelligent Filtering
+
+Sophisticated risk management that automatically filters stocks based on financial criteria, preventing investment in high-risk stocks that don't meet your tolerance.
+
+### 🎯 Filtering Modes
+```bash
+# Conservative (safest stocks only)
+python main.py --plot --filtering-mode conservative
+
+# Moderate (balanced approach)  
+python main.py --plot --filtering-mode moderate
+
+# Aggressive (higher risk tolerance)
+python main.py --plot --filtering-mode aggressive
+
+# No filtering (all stocks)
+python main.py --plot --no-filter
+```
+
+### � Criteria by Mode
+| Criteria | Conservative | Moderate | Aggressive |
+|----------|-------------|----------|------------|
+| **P/E Ratio** | < 25 | < 35 | < 45 |
+| **Volatility** | < 20% | < 35% | < 50% |
+| **Market Cap** | > $10B | > $1B | > $500M |
+
+---
+
+## 💰 Active Trading Monitor
+
+Real-time profit/loss monitoring for active trading positions with automatic alerts.
+
+### 🚀 Quick Start
+```bash
+# Start monitoring (1-minute updates)
 python main.py --short-trading
 
 # Day trading mode (30-second updates)
@@ -708,1174 +641,277 @@ python main.py --short-trading --interval 30
 python main.py --short-trading --interval 5
 ```
 
-### Adding Positions
+### 📝 Adding Positions
+Add to `short_trading.txt` using any format:
 
-Choose any format in `short_trading.txt`:
-
-**Single Position:**
 ```plaintext
+# Single position
 buy_stocks = AAPL,10,220.50,2025-09-10
-```
 
-**Multiple Positions (Pipe-separated):**
-```plaintext
-buy_stocks = AAPL,10,220.50,2025-09-10|MSFT,5,415.75,2025-09-11|GOOGL,8,185.25,2025-09-09
-```
+# Multiple positions (pipe-separated)
+buy_stocks = AAPL,10,220.50,2025-09-10|MSFT,5,415.75,2025-09-11
 
-**Numbered Entries:**
-```plaintext
+# Numbered entries
 buy_stocks_1 = TSLA,12,250.00,2025-09-10
 buy_stocks_2 = NVDA,20,135.50,2025-09-11
-buy_stocks_3 = META,7,560.75,2025-09-09
 ```
 
-### Live Monitoring Display
-
+### 📊 Live Display
 ```
-================================================================================
 📊 SHORT TRADING PORTFOLIO STATUS - 2025-09-12 14:30:15
-================================================================================
-Symbol   Shares   Buy Price    Current      P&L $        P&L %      Status
---------------------------------------------------------------------------------
-AAPL     10       $220.50      $226.78      +$62.80      +2.8%     ✅ HOLD
-MSFT     5        $415.75      $422.15      +$32.00      +1.5%     ✅ HOLD
-AMZN     8        $185.25      $179.80      -$43.60      -2.9%     ⚠️ WATCH
---------------------------------------------------------------------------------
-TOTAL                                       +$51.20                   
-================================================================================
+Symbol   Shares   Buy Price    Current      P&L $      P&L %    Status
+AAPL     10       $220.50      $226.78      +$62.80    +2.8%    ✅ HOLD
+MSFT     5        $415.75      $422.15      +$32.00    +1.5%    ✅ HOLD
+AMZN     8        $185.25      $179.80      -$43.60    -2.9%    ⚠️ WATCH
+TOTAL                                       +$51.20
 ```
 
-### Alert System
+### 🚨 Smart Alerts
+- **🎯 Target Gain**: Automatic alerts when positions reach target profit (default: 25%)
+- **🛡️ Stop Loss**: Automatic alerts when positions hit loss threshold (default: 5%)
+- **� Real-time Updates**: Continuous monitoring with configurable intervals
 
-**🎯 Target Gain Alert:**
-```
-🚨 SELL ALERT: AAPL reached target gain of 25%! 🚨
-💰 Current: $275.63 | Buy Price: $220.50
-💡 Gain: +$551.30 (+25.0%)
-⭐ RECOMMENDATION: Consider taking profits
+---
+
+## � Live Yahoo Finance Analyzer
+
+**Professional real-time stock analyzer** that provides continuous live recommendations with institutional-quality analysis directly in your terminal.
+
+### 🚀 Quick Start
+```bash
+# Start live analyzer (5-minute updates)
+python yahoo_finance_data_analyzer.py
+
+# Fast updates (1-minute intervals)
+python yahoo_finance_data_analyzer.py --interval 60
+
+# Day trading mode (30-second updates with data saving)
+python yahoo_finance_data_analyzer.py --interval 30 --save
 ```
 
-**🛡️ Stop Loss Alert:**
-```
-🚨 SELL ALERT: AMZN hit stop loss threshold! 🚨
-📉 Current: $176.00 | Buy Price: $185.25
-💸 Loss: -$74.00 (-5.0%)
-🛡️ RECOMMENDATION: Consider cutting losses
+### 🎯 Key Features
+- **� Real-Time Analysis**: Continuous Yahoo Finance data fetching and analysis
+- **📊 Professional Display**: 17+ financial metrics per stock in clean terminal table
+- **📰 Live News Integration**: Ticker-specific headlines from Yahoo Finance
+- **⚡ Color-Based Flashing**: Professional visual indicators for STRONG_BUY/AVOID
+- **� Smart Symbol Cache**: JSON persistence tracking new symbols with dates
+- **📅 Earnings Calendar**: Next earnings dates for strategic planning
+- **💾 Excel Export**: Optional comprehensive data export with analysis summaries
+
+### � Analysis Categories
+Fetches and analyzes from 6 Yahoo Finance categories:
+1. **📈 Most Active** (50+ stocks) - Highest trading volume
+2. **🔥 Trending Now** (25+ stocks) - Currently trending
+3. **🚀 Top Gainers** (25+ stocks) - Best daily performers  
+4. **📉 Top Losers** (25+ stocks) - Worst daily performers
+5. **🏆 52 Week Gainers** (25+ stocks) - Best annual performers
+6. **⬇️ 52 Week Losers** (25+ stocks) - Worst annual performers
+
+### 🎯 Recommendation System
+- **🚀 STRONG_BUY**: Exceptional opportunity (ROI >20%, Sharpe >1.5)
+- **💰 BUY**: Good investment potential (ROI >10%, positive metrics)
+- **⚖️ HOLD**: Neutral position, mixed signals
+- **⚠️ AVOID**: Poor outlook, negative returns
+- **🛑 STRONG_AVOID**: High risk, poor fundamentals (ROI <-10%)
+
+### 🔧 Advanced Options
+```bash
+# Professional day trading (1-minute updates)
+python yahoo_finance_data_analyzer.py --interval 60 --save --output-dir trading
+
+# Long-term monitoring (1-hour updates)  
+python yahoo_finance_data_analyzer.py --interval 3600 --save --output-dir research
 ```
 
 ---
 
-## 📊 Stock Risk Analysis Tool
+## 📰 Market News Fetcher
 
-### Overview
+**Free, unlimited** stock market news fetcher with intelligent stock detection and sentiment analysis.
 
-Comprehensive stock analysis system with **dual output options**: professional visualization charts and detailed Excel reports. Performs risk vs return analysis with 52-week positioning, sector analysis, and performance metrics.
-
-### 🆕 **Two Analysis Tools Available:**
-
-#### **📊 Visual Charts (`stock_analyzer.py`)**
-- **Professional PNG charts** with risk vs return scatter plots
-- **52-week positioning indicators** (🔥 Near High, ⚡ Mid-Range, ❄️ Near Low)
-- **Dual color coding** for Sharpe ratios and market positioning
-- **Side-by-side visualizations** with comprehensive statistics
-
-#### **📈 Excel Reports (`stock_analyzer_excel.py`)**
-- **Multi-sheet Excel workbooks** with detailed analysis
-- **7 comprehensive sheets**: Analysis, Summary, Sectors, Top Performers, High Risk, Near Highs, Errors
-- **Sortable and filterable data** for in-depth analysis
-- **Complete metrics** including company info, sectors, and market caps
-
-### Quick Start
-
-#### **For Visual Analysis (PNG Charts):**
+### 🚀 Quick Start
 ```bash
-# Create sample files
-python stock_analyzer.py --create-sample
-
-# Analyze stocks from your Excel file
-python stock_analyzer.py your_stocks.xlsx
-
-# Custom chart output name
-python stock_analyzer.py your_stocks.xlsx --output my_analysis.png
-
-# 2-year analysis period
-python stock_analyzer.py your_stocks.xlsx --period 2y
-```
-
-#### **For Excel Reports (Detailed Data):**
-```bash
-# Generate comprehensive Excel report
-python stock_analyzer_excel.py your_stocks.xlsx
-
-# Custom Excel output name
-python stock_analyzer_excel.py your_stocks.xlsx --output detailed_analysis.xlsx
-
-# Analyze specific sheet
-python stock_analyzer_excel.py your_stocks.xlsx --sheet Portfolio1
-
-# Different analysis period
-python stock_analyzer_excel.py your_stocks.xlsx --period 2y --output results.xlsx
-```
-
-#### **For Complete Analysis (Both Outputs):**
-```bash
-# Generate both chart and Excel report
-python stock_analyzer.py your_stocks.xlsx --output visual_analysis.png
-python stock_analyzer_excel.py your_stocks.xlsx --output data_analysis.xlsx
-```
-
-### Sample Excel Structure
-
-The system includes 6 professional analysis sheets:
-
-1. **📊 All_Stocks** - Complete dataset (16 stocks)
-2. **🛡️ Conservative_Portfolio** - Low-risk, dividend stocks
-3. **⚖️ Moderate_Portfolio** - Balanced growth stocks  
-4. **🚀 Aggressive_Portfolio** - High-growth stocks
-5. **📈 Sector_Analysis** - Sector breakdown
-6. **📚 Instructions** - Usage guide
-
-### Analysis Output
-
-```
-🎯 KEY INSIGHTS:
-🏆 Best Expected Return: SHOP (93.5%)
-📊 Best Sharpe Ratio: NFLX (2.03)
-🛡️ Lowest Risk: MSFT (24.9%)
-
-🔥 52-WEEK ANALYSIS:
-🔥 Near 52W High (>80%): GOOGL, NVDA, META, NFLX
-❄️ Near 52W Low (<20%): CRM, ADBE
-📏 Widest 52W Range: SPOT (143.5% range)
-```
-
----
-
-## 📡 Live Stock Market News Fetcher
-
-### Overview
-
-A comprehensive **free, unlimited** stock market news fetcher that monitors live market news across all sectors and automatically identifies affected stocks. Features multiple news sources, intelligent stock detection, sentiment analysis, and continuous monitoring capabilities.
-
-### 🆕 **Key Features:**
-
-- **🆓 Free & No Limits**: Uses public RSS feeds and free APIs without restrictions
-- **🌍 Generalized Market Coverage**: Monitors all sectors, not just specific stocks  
-- **🎯 Smart Stock Detection**: Automatically identifies affected stocks in headlines
-- **📊 Three Operating Modes**: General, Major Sectors, and Specific Stocks
-- **💡 Sentiment Analysis**: Classifies news as positive/negative/neutral
-- **🏷️ News Categorization**: Earnings, mergers, analyst reports, regulatory, etc.
-- **📊 CSV Export**: Automatic data export for analysis
-- **⏰ Continuous Monitoring**: Real-time updates with customizable intervals
-- **🌐 Multiple Sources**: Yahoo Finance, MarketWatch, YFinance API
-- **💾 Smart Caching**: Prevents duplicate fetches and maintains history
-
-### 🚀 **Quick Start**
-
-```bash
-# Install additional dependencies
-pip install feedparser requests python-dateutil
-
 # General market news (RECOMMENDED - all sectors)
 python stock_news_fetcher.py --general
 
-# Major market sectors (84+ symbols across all sectors)
+# Major market sectors (84+ symbols)
 python stock_news_fetcher.py
 
-# Monitor specific stocks only
-python stock_news_fetcher.py --stocks AAPL GOOGL TSLA NVDA
-
-# Show limited results
-python stock_news_fetcher.py --general --limit 10
-```
-
-### 📊 **Three Operating Modes**
-
-#### **1. 🌍 General Mode (--general) - RECOMMENDED**
-```bash
-python stock_news_fetcher.py --general
-```
-- **✅ Best for**: Comprehensive market intelligence
-- **📊 Coverage**: ALL market news across sectors
-- **🎯 Detection**: Automatically finds any stock symbols in headlines
-- **📈 Includes**: Indices (SPY, QQQ), crypto (BTC-USD, ETH-USD), commodities (GLD, USO)
-- **🔍 Smart Filtering**: Focuses on real ticker symbols, filters noise
-
-#### **2. 📊 Major Sectors Mode (Default)**
-```bash
-python stock_news_fetcher.py
-```
-- **✅ Best for**: Broad market sector coverage
-- **📊 Coverage**: 84+ major market symbols across sectors:
-  - **Indices & ETFs**: SPY, QQQ, DIA, IWM, VTI, VOO, VEA, VWO
-  - **Technology**: AAPL, GOOGL, MSFT, AMZN, META, NVDA, TSLA, NFLX
-  - **Healthcare**: JNJ, PFE, UNH, ABBV, BMY, MRK, LLY, TMO
-  - **Financial**: JPM, BAC, WFC, GS, MS, BRK-B, V, MA, COIN
-  - **Energy**: XOM, CVX, COP, SLB, EOG, NEE, DUK, SO
-  - **Consumer**: WMT, TGT, HD, LOW, NKE, SBUX, MCD, DIS
-  - **Industrial**: CAT, BA, GE, MMM, HON, UPS, FDX, LMT
-  - **Commodities**: GLD, SLV, USO, UNG, GOLD, NEM, FCX, AA
-  - **Crypto**: BTC-USD, ETH-USD, COIN, MSTR, RIOT, MARA
-  - **Bonds**: TLT, IEF, SHY, HYG, LQD, TIP
-
-#### **3. 🎯 Specific Stocks Mode (--stocks)**
-```bash
+# Monitor specific stocks  
 python stock_news_fetcher.py --stocks AAPL GOOGL TSLA NVDA
 ```
-- **✅ Best for**: Focused portfolio monitoring
-- **📊 Coverage**: Only specified symbols
-- **🎯 Perfect for**: Tracking specific positions or watchlists
 
-### ⏰ **Continuous Monitoring**
-
+### ⏰ Continuous Monitoring
 ```bash
-# General mode with continuous monitoring (every 60 minutes)
+# Every 60 minutes
 python stock_news_fetcher.py --general --continuous
 
-# Quick updates every 30 minutes, show top 5 items
-python stock_news_fetcher.py --general --continuous --interval 30 --limit 5
-
-# Day trading mode (every 5 minutes), top 3 news items
-python stock_news_fetcher.py --general --continuous --interval 5 --limit 3
-
-# Run for specific number of updates then stop
-python stock_news_fetcher.py --general --continuous --iterations 10 --limit 8
-```
-
-### 📊 **Sample Output**
-
-```
-🚀 Stock Market News Fetcher Initialized
-📊 General market news monitoring (all sectors and symbols)
-🗞️ Using 5 news sources
-
-🗞️ LATEST STOCK MARKET NEWS (8 items)
-====================================================================================================
-
-1. 📈 💰 Federal Reserve Policy Decision Pending
-   🏢 Affected Stocks: TLT
-   📅 2025-09-17 12:29 | 🌐 Market News (General)
-   📊 Sentiment: Positive | 📂 Category: Regulatory
-   📄 Financial markets await central bank announcement affecting bonds TLT and equities
-
-2. ➡️ 📰 Stock Market Indices Hit Record Highs  
-   🏢 Affected Stocks: SPY, QQQ, DIA
-   📅 2025-09-17 12:29 | 🌐 Market News (General)
-   📊 Sentiment: Neutral | 📂 Category: General
-   📄 Major indices SPY, QQQ, and DIA reach new peaks amid investor optimism
-
-3. ➡️ 📰 Cryptocurrency Market Shows Volatility
-   🏢 Affected Stocks: BTC-USD, ETH-USD
-   📅 2025-09-17 12:29 | 🌐 Market News (General)
-   📊 Sentiment: Neutral | 📂 Category: General
-   📄 Bitcoin BTC-USD and Ethereum ETH-USD experience significant price swings
-
-📊 STOCK MENTION STATISTICS
-==================================================
- 1. SPY: 3 mentions
-    ➡️ Stock Market Indices Hit Record Highs...
-    ➡️ S&P 500 Reaches New All-Time High on Tech Rally...
- 2. QQQ: 2 mentions
-    ➡️ Stock Market Indices Hit Record Highs...
-    ➡️ S&P 500 Reaches New All-Time High on Tech Rally...
-```
-
-### 💾 **Data Export & Caching**
-
-#### **CSV Export (On Demand)**
-CSV files are only created when explicitly requested:
-```bash
-# Export to custom file
-python stock_news_fetcher.py --general --export my_market_news.csv
-
-# No CSV files created by default
-python stock_news_fetcher.py --general  # Clean run, no files
-```
-
-#### **Smart Caching**
-- `news_cache.json` - Prevents duplicate API calls
-- Maintains news history between runs
-- Automatic cache updates with timestamps
-
-### 🔄 **Integration with Trading Systems**
-
-The news fetcher complements your existing tools:
-
-```bash
-# Morning routine: Check news + portfolio
-python stock_news_fetcher.py --general --limit 15
-python portfolio_summary.py
-
-# Pre-market analysis
-python stock_news_fetcher.py --general --continuous --interval 30 &
-python main.py --quick-monitor --plot
-
-# Active trading monitoring
-python stock_news_fetcher.py --general --continuous --interval 5 &
-python main.py --short-trading --interval 30
-```
-
-### 🎯 **News Categories & Sentiment**
-
-#### **📂 Categories Detected:**
-- **💰 Earnings**: Revenue, profits, quarterly reports, guidance
-- **🤝 Merger**: Acquisitions, takeovers, corporate deals  
-- **⚖️ Lawsuit**: Legal issues, court cases, settlements
-- **🚀 Product**: Launches, innovations, patents, releases
-- **🤜 Partnership**: Collaborations, agreements, contracts
-- **📊 Analyst**: Upgrades, downgrades, price targets, ratings
-- **🏛️ Regulatory**: FDA approvals, investigations, compliance
-- **💵 Financial**: Dividends, buybacks, debt, financing, IPOs
-
-#### **📊 Sentiment Analysis:**
-- **📈 Positive**: "surge", "gain", "beat", "strong", "growth", "approval"
-- **📉 Negative**: "drop", "decline", "miss", "weak", "concern", "warning"  
-- **➡️ Neutral**: Balanced or purely factual headlines
-
-
-
-### 📋 **Complete Command Reference**
-
-```bash
-# Basic Operations
-python stock_news_fetcher.py --general                    # General market news
-python stock_news_fetcher.py                              # Major sectors (84+ symbols)
-python stock_news_fetcher.py --stocks AAPL GOOGL TSLA     # Specific stocks
-
-# Continuous Monitoring  
-python stock_news_fetcher.py --general --continuous       # Every 60 minutes
-python stock_news_fetcher.py --general --continuous --interval 30  # Every 30 minutes
-python stock_news_fetcher.py --general --continuous --iterations 5 # 5 updates then stop
-
-# Output Control
-python stock_news_fetcher.py --general --limit 15         # Show 15 latest items
-python stock_news_fetcher.py --general --export news.csv  # Export to CSV file
-python stock_news_fetcher.py --general --continuous --interval 30 --limit 5  # Continuous with limit
-
-# Advanced Options
-python stock_news_fetcher.py --general --cache my_cache.json       # Custom cache file
-python stock_news_fetcher.py --help                               # Show all options
-```
-
-### 🎯 **Use Cases**
-
-#### **📈 For Active Traders:**
-```bash
-# Pre-market news scan (no files created)
-python stock_news_fetcher.py --general --limit 20
-
-# Continuous day trading alerts (clean monitoring)  
+# Day trading mode (every 5 minutes, top 3 items)
 python stock_news_fetcher.py --general --continuous --interval 5 --limit 3
 ```
 
-#### **💼 For Portfolio Managers:**
-```bash
-# Daily market intelligence (clean monitoring)
-python stock_news_fetcher.py --general --continuous --interval 60 --limit 10
-
-# Sector-specific monitoring
-python stock_news_fetcher.py --stocks SPY QQQ DIA VTI --continuous --limit 8
-```
-
-#### **🔍 For Market Researchers:**
-```bash
-# Comprehensive data collection with export
-python stock_news_fetcher.py --general --continuous --interval 60 --export research_data.csv
-
-# Historical news analysis (export when needed)
-python stock_news_fetcher.py --general --iterations 20 --interval 30 --export historical.csv
-```
-
-
-### 📁 Generated Files
-
-- **`news_cache.json`** — Cached news data and timestamps (always created for performance)
-- **Custom CSV files** — Only created when using `--export filename.csv`
-- **🚫 No automatic files** — Clean workspace by default
+### 🎯 Features
+- **🆓 Free & Unlimited**: Uses public RSS feeds and APIs
+- **🌍 All Sectors**: Monitors comprehensive market coverage
+- **� Sentiment Analysis**: Positive/negative/neutral classification
+- **🏷️ News Categories**: Earnings, mergers, analyst reports, regulatory
+- **� CSV Export**: On-demand data export for analysis
+- **� Smart Caching**: Prevents duplicate fetches, maintains history
 
 ---
 
-## 🔧 Advanced Features
+## ⚙️ Configuration
 
-### File Management
+### 📝 Portfolio Configuration (`investments.txt`)
+```plaintext
+# Your investment preferences
+total_investment = 3000                    # Total capital to invest
+target_gain_percentage = 25                # Annual target return (%)
+maximum_loss_percentage = 5                # Maximum acceptable loss (%)
+preferred_stocks = AAPL,MSFT,GOOGL,AMZN,TSLA,NVDA,META,NFLX
+```
 
+### 💰 Trading Configuration (`short_trading.txt`)
+```plaintext
+# Active trading settings
+target_gain_percentage = 25         # Alert when stock gains 25%
+maximum_loss_percentage = 5         # Alert when stock loses 5%
+
+# Add positions using any format:
+buy_stocks = AAPL,10,220.50,2025-09-10
+# or
+buy_stocks_1 = TSLA,12,250.00,2025-09-10
+buy_stocks_2 = NVDA,20,135.50,2025-09-11
+```
+
+---
+
+## 🎯 Command Reference
+
+### 📊 Core Commands
 ```bash
-# Keep timestamped files for history
+# Portfolio overview dashboard (START HERE)
+python portfolio_summary.py
+
+# Portfolio optimization with dashboard
+python main.py --plot
+
+# Trading horizons analysis (Long/Short/Day trading)
+python main.py --horizons --plot
+
+# Live Yahoo Finance analyzer with real-time recommendations
+python yahoo_finance_data_analyzer.py
+
+# Live market news (all sectors)
+python stock_news_fetcher.py --general
+
+# Stock comparison with visualization
+python main.py --compare AAPL MSFT --plot
+
+# Active trading monitor
+python main.py --short-trading
+
+# Real-time portfolio monitoring
+python main.py --quick-monitor --plot
+```
+
+### 🔧 Advanced Options
+```bash
+# Conservative filtering
+python main.py --plot --filtering-mode conservative
+
+# Custom target return (30%)
+python main.py --plot --target-return 0.30
+
+# Continuous monitoring (5-minute intervals)
+python main.py --monitor --plot --interval 300
+
+# Keep timestamped files
 python main.py --plot --keep-timestamp
 
 # Clean up old files (keep 5 latest)
 python main.py --cleanup 5
 ```
 
-### Custom Parameters
-
-```bash
-# Custom target return (30%)
-python main.py --plot --target-return 0.30
-
-# Lower risk per trade (1%)
-python main.py --plot --risk-per-trade 0.01
-```
-
-### Dual System Operation
-
-Run both systems simultaneously for comprehensive coverage:
-
-```bash
-# Terminal 1: Long-term portfolio monitoring
-python main.py --monitor --plot --interval 300
-
-# Terminal 2: Short-term active trading
-python main.py --short-trading --interval 30
-```
-
-### Integration Workflow
-
-1. **Get Recommendations**: Run portfolio optimizer
-2. **Execute Trades**: Buy through your broker
-3. **Record Positions**: Add to `short_trading.txt`
-4. **Monitor Live**: Start short trading mode
-
 ---
 
 ## 🔧 Troubleshooting
 
-### Common Issues
+### ⚠️ Common Issues
 
-#### Wrong Interval Usage
-```
-⚠️ WARNING: --interval ignored in single-run mode
-💡 Use --monitor flag to enable interval-based monitoring
-```
+| **Issue** | **Solution** |
+|-----------|-------------|
+| **Wrong Interval Usage** | Add `--monitor` flag: `python main.py --monitor --plot --interval 300` |
+| **Invalid Stock Symbol** | Check `investments.txt` for valid ticker symbols |
+| **Network Issues** | Check internet connection; system will auto-retry |
+| **Font Warnings** | Cosmetic only - all functionality remains intact |
 
-**Solution:** Add `--monitor` flag:
-```bash
-# ❌ Wrong
-python main.py --plot --interval 300
-
-# ✅ Correct  
-python main.py --monitor --plot --interval 300
-```
-
-#### Invalid Stock Symbol
-```
-❌ WARNING: Symbol 'XYZ' not found
-🔄 Skipping invalid symbol, continuing with others
-```
-
-**Solution:** Check `investments.txt` for valid ticker symbols.
-
-#### Network Issues
-```
-❌ ERROR: Failed to fetch data for MSFT
-🌐 Network issue detected - retrying in 30 seconds...
-```
-
-**Solution:** Check internet connection; system will auto-retry.
-
-### Performance Notes
-
+### 📊 Performance Notes
 - **Memory Usage**: 50-500MB depending on portfolio size
 - **CPU Usage**: Brief spikes during optimization (2-5 seconds)
 - **Disk Usage**: 1-3MB per dashboard image
 
-### Expected Warnings (Normal)
-
-Font warnings are cosmetic only:
-```
-UserWarning: Glyph missing from font(s) DejaVu Sans.
-```
-All functionality remains intact.
-
 ---
 
-## 👨‍💻 Development & Technical
+## 💻 Technical Reference
 
-### Testing Modules
+### 🏗️ System Architecture
+```
+📦 Modern Portfolio Theory Implementation
+├── 🧮 Portfolio Module: Core optimization logic
+├── 📊 Visualization Module: Dashboard generation  
+├── 🔧 Utils Module: Constants and helpers
+└── 🎯 Main Entry: Command-line interface
+```
 
+### 🔬 Financial Calculations
+
+#### **Sharpe Ratio**
+```
+Sharpe Ratio = (Expected Return - Risk-Free Rate) / Volatility
+Risk-Free Rate: 2% annually (US Treasury benchmark)
+```
+
+#### **Expected Return**
+```
+Expected Return = Mean Daily Return × 252 (trading days)
+```
+
+#### **Volatility (Risk)**
+```
+Volatility = Standard Deviation of Daily Returns × √252
+```
+
+#### **52-Week Position**
+```
+Position = (Current Price - 52W Low) / (52W High - 52W Low) × 100
+```
+
+### 📋 Dependencies
+- **Core**: `yfinance>=0.2.18`, `pandas>=2.0.0`, `numpy>=1.24.0`
+- **Analysis**: `scipy>=1.10.0`, `matplotlib>=3.7.0`, `seaborn>=0.12.0`
+- **Integration**: `openpyxl>=3.1.0`, `bokeh` (for interactive charts)
+
+### 🧪 Testing
 ```bash
-# Test individual components
+# Test components
 python -c "from src.utils.constants import EMOJIS; print(f'Loaded {len(EMOJIS)} emojis')"
-
 python -c "from src.portfolio.optimizer import InvestmentOptimizer; print('Portfolio module loaded')"
 ```
 
-### Dependencies
-
-**Core Requirements:**
-- `yfinance>=0.2.18` - Real-time stock data
-- `pandas>=2.0.0` - Data manipulation  
-- `numpy>=1.24.0` - Numerical computations
-- `scipy>=1.10.0` - Scientific computing
-- `matplotlib>=3.7.0` - Plotting
-- `seaborn>=0.12.0` - Statistical visualization
-- `openpyxl>=3.1.0` - Excel support
-
-### Module Architecture
-
-- **Portfolio Module**: Core optimization logic
-- **Visualization Module**: Dashboard generation  
-- **Utils Module**: Constants and helpers
-- **Main Entry**: Command-line interface
-
-### Migration from V1.0
-
-If upgrading from the monolithic version:
-
-1. **Backup data**: Copy `investments.txt` and dashboards
-2. **Use new entry**: Run `main.py` instead of old script
-3. **Same functionality**: All features preserved with improvements
-4. **Clean up**: Use `--cleanup` for old files
-
 ---
 
-## 📜 License
+## 📜 License & Credits
 
-Investment Management System - September 2025
+**Investment Portfolio Optimizer** - September 2025  
+Professional-grade portfolio optimization using Modern Portfolio Theory
 
----
-
-## 🎯 Quick Reference
-
-### Most Used Commands
+### 🎯 Quick Help
 ```bash
-# Portfolio overview dashboard (START HERE)
-python portfolio_summary.py
-
-# Portfolio optimization
-python main.py --plot
-
-# Trading horizons analysis (Long-Term/Short-Term/Day Trading)
-python main.py --horizons --plot
-
-# Live Yahoo Finance analyzer with real-time recommendations
-python yahoo_finance_data_analyzer.py
-
-# Live market news (general mode - all sectors)
-python stock_news_fetcher.py --general
-
-# Stock comparison  
-python main.py --compare AAPL MSFT --plot
-
-# Continuous monitoring
-python main.py --quick-monitor --plot
-
-# Short trading
-python main.py --short-trading
-
-# Download Yahoo Finance data
-python yahoo_finance_downloader.py
-
-# Continuous news monitoring (every 30 minutes)
-python stock_news_fetcher.py --general --continuous --interval 30
-
-# Help
-python main.py --help
+python main.py --help                 # Show all options
+python portfolio_summary.py           # Portfolio dashboard (START HERE)
+python main.py --horizons --plot      # Trading horizons analysis
+python yahoo_finance_data_analyzer.py # Live market analyzer
 ```
 
-### Key Files
-- `portfolio_summary.py` - **Comprehensive portfolio dashboard**
-- `stock_news_fetcher.py` - **Live market news fetcher** (free, unlimited, all sectors)
-- `yahoo_finance_downloader.py` - **Yahoo Finance stock data downloader**
-- `yahoo_finance_data_analyzer.py` - **Live Yahoo Finance analyzer with real-time recommendations**
-- `investments.txt` - Portfolio optimization settings
-- `short_trading.txt` - Active trading positions
-- `main.py` - Core system entry point
-
-### Output Files
-- `portfolio_dashboard.png` - Latest optimization results
-- `stock_comparison_*.png` - Comparison charts
-- `stock_news_*.csv` - Market news exports with timestamps
-- `news_cache.json` - Cached news data and history
-- `yahoo_finance_data_*.xlsx` - Yahoo Finance stock data exports
-- `sample_stocks.xlsx` - Example data
-
----
-
-## 📊 Yahoo Finance Stock Data Downloader
-
-### Overview
-
-The **Yahoo Finance Stock Data Downloader** is a comprehensive tool that downloads and organizes stock data from Yahoo Finance into Excel files. It provides access to 6 different stock categories, making it easy to analyze market trends and discover investment opportunities.
-
-### Available Stock Categories
-
-1. **📈 Most Active** - Stocks with highest trading volume
-2. **🔥 Trending Now** - Currently trending stocks
-3. **🚀 Top Gainers** - Best performing stocks today
-4. **📉 Top Losers** - Worst performing stocks today
-5. **🏆 52 Week Gainers** - Best performers over the past year
-6. **⬇️ 52 Week Losers** - Worst performers over the past year
-
-### Quick Usage
-
-```bash
-# Download all categories for today
-python yahoo_finance_downloader.py
-
-# Download specific categories
-python yahoo_finance_downloader.py --categories most_active trending gainers
-
-# Download for a specific date
-python yahoo_finance_downloader.py --date 2024-01-15
-
-# Custom output directory
-python yahoo_finance_downloader.py --output-dir /path/to/your/data/folder
-```
-
-### Features
-
-- **📊 Multi-Sheet Excel Files** - Each category gets its own sheet
-- **📅 Date-Specific Naming** - Files named by download date (`yahoo_finance_data_2024-01-15.xlsx`)
-- **🔄 Progress Tracking** - Real-time download progress with stock counts
-- **⚡ Rate Limiting** - Respects Yahoo Finance API limits
-- **🛡️ Error Handling** - Robust error recovery and logging
-- **📈 Rich Data** - Includes price, volume, market cap, and performance metrics
-- **💰 Smart Formatting** - Volume in millions, Market Cap in billions for easy reading
-- **📍 52W Range Position** - Shows current price position in 52-week range as percentage
-- **🎯 Comprehensive Data** - 14+ data fields per stock including sector, industry, P/E ratio
-
-### Data Fields Included
-
-Each stock entry contains:
-- **Symbol** - Stock ticker symbol
-- **Company Name** - Full company name
-- **Current Price** - Current stock price
-- **Change** - Price change from previous close
-- **Change %** - Percentage change from previous close
-- **Volume (M)** - Trading volume in millions
-- **Average Volume (M)** - Average trading volume in millions
-- **Market Cap (B)** - Market capitalization in billions
-- **52 Week High** - Highest price in past 52 weeks
-- **52 Week Low** - Lowest price in past 52 weeks
-- **52W Range Position %** - Current position in 52-week range (0-100%)
-- **P/E Ratio** - Price-to-earnings ratio
-- **Sector** - Industry sector
-- **Industry** - Specific industry
-
-### Integration with Portfolio System
-
-The downloaded data can be used with the main portfolio optimization system:
-
-```bash
-# Use downloaded stocks for analysis
-python main.py --analyze-file data/yahoo_finance_data_2024-01-15.xlsx
-
-# Import trending stocks into your portfolio
-python portfolio_summary.py --import-yahoo-data data/yahoo_finance_data_2024-01-15.xlsx
-```
-
-### Examples
-
-```bash
-# Market research workflow
-python yahoo_finance_downloader.py --categories most_active trending
-python main.py --compare-stocks --source data/yahoo_finance_data_*.xlsx
-
-# Weekly analysis
-python yahoo_finance_downloader.py --categories gainers losers_52w gainers_52w
-python portfolio_summary.py --weekly-analysis --data-source yahoo
-```
-
-### Output Structure
-
-```
-data/
-├── yahoo_finance_data_2024-01-15.xlsx
-│   ├── Most Active (50+ stocks)
-│   ├── Trending Now (25+ stocks)  
-│   ├── Top Gainers (25+ stocks)
-│   ├── Top Losers (25+ stocks)
-│   ├── 52 Week Gainers (25+ stocks)
-│   └── 52 Week Losers (25+ stocks)
-```
-
----
-
-## 🚀 Live Yahoo Finance Data Analyzer
-
-### Overview
-
-The **Live Yahoo Finance Data Analyzer** (`yahoo_finance_data_analyzer.py`) is an advanced real-time analysis system that combines Yahoo Finance data with professional-grade financial metrics to provide continuous live stock recommendations with institutional-quality analysis directly in your terminal.
-
-### 🎯 **Key Features**
-
-- **🔄 Real-Time Analysis**: Continuous fetching and analysis of live market data
-- **📊 Professional Table Display**: Clean, aligned table with comprehensive financial metrics
-- **📰 Live News Integration**: Real ticker-specific news headlines from Yahoo Finance
-- **💵 ROI Calculations**: Risk-adjusted return on investment with volatility adjustments
-- **📅 Earnings Calendar**: Next earnings reporting dates for strategic planning
-- **🎨 Visual Indicators**: Color-coded recommendations with emojis and flashing effects
-- **⚡ Enhanced Flashing System**: Color-based flashing for STRONG_BUY/STRONG_AVOID and extreme price changes >5%
-- **💾 Smart Symbol Cache**: JSON persistence tracking first-seen dates for new symbols with dual table display
-- **🧮 Advanced Scoring**: Comprehensive risk analysis with Sharpe ratios and volatility metrics
-- **💾 Data Export**: Optional Excel export with detailed analysis and summary statistics
-- **⚡ Customizable Updates**: Configurable refresh intervals from 30 seconds to hours
-
-### 🚀 **Quick Start**
-
-```bash
-# Start live analyzer with default 5-minute updates (includes flashing & cache)
-python yahoo_finance_data_analyzer.py
-
-# Fast updates every 1 minute with enhanced flashing effects
-python yahoo_finance_data_analyzer.py --interval 60
-
-# Enable data saving with custom directory + symbol tracking
-python yahoo_finance_data_analyzer.py --save --output-dir my_live_analysis
-
-# Day trading mode - 30 second updates with data saving and cache
-python yahoo_finance_data_analyzer.py --interval 30 --save
-```
-
-### 📊 **Enhanced Terminal Display**
-
-The analyzer displays a continuously updating professional-grade table:
-
-```
-====================================================================================================================================
-🚀 YAHOO FINANCE LIVE STOCK ANALYZER - TOP 50 RECOMMENDATIONS
-📅 2025-09-25 14:30:15 | 🔄 Next update in 300s
-====================================================================================================================================
-
-#    📊   Symbol   Company                 💰Price     📈Chg%   📊Vol(M)  🎯Ret%   ⚡Vol%   📈SRI   🔥Pos%  ⚖️Risk   📍52W  💹MCap    📊PE    💵ROI%   📅Earn      🏢Sector          📰News                    Rec
-1    🚀   NVDA     NVIDIA Corp             $891.23    +4.7%   52.0     35.6%   52.8%   2.15   88.9%  🔴HIG     ❓     2200.0B  71.8   32.4%   01-28      Semiconductors    AI chip demand surges in Q3      🚀STRONG_B
-2    💰   AAPL     Apple Inc.              $175.43    +2.1%   45.0     12.5%   25.3%   1.85   85.2%  �MED     ❓     2700.0B  28.5   15.2%   01-25      Technology        iPhone 15 sales exceed exp...    💰BUY    
-3    💰   TSLA     Tesla Inc.              $267.89    -1.8%   68.0     25.8%   45.1%   1.42   15.4%  🔴HIG     ❓     850.0B   65.2   18.7%   01-22      Automotive        Model Y production ramp co...    💰BUY    
-4    ⚖️  MSFT     Microsoft Corp          $425.67    +0.8%   28.0     8.2%    18.9%   1.95   92.1%  🟢LOW     ❓     3150.0B  32.1   12.3%   01-24      Technology        Azure cloud revenue up 29%      ⚖️HOLD   
-```
-
-### ⚡ **Enhanced Flashing & Cache System**
-
-#### **🔥 Visual Flash Indicators**
-- **Color-Based Flashing**: Professional color-only flashing without emoji clutter
-- **STRONG_BUY**: Green/Bold coloring for exceptional opportunities
-- **STRONG_AVOID**: Red/Bold coloring for high-risk stocks
-- **Extreme Changes >5%**: Green/Bold for gains, Red/Bold for losses
-- **Near 52W Lows <50%**: Cyan/Bold for potential value opportunities
-- **🔄 Flashing Cycles**: Visual indicators appear every 3rd analysis cycle
-- **💫 Cycle Status**: Display shows current flashing status in header
-
-#### **💾 Smart Symbol Cache System**
-- **JSON Persistence**: `symbols_cache.json` tracks first-seen dates for all symbols
-- **New Symbols Detection**: Automatically identifies stocks not seen before
-- **Dual Table Display**: Main recommendations + separate new symbols table with dates
-- **50 Symbol Limit**: New symbols table limited to latest 50 to prevent overflow
-- **Date Tracking**: Each symbol stamped with first appearance date (YYYY-MM-DD format)
-
-### 📋 **Comprehensive Data Columns**
-
-Each stock displays 17 professional-grade metrics:
-
-| Column | Description | Purpose |
-|--------|-------------|---------|
-| **#** | Ranking | Best recommendations first |
-| **📊** | Recommendation emoji | Visual recommendation indicator |
-| **Symbol** | Stock ticker | Company identifier |
-| **Company** | Company name | Full company name (truncated) |
-| **💰Price** | Current stock price | Real-time market price |
-| **📈Chg%** | Daily change % | Today's price movement |
-| **📊Vol(M)** | Volume in millions | Daily trading activity |
-| **🎯Ret%** | Expected annual return | Projected yearly return |
-| **⚡Vol%** | Volatility % | Risk/price fluctuation measure |
-| **📈SRI** | Sharpe Ratio Index | Risk-adjusted return quality |
-| **�Pos%** | 52-week position % | Position in yearly range |
-| **⚖️Risk** | Risk assessment | LOW/MED/HIGH risk level |
-| **📍52W** | Range indicator | Position in 52-week range |
-| **💹MCap** | Market cap (billions) | Company valuation |
-| **📊PE** | P/E Ratio | Price-to-earnings valuation |
-| **💵ROI%** | Adjusted ROI | Risk-adjusted return on investment |
-| **📅Earn** | Next earnings date | Upcoming earnings report (MM-DD) |
-| **🏢Sector** | Business sector | Industry classification |
-| **📰News** | Recent news | Today's ticker-specific headlines |
-| **Rec** | Final recommendation | Investment recommendation |
-
-### 📋 **Analysis Categories**
-
-The system automatically fetches and analyzes stocks from all 6 Yahoo Finance categories:
-
-1. **📈 Most Active** - Highest trading volume stocks (50+ stocks)
-2. **🔥 Trending Now** - Currently trending stocks (25+ stocks)
-3. **🚀 Top Gainers** - Best daily performers (25+ stocks)
-4. **📉 Top Losers** - Worst daily performers (25+ stocks)
-5. **🏆 52 Week Gainers** - Best annual performers (25+ stocks)
-6. **⬇️ 52 Week Losers** - Worst annual performers (25+ stocks)
-
-### 🎯 **Advanced Recommendation System**
-
-#### **Recommendation Levels**
-- **🚀 STRONG_BUY**: Exceptional opportunity, high confidence (ROI >20%, Sharpe >1.5)
-- **💰 BUY**: Good investment potential, moderate-high confidence (ROI >10%, positive metrics)
-- **⚖️ HOLD**: Neutral position, watch for changes (mixed signals, suitable for existing positions)
-- **⚠️ AVOID**: Poor outlook, consider alternatives (negative expected returns)
-- **🛑 STRONG_AVOID**: High risk, strong negative indicators (ROI <-10%, poor fundamentals)
-
-#### **Risk Assessment System**
-- **🟢 LOW RISK**: Volatility <20%, stable performance, predictable movements
-- **🟡 MEDIUM RISK**: Volatility 20-40%, moderate fluctuations, balanced risk/return
-- **🔴 HIGH RISK**: Volatility >40%, significant price swings, higher potential returns
-
-#### **52-Week Position Indicators**
-- **🔥 Near High (80-100%)**: Stock near yearly highs, momentum plays, breakout potential
-- **⚡ Mid-Range (20-80%)**: Stock in middle range, balanced entry point
-- **❄️ Near Low (0-20%)**: Stock near yearly lows, potential value opportunities
-
-### 🧮 **Advanced Financial Calculations**
-
-#### **Risk-Adjusted ROI Formula**
-```
-ROI = Expected_Return × Risk_Adjustment_Factor
-Risk_Adjustment_Factor = max(0.1, 1 - (Volatility / 100))
-```
-
-#### **Sharpe Ratio Index (SRI) Quality Ranges**
-- **>2.0**: Excellent risk-adjusted returns
-- **1.0-2.0**: Good risk-adjusted returns
-- **0.5-1.0**: Fair performance
-- **<0.5**: Poor risk-adjusted returns
-
-#### **Volatility Risk Bands**
-- **<20%**: Stable (blue-chip stocks, utilities)
-- **20-40%**: Moderate (growth stocks, tech)
-- **>40%**: Volatile (small-cap, biotech, crypto-related)
-
-### 📰 **Real-Time News Integration**
-
-The system fetches actual ticker-specific news headlines:
-
-- **Real-time headlines**: Today's news for each ticker from Yahoo Finance
-- **Smart parsing**: Extracts title from nested content structure
-- **Date filtering**: Only shows news from current day
-- **Fallback handling**: Shows "No recent news" when no current news available
-- **Error resilience**: Handles API timeouts and connection issues gracefully
-
-### 💾 **Data Export & Saving**
-
-When `--save` option is enabled, the analyzer automatically exports comprehensive data:
-
-#### **Excel Structure**
-1. **Live_Recommendations** - Complete analysis with all 20+ metrics per stock
-2. **Summary_Stats** - Analysis summary, counts by recommendation type, sector breakdown
-3. **Performance_Metrics** - Historical performance tracking and trend analysis
-
-#### **Export Features**
-- **Timestamped files**: `yahoo_live_analysis_20250925_143015.xlsx`
-- **Automatic saving**: Each analysis cycle creates a new file with fresh data
-- **Comprehensive data**: All metrics, news, earnings dates, and calculated fields
-- **Professional formatting**: Color-coded recommendations, proper number formatting
-
-### 📊 **Compact Quick Reference Guide**
-
-The analyzer includes a comprehensive but compact legend:
-
-```
-📊 COMPREHENSIVE QUICK REFERENCE:
-🎯 🚀STRONG_BUY(Best picks) 💰BUY(Good buys) ⚖️HOLD(Wait&watch) ⚠️AVOID(Skip) 🛑STRONG_AVOID(Dangerous)
-⚖️ Risk: 🟢LOW(<20% vol) 🟡MED(20-40% vol) 🔴HIGH(>40% vol) | ⚡Vol%: <20(stable) 20-40(moderate) >40(volatile)
-📈 SRI (Sharpe Ratio Index: Risk-Adjusted, Poor < 1, Good 1–2, Excellent > 2) | 52W: 🔥(80-100%) ⚡(20-80%) ❄️(0-20%)
-📊 PE (Price-to-Earnings Ratio: Valuation, Poor > 25, Good 15–25, Excellent < 15) | 💵 ROI% (Adjusted Return: Profitability, Poor < 5%, Good 5–10%, Excellent > 10%)
-📋 Columns: 💰Price 📈Chg%(daily) 📊Vol(M/daily) 🎯Ret%(annual) ⚡Vol%(risk) 📈SRI(risk-adj) 
-           🔥Pos%(52W) 💹MCap(B) 📊PE(ratio) 💵ROI%(adj-return) 📅Earn(next-date) 🏢Sector 📰News(recent)
-```
-
-### ⚡ **Performance & Reliability**
-
-- **Robust error handling**: Handles timeouts, SSL errors, delisted stocks
-- **Rate limiting**: Respects Yahoo Finance API limits
-- **Memory efficient**: Processes data in batches to handle large datasets
-- **Connection resilience**: Automatic retry logic for network issues
-- **Data validation**: Filters out invalid or missing data automatically
-
-### 🔧 **Advanced Usage Examples**
-
-```bash
-# Professional day trading setup (1-minute updates)
-python yahoo_finance_data_analyzer.py --interval 60 --save --output-dir day_trading
-
-# Weekly analysis (30-minute updates)
-python yahoo_finance_data_analyzer.py --interval 1800 --save --output-dir weekly_analysis
-
-# Long-term monitoring (1-hour updates)
-python yahoo_finance_data_analyzer.py --interval 3600 --save --output-dir long_term
-
-# Research mode (save data without continuous display)
-python yahoo_finance_data_analyzer.py --interval 300 --save --output-dir research --quiet
-```
-
-### 🎯 **Integration with Portfolio System**
-
-The live analyzer integrates seamlessly with the main portfolio optimization system:
-
-```bash
-# Use live analysis data for portfolio optimization
-python main.py --source live_analysis/yahoo_live_analysis_latest.xlsx
-
-# Import top recommendations into portfolio
-python portfolio_summary.py --import-recommendations live_analysis/
-
-# Compare live analysis with existing portfolio
-python stock_analyzer.py --benchmark live_analysis/yahoo_live_analysis_latest.xlsx
-```
-- **Comprehensive data**: All calculated metrics, company info, sectors
-- **Summary statistics**: Recommendation counts, averages, analysis metadata
-
-### ⚙️ **Configuration Options**
-
-```bash
-# Update intervals
-python yahoo_finance_data_analyzer.py --interval 30    # 30 seconds (day trading)
-python yahoo_finance_data_analyzer.py --interval 60    # 1 minute (active monitoring)
-python yahoo_finance_data_analyzer.py --interval 300   # 5 minutes (default)
-python yahoo_finance_data_analyzer.py --interval 900   # 15 minutes (casual monitoring)
-python yahoo_finance_data_analyzer.py --interval 3600  # 1 hour (long-term tracking)
-
-# Data saving options
-python yahoo_finance_data_analyzer.py --save                          # Save to 'live_analysis' folder
-python yahoo_finance_data_analyzer.py --save --output-dir my_data     # Custom save directory
-```
-
-### 🎨 **Visual Features**
-
-- **Color Coding**: Green for buys, yellow for holds, red for avoids
-- **Emoji Indicators**: Quick visual identification of recommendations and risk levels
-- **Flashing Effects**: Periodic flashing every 4th cycle for attention
-- **Clear Screen**: Clean display updates for easy reading
-- **Progress Indicators**: Real-time status of data fetching and analysis
-
-### 🔄 **Integration with Existing Tools**
-
-The Live Analyzer seamlessly integrates with your existing workflow:
-
-```bash
-# Morning routine: Start live analyzer and portfolio overview
-python yahoo_finance_data_analyzer.py --interval 300 --save &
-python portfolio_summary.py
-
-# Active trading setup: Live analyzer + short trading monitoring
-python yahoo_finance_data_analyzer.py --interval 60 --save &
-python main.py --short-trading
-
-# Research workflow: Live analyzer + detailed stock analysis
-python yahoo_finance_data_analyzer.py --save --output-dir research_data
-python stock_analyzer.py live_analysis/yahoo_live_analysis_*.xlsx
-```
-
-### ⚠️ **Usage Guidelines**
-
-#### **Recommended Update Intervals**
-- **30-60 seconds**: Day trading, very active monitoring (watch API limits)
-- **5-15 minutes**: Active investing, regular monitoring (recommended)  
-- **30-60 minutes**: Long-term investing, casual monitoring
-- **2-4 hours**: Portfolio review, trend analysis
-
-#### **API Rate Limiting & Network Issues**
-- Yahoo Finance has rate limits, very frequent updates (< 30s) may trigger throttling
-- **SSL Certificate errors**: Common with some network configurations - stocks automatically skipped
-- **Timeout errors**: Expected during high API load - system continues with available data
-- The system includes built-in error handling and retry logic
-- Consider longer intervals for continuous use or unstable connections
-
-#### **Handling Network Problems**
-- **4-6 failed stocks per 76 is normal** (5-8% failure rate expected)
-- System continues analysis with successfully retrieved data
-- Problematic stocks are automatically excluded from analysis
-- No manual intervention required - system is self-healing
-
-### 🛑 **Stopping the Analyzer**
-
-- **Keyboard Interrupt**: Press `Ctrl+C` to gracefully stop
-- **Automatic Recovery**: Handles network errors and continues automatically
-- **Data Preservation**: All saved data remains in output directory
-
-### 📊 **Sample Terminal Output**
-
-```
-🚀 Yahoo Finance Live Analyzer Initialized
-⏰ Update interval: 300 seconds
-💾 Data saving enabled: live_analysis
-
-� Starting continuous analysis...
-Press Ctrl+C to stop
-⚡ Flashing effects will occur every 3rd cycle
-
-�🔄 Analysis Cycle #3 📊 ⚡ FLASHING ACTIVE
-📡 Fetching live data from Yahoo Finance...
-   ✅ Most Active: 52 stocks
-   ✅ Trending Now: 31 stocks  
-   ✅ Top Gainers: 18 stocks
-   ✅ Top Losers: 35 stocks
-   ✅ 52 Week Gainers: 39 stocks
-   ✅ 52 Week Losers: 38 stocks
-📊 Combined data: 213 total, 156 unique stocks
-🧮 Analyzing stocks with Risk Analysis Tool...
-✅ Successfully fetched data for 142/156 stocks
-✅ Calculated metrics for 142 stocks
-🔍 Identified 8 new symbols since last run
-💾 Analysis data saved: live_analysis/yahoo_live_analysis_20250925_143015.xlsx
-💾 Symbol cache updated: symbols_cache.json
-
-[Live updating table with flashing indicators displays here]
-
-📊 NEW SYMBOLS DETECTED TODAY (8 stocks)
-====================================================================================================================================
-Symbol   Company                 💰Price     📈Chg%   📅First Seen    🏢Sector          📊Rec
-COIN     Coinbase Global Inc     $68.45      +3.2%   2025-09-25      Financial         💰BUY
-RIVN     Rivian Automotive       $14.23      -2.1%   2025-09-25      Automotive        ⚖️HOLD
-
-📊 LEGEND:
-🚀 STRONG_BUY | 💰 BUY | ⚖️ HOLD | ⚠️ AVOID | 🛑 STRONG_AVOID
-⚡⚡ Lightning = STRONG_BUY + extreme changes | 🔥� Fire = STRONG_AVOID + extreme changes
-�🟢 LOW RISK | 🟡 MEDIUM RISK | 🔴 HIGH RISK  
-🔥 Near 52W High | ⚡ Mid-Range | ❄️ Near 52W Low
-
-📊 Total analyzed: 142 stocks | Showing top 50
-💾 Data auto-saved to: live_analysis | Cache: 148 symbols tracked
-⏰ Waiting 298.4s for next update...
-```
-
-This Live Analyzer provides the ultimate real-time stock analysis experience, combining comprehensive data fetching, advanced analytics, and intuitive visual presentation in a single powerful tool!
-
----
-
-## 📊 Financial Metrics and Calculations
-
-### Overview
-
-The stock analysis system calculates comprehensive financial metrics for each stock using Modern Portfolio Theory and quantitative finance principles. All calculations are based on historical price data and market information retrieved from Yahoo Finance.
-
-### Core Metrics Explained
-
-#### 📈 **Expected Return (%)**
-**Formula:** `Expected Return = Mean Daily Return × 252`
-
-- **Calculation:** Average of daily percentage price changes over the analysis period (default: 1 year)
-- **Annualization:** Multiplied by 252 (average trading days per year)
-- **Interpretation:** Projected annual return based on historical performance
-- **Example:** If daily returns average 0.08%, expected annual return = 0.08% × 252 = 20.16%
-
-#### 📊 **Risk/Volatility (%)**
-**Formula:** `Volatility = Standard Deviation of Daily Returns × √252`
-
-- **Calculation:** Standard deviation of daily percentage price changes
-- **Annualization:** Multiplied by square root of 252 for proper volatility scaling
-- **Interpretation:** Measure of price fluctuation risk - higher values indicate more volatile stocks
-- **Example:** Daily volatility of 2% = Annual volatility of 2% × √252 ≈ 31.75%
-
-#### ⚡ **Sharpe Ratio**
-**Formula:** `Sharpe Ratio = (Expected Return - Risk-Free Rate) / Volatility`
-
-- **Risk-Free Rate:** 2% annually (configurable, represents treasury bond yield)
-- **Calculation:** Excess return per unit of risk
-- **Interpretation:** 
-  - **> 1.0:** Excellent risk-adjusted return
-  - **0.5 - 1.0:** Good risk-adjusted return  
-  - **< 0.5:** Poor risk-adjusted return
-  - **Negative:** Returns below risk-free rate
-- **Example:** (15% return - 2% risk-free) / 20% volatility = 0.65 Sharpe ratio
-
-#### 💰 **Market Cap Proxy**
-**Formula:** `Market Cap Proxy = Current Price × Average Volume (30 days) / 1,000,000`
-
-- **Purpose:** Approximate market capitalization in millions
-- **Calculation:** Uses trading volume as liquidity indicator
-- **Limitations:** Simplified proxy, not actual market cap
-- **Usage:** Bubble size in risk/return visualizations
-
-#### 📍 **52-Week Range Position (%)**
-**Formula:** `Position = (Current Price - 52W Low) / (52W High - 52W Low) × 100`
-
-- **Range:** 0% (at 52-week low) to 100% (at 52-week high)
-- **Interpretation:**
-  - **80-100%:** 🔥 Near 52-week high (momentum/strength)
-  - **20-80%:** ⚡ Mid-range (neutral position)
-  - **0-20%:** ❄️ Near 52-week low (potential value/risk)
-
-### Advanced Metrics
-
-#### 📉 **Maximum Drawdown**
-**Formula:** `Max Drawdown = Max((Peak - Trough) / Peak)`
-
-- **Calculation:** Largest peak-to-trough decline over the analysis period
-- **Purpose:** Measures worst-case historical loss
-- **Usage:** Risk assessment and position sizing
-
-#### 📊 **Daily Returns Calculation**
-**Formula:** `Daily Return = (Price[t] - Price[t-1]) / Price[t-1]`
-
-- **Method:** Percentage change between consecutive trading days
-- **Requirements:** Minimum 30 days of data for statistical validity
-- **Preprocessing:** Outliers and gaps handled automatically
-
-### Data Requirements and Quality
-
-#### **Minimum Data Standards**
-- **Historical Period:** 1 year default (configurable: 1d to 10y)
-- **Minimum Days:** 30 trading days for statistical validity
-- **Data Sources:** Yahoo Finance API with real-time updates
-- **Quality Checks:** Automatic detection of insufficient or corrupted data
-
-#### **Calculation Periods**
-- **Risk/Return Analysis:** 1 year historical data (252 trading days)
-- **Price Trends:** 30 days for visualization (configurable)
-- **Volume Averaging:** 30-day rolling average for market cap proxy
-- **52-Week Range:** Trailing 252 trading days
-
-### Statistical Assumptions
-
-#### **Modern Portfolio Theory Framework**
-- **Normal Distribution:** Daily returns assumed normally distributed
-- **Stationarity:** Historical patterns expected to continue
-- **Liquidity:** All positions can be entered/exited at market prices
-- **No Transaction Costs:** Pure theoretical returns
-
-#### **Risk-Free Rate**
-- **Default:** 2% annually (US Treasury benchmark)
-- **Purpose:** Sharpe ratio calculation baseline
-- **Adjustable:** Can be modified for different economic environments
-
-### Interpretation Guidelines
-
-#### **Portfolio Construction**
-- **High Sharpe Ratio (>1.0):** Priority candidates for portfolio inclusion
-- **Balanced Risk-Return:** Target 8-15% expected return with <25% volatility
-- **Position Sizing:** Use volatility for risk-adjusted position weights
-- **Diversification:** Combine low-correlation assets across sectors
-
-#### **Risk Assessment**
-- **Volatility Buckets:**
-  - Low Risk: <20% volatility
-  - Medium Risk: 20-40% volatility  
-  - High Risk: >40% volatility
-- **52-Week Position:** Near highs suggest momentum, near lows suggest value opportunities
-
-#### **Performance Evaluation**
-- **Benchmark Comparison:** Compare Sharpe ratios to market indices
-- **Risk-Adjusted Returns:** Focus on return per unit of risk
-- **Drawdown Analysis:** Assess maximum potential losses
-
-### Example Calculation
-
-**Stock Example: AAPL**
-```
-Historical Data: 252 days of closing prices
-Daily Returns: [-0.5%, +1.2%, +0.8%, -0.3%, ...] 
-Mean Daily Return: 0.068%
-Daily Volatility: 1.87%
-
-Calculations:
-Expected Return = 0.068% × 252 = 17.1%
-Volatility = 1.87% × √252 = 29.7%
-Sharpe Ratio = (17.1% - 2.0%) / 29.7% = 0.51
-52W Position = (254.43 - 168.80) / (259.18 - 168.80) = 94.7%
-```
-
-### Technical Implementation
-
-The calculations are implemented in the `calculate_risk_return_metrics()` method of the `StockAnalyzer` class, ensuring:
-
-- **Numerical Stability:** Proper handling of division by zero and edge cases
-- **Data Validation:** Automatic screening for insufficient or corrupted data
-- **Performance Optimization:** Vectorized operations using NumPy and Pandas
-- **Error Handling:** Graceful degradation when data is unavailable
-
-**🚀 Ready to optimize your investment portfolio? Start with the Quick Start section above!**
+**🚀 Ready to optimize your investment portfolio? Start with the portfolio overview dashboard above!**

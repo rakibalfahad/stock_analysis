@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-Investment Portfolio Optimizer - Main Entry Point
+Investment Portfolio Optimiz    🎯 Trading Horizons Analysis:
+        python main.py --horizons --plot          # Complete trading analysis with dashboard + Excel
+        python main.py --horizons                  # Console analysis + automatic Excel export- Main Entry Point
 
 Clean, modular investment portfolio optimization system using Modern Portfolio Theory.
 
@@ -53,8 +55,8 @@ Examples:
   python main.py --compare AAPL MSFT       # Compare two stocks with balanced strategy
   python main.py --compare TSLA NVDA --strategy growth  # Compare with growth-focused weighting
   python main.py --compare JNJ PG --strategy income     # Compare dividend stocks
-  python main.py --horizons --plot         # Analyze stocks by trading horizons with dashboard
-  python main.py --horizons                # Trading horizons analysis (Long/Short/Day trading)
+  python main.py --horizons --plot         # Analyze stocks by trading horizons with dashboard + Excel
+  python main.py --horizons                # Trading horizons analysis + automatic Excel export
   python main.py --short-trading           # Short trading mode with P&L alerts (uses short_trading.txt)
   python main.py --short-trading --interval 30      # Short trading with 30-sec updates
   python main.py --cleanup 5               # Keep 5 latest dashboard files
@@ -100,7 +102,7 @@ Trading Horizons Analysis:
     parser.add_argument('--strategy', choices=['growth', 'value', 'income', 'stability', 'balanced'],
                        default='balanced', help='Investment strategy for comparison weighting (default: balanced)')
     parser.add_argument('--horizons', action='store_true',
-                       help='Analyze stocks by trading horizons: Long-Term (Value), Short-Term (Momentum), Day Trading (Technical)')
+                       help='Analyze stocks by trading horizons: Long-Term (Value), Short-Term (Momentum), Day Trading (Technical) - Auto-exports Excel')
     
     # Visualization options
     parser.add_argument('--plot', action='store_true',
@@ -350,6 +352,9 @@ sold_positions =
                 print(f"📊 Analyzing {len(symbols)} stocks: {', '.join(symbols)}")
                 print()
                 
+                # Initialize visualizer for potential dashboard creation
+                visualizer = PortfolioVisualizer(enable_plotting=args.plot)
+                
                 # Initialize trading horizon analyzer
                 horizon_analyzer = TradingHorizonAnalyzer()
                 
@@ -362,6 +367,12 @@ sold_positions =
                 
                 # Print comprehensive results
                 horizon_analyzer.print_horizon_analysis(analysis_results)
+                
+                # Always export to Excel
+                print(f"\n{EMOJIS['folder']} Exporting complete analysis to Excel...")
+                excel_file = horizon_analyzer.export_to_excel(analysis_results)
+                if excel_file:
+                    print(f"{EMOJIS['check']} Excel export completed: {excel_file}")
                 
                 # Create visualization if plotting enabled
                 if args.plot:

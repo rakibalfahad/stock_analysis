@@ -12,11 +12,14 @@ Each horizon has specific metrics and thresholds optimized for that trading styl
 import pandas as pd
 import numpy as np
 import yfinance as yf
+import os
+from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
 from datetime import datetime
 import logging
+import os
 
 class TradingHorizon(Enum):
     """Trading horizon categories"""
@@ -526,3 +529,201 @@ class TradingHorizonAnalyzer:
                         print(f"   {metric_name:20}: {value:8.2f} ({rating})")
                     else:
                         print(f"   {metric_name:20}: {'N/A':>8} ({rating})")
+    
+    def export_to_excel(self, analysis_results: Dict[str, Any], filename: Optional[str] = None) -> str:
+        """
+        Export complete trading horizons analysis to Excel with all matrices and recommendations.
+        
+        Args:
+            analysis_results: Results from analyze_portfolio_horizons()
+            filename: Optional custom filename (default: auto-generated with timestamp)
+            
+        Returns:
+            str: Path to created Excel file
+        """
+        try:
+            # Generate filename if not provided
+            if filename is None:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"trading_horizons_analysis_{timestamp}.xlsx"
+            
+            # Ensure .xlsx extension
+            if not filename.endswith('.xlsx'):
+                filename += '.xlsx'
+            
+            print(f"📊 Exporting Trading Horizons Analysis to {filename}...")
+            
+            # Create Excel writer
+            with pd.ExcelWriter(filename, engine='openpyxl') as writer:
+                
+                # Sheet 1: Summary & Recommendations
+                self._create_summary_sheet(analysis_results, writer)
+                
+                # Sheet 2: Detailed Stock Metrics - Long Term
+                self._create_detailed_metrics_sheet(analysis_results, writer, "Long-Term", "LongTerm_Metrics")
+                
+                # Sheet 3: Detailed Stock Metrics - Short Term  
+                self._create_detailed_metrics_sheet(analysis_results, writer, "Short-Term", "ShortTerm_Metrics")
+                
+                # Sheet 4: Detailed Stock Metrics - Day Trading
+                self._create_detailed_metrics_sheet(analysis_results, writer, "Day Trading", "DayTrading_Metrics")
+                
+                # Sheet 5: Stock Rankings by Horizon
+                self._create_rankings_sheet(analysis_results, writer)
+                
+                # Sheet 6: Raw Data & Scores
+                self._create_raw_data_sheet(analysis_results, writer)
+            
+            print(f"✅ Excel file created successfully: {filename}")
+            return filename
+            
+        except Exception as e:
+            print(f"❌ Error creating Excel file: {e}")
+            return ""
+    
+    def _create_summary_sheet(self, analysis_results: Dict[str, Any], writer: pd.ExcelWriter) -> None:
+        """Create summary sheet with recommendations overview."""
+        
+        # Summary data
+        summary_data = []
+        for rec in analysis_results["recommendations"]:
+            summary_data.append({
+                'Trading_Horizon': rec['horizon'],
+                'Strategy_Theory': rec['theory'],
+                'Suitable_Stocks_Count': rec['count'],
+                'Top_Stock_Symbol': rec['top_picks'][0]['symbol'] if rec['top_picks'] else 'None',
+                'Top_Stock_Company': rec['top_picks'][0]['company'] if rec['top_picks'] else 'None',
+                'Top_Stock_Score': f"{rec['top_picks'][0]['score']:.1f}%" if rec['top_picks'] else 'N/A'
+            })
+        
+        summary_df = pd.DataFrame(summary_data)
+        summary_df.to_excel(writer, sheet_name='Summary', index=False)
+        
+        # Top picks for each horizon
+        top_picks_data = []
+        for rec in analysis_results["recommendations"]:
+            for i, stock in enumerate(rec["top_picks"][:5], 1):  # Top 5 per horizon
+                # Get the stock's data for this horizon
+                stock_data = analysis_results["stocks"][stock['symbol']]
+                horizon_data = stock_data["horizons"][rec['horizon']]
+                
+                top_picks_data.append({
+                    'Rank': i,
+                    'Trading_Horizon': rec['horizon'],
+                    'Symbol': stock['symbol'],
+                    'Company': stock['company'],
+                    'Score': f"{stock['score']:.1f}%",
+                    'Recommendation': horizon_data['recommendation']
+                })
+        
+        top_picks_df = pd.DataFrame(top_picks_data)
+        top_picks_df.to_excel(writer, sheet_name='Top_Recommendations', index=False)
+    
+    def _create_detailed_metrics_sheet(self, analysis_results: Dict[str, Any], writer: pd.ExcelWriter, 
+                                     horizon_name: str, sheet_name: str) -> None:
+        """Create detailed metrics sheet for a specific trading horizon."""
+        
+        detailed_data = []
+        stocks_data = analysis_results.get("stocks", {})
+        
+        for symbol, stock_data in stocks_data.items():
+            if horizon_name in stock_data.get("horizons", {}):
+                horizon_data = stock_data["horizons"][horizon_name]
+                
+                row_data = {
+                    'Symbol': symbol,
+                    'Company': stock_data.get('company_name', 'N/A'),
+                    'Overall_Score': f"{horizon_data.get('suitability_score', 0):.1f}%",
+                    'Recommendation': horizon_data.get('recommendation', 'N/A')
+                }
+                
+                # Add all metrics for this horizon
+                for metric_name, metric_data in horizon_data.get("metrics", {}).items():
+                    value = metric_data.get("value")
+                    rating = metric_data.get("rating", "N/A")
+                    
+                    if value is not None:
+                        if isinstance(value, float):
+                            row_data[f'{metric_name}_Value'] = f"{value:.2f}"
+                        else:
+                            row_data[f'{metric_name}_Value'] = str(value)
+                    else:
+                        row_data[f'{metric_name}_Value'] = 'N/A'
+                    
+                    row_data[f'{metric_name}_Rating'] = rating
+                
+                detailed_data.append(row_data)
+        
+        # Sort by score (descending)
+        detailed_data.sort(key=lambda x: float(x['Overall_Score'].replace('%', '')), reverse=True)
+        
+        detailed_df = pd.DataFrame(detailed_data)
+        detailed_df.to_excel(writer, sheet_name=sheet_name, index=False)
+    
+    def _create_rankings_sheet(self, analysis_results: Dict[str, Any], writer: pd.ExcelWriter) -> None:
+        """Create rankings comparison sheet showing all stocks across all horizons."""
+        
+        rankings_data = []
+        stocks_data = analysis_results.get("stocks", {})
+        
+        for symbol, stock_data in stocks_data.items():
+            company = stock_data.get('info', {}).get('company', 'N/A')
+            
+            row_data = {
+                'Symbol': symbol,
+                'Company': company,
+                'Best_Horizon': stock_data.get('best_horizon', {}).get('horizon', 'N/A'),
+                'Best_Score': f"{stock_data.get('best_horizon', {}).get('score', 0):.1f}%"
+            }
+            
+            # Add scores for each horizon
+            for horizon_name in ["Long-Term", "Short-Term", "Day Trading"]:
+                if horizon_name in stock_data.get("horizons", {}):
+                    score = stock_data["horizons"][horizon_name].get('suitability_score', 0)
+                    recommendation = stock_data["horizons"][horizon_name].get('recommendation', 'N/A')
+                    row_data[f'{horizon_name.replace("-", "")}_Score'] = f"{score:.1f}%"
+                    row_data[f'{horizon_name.replace("-", "")}_Recommendation'] = recommendation
+                else:
+                    row_data[f'{horizon_name.replace("-", "")}_Score'] = 'N/A'
+                    row_data[f'{horizon_name.replace("-", "")}_Recommendation'] = 'N/A'
+            
+            rankings_data.append(row_data)
+        
+        # Sort by best score (descending)
+        rankings_data.sort(key=lambda x: float(x['Best_Score'].replace('%', '')), reverse=True)
+        
+        rankings_df = pd.DataFrame(rankings_data)
+        rankings_df.to_excel(writer, sheet_name='Stock_Rankings', index=False)
+    
+    def _create_raw_data_sheet(self, analysis_results: Dict[str, Any], writer: pd.ExcelWriter) -> None:
+        """Create raw data sheet with all calculated values and metadata."""
+        
+        raw_data = []
+        stocks_data = analysis_results.get("stocks", {})
+        
+        for symbol, stock_data in stocks_data.items():
+            for horizon_name, horizon_data in stock_data.get("horizons", {}).items():
+                for metric_name, metric_data in horizon_data.get("metrics", {}).items():
+                    raw_data.append({
+                        'Symbol': symbol,
+                        'Company': stock_data.get('info', {}).get('company', 'N/A'),
+                        'Trading_Horizon': horizon_name,
+                        'Metric_Name': metric_name,
+                        'Value': metric_data.get("value"),
+                        'Score': metric_data.get("score", 0),
+                        'Rating': metric_data.get("rating", "N/A"),
+                        'Description': metric_data.get("description", "N/A")
+                    })
+        
+        raw_df = pd.DataFrame(raw_data)
+        raw_df.to_excel(writer, sheet_name='Raw_Data', index=False)
+        
+        # Analysis metadata
+        metadata = {
+            'Analysis_Date': [datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
+            'Total_Stocks_Analyzed': [len(stocks_data)],
+            'Analysis_Summary': [analysis_results.get('summary', 'Trading Horizons Analysis Complete')]
+        }
+        
+        metadata_df = pd.DataFrame(metadata)
+        metadata_df.to_excel(writer, sheet_name='Analysis_Metadata', index=False)
