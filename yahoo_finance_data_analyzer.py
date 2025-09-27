@@ -474,8 +474,20 @@ class YahooFinanceLiveAnalyzer:
                 print(f"   ⚠️ Error processing {row.get('symbol', 'Unknown')}: {e}")
                 continue
         
-        # Sort by score (best recommendations first)
-        recommendations.sort(key=lambda x: x['Score'], reverse=True)
+        # Sort by Recommendation first, then by Change_Percent
+        # Define recommendation priority order (higher priority = better recommendation)
+        rec_priority = {
+            'STRONG_BUY': 5,
+            'BUY': 4, 
+            'HOLD': 3,
+            'AVOID': 2,
+            'STRONG_AVOID': 1
+        }
+        
+        recommendations.sort(key=lambda x: (
+            -rec_priority.get(x['Recommendation'], 0),  # Negative for descending order (best first)
+            -x['Change_Percent']  # Negative for descending order (highest change % first)
+        ))
         
         return recommendations
 
@@ -833,7 +845,7 @@ class YahooFinanceLiveAnalyzer:
         print("\\n📊 Running single analysis cycle...")
         
         # Get all recommendations
-        recommendations = self.get_all_recommendations()
+        recommendations = self.get_live_recommendations()
         
         if recommendations:
             # Single run - no flashing, cycle count = 1
