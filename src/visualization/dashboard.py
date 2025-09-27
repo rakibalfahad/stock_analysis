@@ -718,9 +718,14 @@ Expected Gain:
             # Prepare pie chart data
             data = pd.DataFrame(list(allocation_data.items()), columns=['category', 'value'])
             data['angle'] = data['value'] / data['value'].sum() * 2 * pi
-            data['color'] = ['#3498db', '#2ecc71', '#f39c12', '#e74c3c', '#9b59b6', '#1abc9c'][:len(data)]
             
-                        # Calculate cumulative angles manually
+            # Ensure we have enough colors for all data items
+            base_colors = ['#3498db', '#2ecc71', '#f39c12', '#e74c3c', '#9b59b6', '#1abc9c']
+            # Create color list that matches data length exactly
+            colors_needed = len(data)
+            data['color'] = (base_colors * ((colors_needed // len(base_colors)) + 1))[:colors_needed]
+            
+            # Calculate cumulative angles manually
             data['start_angle'] = 0.0  # Initialize as float
             data['end_angle'] = 0.0    # Initialize as float
             cumulative = 0.0
@@ -790,8 +795,10 @@ Expected Gain:
                 actual_risks = [25, 20, 30, 28, 45]
                 actual_returns = [12, 10, 15, 14, 20]
             
-            # Create color palette
-            colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f'][:len(actual_stocks)]
+            # Create color palette that matches the number of stocks exactly
+            base_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f']
+            colors_needed = len(actual_stocks)
+            colors = (base_colors * ((colors_needed // len(base_colors)) + 1))[:colors_needed]
             
             # Create data source with proper hover information
             source = ColumnDataSource(data=dict(
@@ -971,7 +978,13 @@ Expected Gain:
             bokeh_save(layout, resources=CDN)
             
         except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
             logging.warning(f"Error creating Bokeh dashboard: {e}")
+            logging.debug(f"Full error details: {error_details}")
+            # Print more specific error information to help debugging
+            if "Length of values" in str(e) and "index" in str(e):
+                logging.warning("Data length mismatch detected in Bokeh visualization - this is likely due to inconsistent array lengths in portfolio data")
             raise
     
     def _create_bokeh_comparison(self, comparison_result: Dict[str, Any], output_file: str) -> None:
@@ -1196,6 +1209,7 @@ Expected Gain:
             heatmap_labels = []
             metric_names = []
             
+            # Build heatmap data with proper error handling and validation
             for rec in recommendations:
                 if rec.get("top_picks"):
                     top_stock = rec["top_picks"][0]
@@ -1206,18 +1220,23 @@ Expected Gain:
                         horizon_analysis = stock_data['horizons'].get(rec['horizon'], {})
                         metrics = horizon_analysis.get('metrics', {})
                         
-                        scores = []
-                        if not metric_names:  # First iteration, set metric names
+                        # Set metric names on first iteration or verify consistency
+                        if not metric_names:  
                             metric_names = list(metrics.keys())
                         
+                        # Ensure all rows have the same number of columns by padding missing metrics
+                        scores = []
                         for metric in metric_names:
-                            score = metrics.get(metric, {}).get('score', 0)
+                            score = metrics.get(metric, {}).get('score', 0) if isinstance(metrics.get(metric), dict) else 0
                             scores.append(score)
                         
-                        heatmap_data.append(scores)
-                        heatmap_labels.append(f"{symbol}\n({rec['horizon'][:5]})")
+                        # Only add if we have the expected number of metrics
+                        if len(scores) == len(metric_names):
+                            heatmap_data.append(scores)
+                            heatmap_labels.append(f"{symbol}\n({rec['horizon'][:5]})")
             
-            if heatmap_data:
+            # Create heatmap only if we have consistent data
+            if heatmap_data and all(len(row) == len(metric_names) for row in heatmap_data):
                 heatmap_df = pd.DataFrame(heatmap_data, 
                                         index=heatmap_labels, 
                                         columns=[m.replace('_', ' ').title() for m in metric_names])
