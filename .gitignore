@@ -47,6 +47,18 @@ stock_env/
 ehthumbs.db
 Thumbs.db
 
+# Automation logs and backups
+automation.log
+*.backup.*
+
+# Analysis output directories (keep structure but not all files)
+live_analysis/*.xlsx
+trading_horizons_data/*.xlsx
+
+# Keep README files in output directories
+!live_analysis/README.md
+!trading_horizons_data/README.md
+
 # Test files
 test_*.csv
 test_*.xlsx
@@ -64,7 +76,6 @@ detailed_*.xlsx
 # Runtime cache files
 symbols_cache.json
 news_cache.json
-live_analysis/
 
 # Temporary analysis files (Images)
 *_analysis.png
@@ -76,9 +87,17 @@ tech_stocks_*.png
 final_*.png
 stock_analysis.png
 
+# Portfolio output files (these change frequently)
+portfolio_dashboard.png
+portfolio_dashboard.html
+
+# Stock filtering temporary results
+stock_filtering_results.xlsx
+stock_filtering_analysis.png
+trading_horizons_analysis.png
+
 # Logs
 *.log
 
-# Keep only the main portfolio dashboard
-!portfolio_dashboard.png
+# Keep only important demo files
 !final_demo_moderate.png
