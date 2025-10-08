@@ -64,6 +64,12 @@ setup_directories() {
     mkdir -p "$LIVE_ANALYSIS_DIR"
     mkdir -p "$TRADING_HORIZONS_DIR"
     info "Created output directories: $LIVE_ANALYSIS_DIR, $TRADING_HORIZONS_DIR"
+    
+    # Create a configuration file for output directories
+    cat > output_config.env << EOF
+LIVE_ANALYSIS_DIR=$LIVE_ANALYSIS_DIR
+TRADING_HORIZONS_DIR=$TRADING_HORIZONS_DIR
+EOF
 }
 
 # Change to script directory
@@ -280,6 +286,11 @@ timeout 600 $PYTHON_ENV main.py --horizons --plot || {
     warning "Trading horizons analysis completed with warnings/errors"
 }
 
+# Ensure any generated trading horizons files are moved to the correct directory
+info "Moving trading horizons output files to $TRADING_HORIZONS_DIR..."
+find . -maxdepth 1 -name "trading_horizons_analysis_*.xlsx" -exec mv {} "$TRADING_HORIZONS_DIR/" \; 2>/dev/null || true
+find . -maxdepth 1 -name "trading_horizons_analysis*.png" -exec mv {} "$TRADING_HORIZONS_DIR/" \; 2>/dev/null || true
+
 success "Trading horizons analysis with confidence matrix completed"
 
 ################################################################################
@@ -300,11 +311,44 @@ from openpyxl import load_workbook
 try:
     print('📊 Adding confidence matrix to existing trading horizons strategy sheets...')
     
-    # Find the most recent trading horizons Excel file
+    # Ensure trading_horizons_data directory exists
+    os.makedirs('trading_horizons_data', exist_ok=True)
+    
+    # Find the most recent trading horizons Excel file in the correct directory
     horizons_files = glob.glob('trading_horizons_data/trading_horizons_analysis_*.xlsx')
+    
+    # Also check root directory for any files that need to be moved
+    root_files = glob.glob('trading_horizons_analysis_*.xlsx')
+    if root_files:
+        print(f'📁 Found {len(root_files)} files in root directory, moving to trading_horizons_data...')
+        import shutil
+        for file in root_files:
+            dest = os.path.join('trading_horizons_data', os.path.basename(file))
+            shutil.move(file, dest)
+            horizons_files.append(dest)
+            print(f'📁 Moved {file} to {dest}')
+    
     if not horizons_files:
         print('⚠️ No trading horizons Excel file found to update')
-        sys.exit(0)
+        print('🔍 Checking if main.py generated any files...')
+        
+        # Try to run main.py to generate the file
+        import subprocess
+        result = subprocess.run([sys.executable, 'main.py', '--horizons', '--plot'], 
+                              capture_output=True, text=True, timeout=300)
+        
+        # Check again for generated files
+        new_files = glob.glob('trading_horizons_analysis_*.xlsx')
+        if new_files:
+            import shutil
+            for file in new_files:
+                dest = os.path.join('trading_horizons_data', os.path.basename(file))
+                shutil.move(file, dest)
+                horizons_files.append(dest)
+                print(f'📁 Generated and moved {file} to {dest}')
+        else:
+            print('❌ No trading horizons files could be generated')
+            sys.exit(0)
     
     # Get the most recent file
     latest_horizons_file = max(horizons_files, key=os.path.getctime)
@@ -575,6 +619,35 @@ except Exception as e:
 success "Yahoo Finance live analysis updated with confidence matrix"
 
 ################################################################################
+# STEP 11: Final cleanup and file organization
+################################################################################
+info "Step 11: Final cleanup and file organization..."
+
+# Ensure all trading horizons files are in the correct directory
+MOVED_FILES=0
+for file in trading_horizons_analysis_*.xlsx trading_horizons_analysis_*.png; do
+    if [ -f "$file" ]; then
+        mv "$file" "$TRADING_HORIZONS_DIR/" 2>/dev/null && MOVED_FILES=$((MOVED_FILES + 1))
+    fi
+done
+
+# Ensure all live analysis files are in the correct directory  
+for file in yahoo_live_analysis_*.xlsx; do
+    if [ -f "$file" ]; then
+        mv "$file" "$LIVE_ANALYSIS_DIR/" 2>/dev/null && MOVED_FILES=$((MOVED_FILES + 1))
+    fi
+done
+
+if [ $MOVED_FILES -gt 0 ]; then
+    info "Moved $MOVED_FILES files to organized directories"
+fi
+
+# Clean up temporary configuration
+rm -f output_config.env 2>/dev/null || true
+
+success "File organization and cleanup completed"
+
+################################################################################
 # WORKFLOW COMPLETION
 ################################################################################
 echo ""
@@ -597,15 +670,18 @@ echo -e "${GREEN}✅ Stock filtering analysis with confidence matrix completed${
 echo -e "${GREEN}✅ Trading horizons analysis with confidence matrix completed${NC}"
 echo -e "${GREEN}✅ Trading horizons strategy sheets updated with confidence matrix${NC}"
 echo -e "${GREEN}✅ Yahoo Finance live analysis updated with confidence matrix${NC}"
+echo -e "${GREEN}✅ File organization and cleanup completed${NC}"
 
-echo -e "\n${BLUE}📁 Generated Files:${NC}"
+echo -e "\n${BLUE}📁 Generated Files (Organized Structure):${NC}"
 echo -e "   📈 Portfolio Dashboard: portfolio_dashboard.png, portfolio_dashboard.html"
 echo -e "   📊 Stock Filtering: stock_filtering_results.xlsx, stock_filtering_analysis.png"
-echo -e "   📊 Trading Horizons: trading_horizons_analysis.png"
-echo -e "   📊 Enhanced Strategy Sheets: trading_horizons_data/ (LongTerm_Metrics, ShortTerm_Metrics, DayTrading_Metrics)"
-echo -e "   📊 Enhanced Live Analysis: live_analysis/ (yahoo_live_analysis_*.xlsx with confidence matrix)"
-echo -e "   📋 Yahoo Analysis: $LATEST_EXCEL"
-echo -e "   🔄 Backup: ${INVESTMENTS_FILE}.backup.*"
+echo -e "   📊 Trading Horizons Folder: $TRADING_HORIZONS_DIR/"
+echo -e "       └── trading_horizons_analysis_*.xlsx (with enhanced strategy sheets)"
+echo -e "       └── trading_horizons_analysis*.png (visualization files)"
+echo -e "   📊 Live Analysis Folder: $LIVE_ANALYSIS_DIR/"
+echo -e "       └── yahoo_live_analysis_*.xlsx (with confidence matrix)"
+echo -e "   📋 Latest Analysis File: $LATEST_EXCEL"
+echo -e "   🔄 Investment Backups: ${INVESTMENTS_FILE}.backup.*"
 
 echo -e "\n${YELLOW}🔧 Next Steps:${NC}"
 echo -e "   • Review updated ticker list in $INVESTMENTS_FILE"
